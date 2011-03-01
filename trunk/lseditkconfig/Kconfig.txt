@@ -1,0 +1,105 @@
+menu "Processor type and features"
+config IA64
+	bool "sarah"
+	select PCI if (!IA64_HP_SIM)
+	select ACPI if (!IA64_HP_SIM)
+	select PM if (!IA64_HP_SIM)
+	select ARCH_SUPPORTS_MSI
+	select HAVE_UNSTABLE_SCHED_CLOCK
+	select HAVE_IDE
+	select HAVE_OPROFILE
+	select HAVE_KPROBES
+	select HAVE_KRETPROBES
+	select HAVE_FTRACE_MCOUNT_RECORD
+	select HAVE_DYNAMIC_FTRACE if (!ITANIUM)
+	select HAVE_FUNCTION_TRACER
+	select HAVE_DMA_ATTRS
+	select HAVE_KVM
+	select HAVE_ARCH_TRACEHOOK
+	select HAVE_DMA_API_DEBUG
+	select HAVE_GENERIC_HARDIRQS
+	select GENERIC_IRQ_PROBE
+	select GENERIC_PENDING_IRQ if SMP
+	select IRQ_PER_CPU
+	default y
+	help
+	  The Itanium Processor Family is Intel's 64-bit successor to
+	  the 32-bit X86 line.  The IA-64 Linux project has a home
+	  page at <http://www.linuxia64.org/> and a mailing list at
+	  <linux-ia64@vger.kernel.org>.
+config 64BIT
+	bool
+	select ATA_NONSTANDARD if ATA
+	default y
+config ZONE_DMA
+	def_bool y
+	depends on !IA64_SGI_SN2
+config QUICKLIST
+	bool
+	default y
+config MMU
+	bool
+	default y
+config ARCH_DMA_ADDR_T_64BIT
+	def_bool y
+config NEED_DMA_MAP_STATE
+	def_bool y
+config NEED_SG_DMA_LENGTH
+	def_bool y
+config SWIOTLB
+       bool
+config STACKTRACE_SUPPORT
+	def_bool y
+config GENERIC_LOCKBREAK
+	def_bool n
+config RWSEM_XCHGADD_ALGORITHM
+	bool
+	default y
+menuconfig PARAVIRT_GUEST
+	bool "Paravirtualized guest support"
+	help
+	  Say Y here to get to see options related to running Linux under
+	  various hypervisors.  This option alone does not add any kernel code.
+	  If you say N, all options in this submenu will be skipped and disabled.
+if PARAVIRT_GUEST
+config PARAVIRT
+	bool "Enable paravirtualization code"
+	depends on PARAVIRT_GUEST
+	default y
+	bool
+	default y
+	help
+	  This changes the kernel so it can modify itself when it is run
+	  under a hypervisor, potentially improving performance significantly
+	  over full virtualization.  However, when run without a hypervisor
+	  the kernel is theoretically slower and slightly larger.
+source "arch/ia64/xen/Kconfig"
+endif
+choice
+	prompt "System type"
+	default IA64_GENERIC
+config IA64_HP_SIM
+	bool "Ski-simulator"
+	select SWIOTLB
+config IA64_XEN_GUEST
+	bool "Xen guest"
+	select SWIOTLB
+	depends on XEN
+	help
+	  Build a kernel that runs on Xen guest domain. At this moment only
+	  16KB page size in supported.
+endchoice
+choice
+	prompt "Page Table Levels"
+	default PGTABLE_3
+config PGTABLE_3
+	bool "3 Levels"
+config PGTABLE_4
+	depends on !IA64_PAGE_SIZE_64KB
+	bool "4 Levels"
+endchoice
+if IA64_HP_SIM
+config HZ
+	default 32
+endif
+endmenu
