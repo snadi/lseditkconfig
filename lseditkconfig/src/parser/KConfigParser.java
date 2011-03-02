@@ -128,15 +128,21 @@ public class KConfigParser {
         return entityInstance;
     }
 
+    private EntityInstance getEntityInstance(String name, String type) {
+        EntityInstance entityInstance = diagram.getCache(removeSpacesAndQuotes(name));
+
+        if (entityInstance == null) {
+            entityInstance = diagram.newCachedEntity(diagram.getEntityClass(type), removeSpacesAndQuotes(name));
+        }
+
+        return entityInstance;
+    }
+
     private EntityInstance parseMenu(EntityInstance parent, String line) throws Exception {
         System.out.println("enter parseMenu() with: " + line);
         String menuName = line.trim().substring(line.indexOf("\"") + 1, line.lastIndexOf("\""));
 
-        EntityInstance menuInstance = diagram.getCache(removeSpacesAndQuotes(menuName));
-
-        if (menuInstance == null) {
-            menuInstance = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.MENU_CLASS), removeSpacesAndQuotes(menuName));
-        }
+        EntityInstance menuInstance = getEntityInstance(menuName, TAEntityClass.MENU_CLASS);
 
         String newLine = readLine();
         //load menu attributes first
@@ -322,20 +328,31 @@ public class KConfigParser {
     }
 
     private void addDependency(EntityInstance parentInstance, String line) {
+        String dependencyName = "";
         String parts[] = line.split(" ");
         if (parts[2].trim().startsWith("!")) {
-            EntityInstance relatedEntity = diagram.getCache(removeSpacesAndQuotes(parts[2].trim().substring(1)));
-            if (relatedEntity == null) {
-                relatedEntity = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CONFIG_CLASS), removeSpacesAndQuotes(parts[2].trim().substring(1)));
+            dependencyName = parts[2].trim().substring(1);
+            if (dependencyName.contains("!=")) {
+                int index = dependencyName.indexOf("!=");
+                dependencyName = dependencyName.substring(0, index);
+            } else if (dependencyName.contains("=")) {
+                int index = dependencyName.indexOf("=");
+                dependencyName = dependencyName.substring(0, index);
             }
+
+            EntityInstance relatedEntity = getEntityInstance(dependencyName, TAEntityClass.CONFIG_CLASS);
 
             diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON_NS), parentInstance, relatedEntity);
         } else {
-
-            EntityInstance relatedEntity = diagram.getCache(removeSpacesAndQuotes(parts[2].trim()));
-            if (relatedEntity == null) {
-                relatedEntity = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CONFIG_CLASS), removeSpacesAndQuotes(parts[2].trim()));
+            dependencyName = parts[2].trim();
+            if (dependencyName.contains("!=")) {
+                int index = dependencyName.indexOf("!=");
+                dependencyName = dependencyName.substring(0, index);
+            } else if (dependencyName.contains("=")) {
+                int index = dependencyName.indexOf("=");
+                dependencyName = dependencyName.substring(0, index);
             }
+            EntityInstance relatedEntity = getEntityInstance(dependencyName, TAEntityClass.CONFIG_CLASS);
 
             diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON), parentInstance, relatedEntity);
         }
@@ -344,18 +361,12 @@ public class KConfigParser {
     private void addVisibility(EntityInstance parentInstance, String line) {
         String parts[] = line.split(" ");
         if (parts[2].trim().startsWith("!")) {
-            EntityInstance relatedEntity = diagram.getCache(removeSpacesAndQuotes(parts[2].trim().substring(1)));
-            if (relatedEntity == null) {
-                relatedEntity = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CONFIG_CLASS), removeSpacesAndQuotes(parts[2].trim().substring(1)));
-            }
+            EntityInstance relatedEntity = getEntityInstance(parts[2].trim().substring(1), TAEntityClass.CONFIG_CLASS);
 
             diagram.addEdge(diagram.getRelationClass(TARelation.VISIBLE_IF_NS), parentInstance, relatedEntity);
         } else {
 
-            EntityInstance relatedEntity = diagram.getCache(removeSpacesAndQuotes(parts[2].trim()));
-            if (relatedEntity == null) {
-                relatedEntity = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CONFIG_CLASS), removeSpacesAndQuotes(parts[2].trim()));
-            }
+            EntityInstance relatedEntity = getEntityInstance(parts[2].trim(), TAEntityClass.CONFIG_CLASS);
 
             diagram.addEdge(diagram.getRelationClass(TARelation.VISIBLE_IF_SELECTED), parentInstance, relatedEntity);
         }
@@ -453,14 +464,7 @@ public class KConfigParser {
         String parts[] = configStart.split(" ");
 
 
-        configInstance = diagram.getCache(removeSpacesAndQuotes(parts[1].trim()));
-
-        if (configInstance == null) {
-            configInstance = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CONFIG_CLASS), removeSpacesAndQuotes(parts[1].trim()));
-
-        } else {
-            System.out.println("CONFIG APPEARING TWICE: " + removeSpacesAndQuotes(parts[1].trim()));
-        }
+        configInstance = getEntityInstance(parts[1].trim(), TAEntityClass.CONFIG_CLASS);
 
 
 
@@ -480,11 +484,7 @@ public class KConfigParser {
 
         if (isSelect(line)) {
             System.out.println("SELECT LINE: " + line);
-            EntityInstance relatedEntity = diagram.getCache(removeSpacesAndQuotes(parts[1].trim()));
-
-            if (relatedEntity == null) {
-                relatedEntity = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CONFIG_CLASS), removeSpacesAndQuotes(parts[1]));
-            }
+            EntityInstance relatedEntity = getEntityInstance(parts[1].trim(), TAEntityClass.CONFIG_CLASS);
 
             RelationInstance relnInstance = diagram.addEdge(diagram.getRelationClass(TARelation.SELECT), entityInstance, relatedEntity);
 
@@ -498,22 +498,8 @@ public class KConfigParser {
                 relnInstance.addAttribute(TaAttribute.SELECT_CONDITION, "\"" + removeQuotes(condName) + "\"");
             }
         } else if (isDependsOn(line)) {
-            if (parts[2].trim().startsWith("!")) {
-                EntityInstance relatedEntity = diagram.getCache(removeSpacesAndQuotes(parts[2].trim().substring(1)));
-                if (relatedEntity == null) {
-                    relatedEntity = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CONFIG_CLASS), removeSpacesAndQuotes(parts[2].trim().substring(1)));
-                }
-
-                diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON_NS), entityInstance, relatedEntity);
-            } else {
-
-                EntityInstance relatedEntity = diagram.getCache(removeSpacesAndQuotes(parts[2].trim()));
-                if (relatedEntity == null) {
-                    relatedEntity = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CONFIG_CLASS), removeSpacesAndQuotes(parts[2].trim()));
-                }
-
-                diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON), entityInstance, relatedEntity);
-            }
+            //TODO HANDLE EXPRESSIONS
+            addDependency(entityInstance, line);
         }
     }
 
@@ -566,27 +552,6 @@ public class KConfigParser {
 
         String parts[] = line.split(" ");
 
-//        if (!(parts[1].trim().equals("y") || parts[1].trim().equals("n"))) {
-//            if (parts[1].startsWith("!")) {
-//                defaultValue = parts[1].trim().substring(1);
-//                relnClass = diagram.getRelationClass(TARelation.HAS_DEFAULT_VALUE_NOT);
-//            } else if (parts[1].startsWith("(")) {
-//                //TODO
-//            } else {
-//                defaultValue = parts[1].trim();
-//                relnClass = diagram.getRelationClass(TARelation.HAS_DEFAULT_VALUE);
-//            }
-//
-//            EntityInstance defaultInst = diagram.getCache(removeSpacesAndQuotes(defaultValue));
-//
-//            if (defaultInst == null) {
-//                defaultInst = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CONFIG_CLASS), removeSpacesAndQuotes(defaultValue));
-//            }
-//
-//
-//            diagram.addEdge(relnClass, parentInstance, defaultInst);
-//        }
-
         entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1]) + "\"");
     }
 
@@ -615,13 +580,7 @@ public class KConfigParser {
         String parts[] = line.trim().split(" ");
         String menuName = parts[1].trim();
 
-        EntityInstance menuInstance = diagram.getCache(removeSpacesAndQuotes(menuName));
-
-        if (menuInstance == null) {
-            menuInstance = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.MENU_CONFIG_CLASS), removeSpacesAndQuotes(menuName));
-        }
-
-
+        EntityInstance menuInstance = getEntityInstance(menuName, TAEntityClass.MENU_CONFIG_CLASS);
 
         loadGeneralAttributes(menuInstance);
 
@@ -667,18 +626,16 @@ public class KConfigParser {
             relationClass = diagram.getRelationClass(TARelation.DEPENDS_ON);
         }
 
-
-        EntityInstance ifInstance = diagram.getCache(removeSpacesAndQuotes(ifName));
-
-        if (ifInstance == null) {
-            System.out.println("null");
-            ifInstance = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CONFIG_CLASS), removeSpacesAndQuotes(ifName));
-        } else {
-            System.out.println("not null");
+        if (ifName.contains("!=")) {
+            int index = ifName.indexOf("!=");
+            ifName = ifName.substring(0, index);
+        } else if (ifName.contains("=")) {
+            int index = ifName.indexOf("=");
+            ifName = ifName.substring(0, index);
         }
 
-        System.out.println("if instance: " + ifInstance + " " + ifInstance.getEntityClass().getId());
-
+        EntityInstance ifInstance = getEntityInstance(ifName, TAEntityClass.CONFIG_CLASS);
+        
         String nextLine = readLine();
 
         while (nextLine != null && !nextLine.equals(Keywords.END_IF)) {
@@ -690,7 +647,7 @@ public class KConfigParser {
             }
 
             if (ifEntry != null && ifInstance != null) {
-                diagram.addEdge(relationClass, ifInstance, ifEntry);
+                diagram.addEdge(relationClass, ifEntry, ifInstance);
             }
 
             nextLine = readLine();
@@ -702,166 +659,6 @@ public class KConfigParser {
 
         System.out.println("exit parseIF()");
         return ifInstance;
-    }
-
-    private void parseEntryContents(EntityInstance parentInstance, String line, RelationClass relnClass) throws Exception {
-        System.out.println("enter parseEntryContents() with: " + line);
-        line = line.trim();
-        String parts[] = line.split(" ");
-
-
-        //check type
-        if (line.equals(Keywords.BOOL) || Pattern.matches(Keywords.BOOL + "\\s\".*\"", line)) {
-            parentInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.BOOL + "\"");
-            checkDefPrompt(parentInstance, line);
-        } else if (line.equals(Keywords.TRISTATE) || Pattern.matches(Keywords.TRISTATE + "\\s\".*\"", line)) {
-            parentInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.TRISTATE + "\"");
-            checkDefPrompt(parentInstance, line);
-        } else if (line.equals(Keywords.STRING) || Pattern.matches(Keywords.STRING + "\\s\".*\"", line)) {
-            parentInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.STRING + "\"");
-            checkDefPrompt(parentInstance, line);
-        } else if (line.equals(Keywords.INTEGER) || Pattern.matches(Keywords.INTEGER + "\\s\".*\"", line)) {
-            parentInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.INTEGER + "\"");
-            checkDefPrompt(parentInstance, line);
-        } else if (line.startsWith(Keywords.DEFAULT_BOOL)) {
-            parentInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.BOOL + "\"");
-            parentInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1].trim()) + "\"");
-            parentInstance.addAttribute(TaAttribute.USER_SELECTABLE, "\"false\"");
-//             relnClass = diagram.getRelationClass(TARelation.HAS_DEFAULT_VALUE_NOT);
-//                } else if (parts[1].startsWith("(")) {
-//                    //TODO
-//                } else {
-//                    defaultValue = parts[1].trim();
-//                    relnClass = diagram.getRelationClass(TARelation.HAS_DEFAULT_VALUE);
-//      
-//              String defaultValue = "";
-//            RelationClass relnClass = null;
-//
-//             if (!(parts[1].trim().equals("y") || parts[1].trim().equals("n"))) {
-//                if (parts[1].startsWith("!")) {
-//                    defaultValue = parts[1].trim().substring(1);
-//                   relnClass = diagram.getRelationClass(TARelation.HAS_DEFAULT_VALUE_NOT);
-//                } else if (parts[1].startsWith("(")) {
-//                    //TODO
-//                } else {
-//                    defaultValue = parts[1].trim();
-//                    relnClass = diagram.getRelationClass(TARelation.HAS_DEFAULT_VALUE);
-//                }
-//
-//                EntityInstance defaultInst = diagram.getCache(removeSpacesAndQuotes(defaultValue));
-//
-//                if (defaultInst == null) {
-//                    defaultInst = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CONFIG_CLASS), removeSpacesAndQuotes(defaultValue));
-//                }
-//
-//                System.out.println("ADDING: " + relnClass + " " + parentInstance + " " + defaultInst);
-//                diagram.addEdge(relnClass, parentInstance, defaultInst);
-//            }else{
-//                System.out.println("WRONG:"+ line + " " + parts[1]);
-//            }
-
-        } //check default values
-        else if (line.startsWith(Keywords.DEFAULT + " ") && parts.length > 1) {
-            String defaultValue = "";
-
-            if (!(parts[1].trim().equals("y") || parts[1].trim().equals("n"))) {
-                if (parts[1].startsWith("!")) {
-                    defaultValue = parts[1].trim().substring(1);
-                    relnClass = diagram.getRelationClass(TARelation.HAS_DEFAULT_VALUE_NOT);
-                } else if (parts[1].startsWith("(")) {
-                    //TODO
-                } else {
-                    defaultValue = parts[1].trim();
-                    relnClass = diagram.getRelationClass(TARelation.HAS_DEFAULT_VALUE);
-                }
-
-                EntityInstance defaultInst = diagram.getCache(removeSpacesAndQuotes(defaultValue));
-
-                if (defaultInst == null) {
-                    defaultInst = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CONFIG_CLASS), removeSpacesAndQuotes(defaultValue));
-                }
-
-
-                diagram.addEdge(relnClass, parentInstance, defaultInst);
-            }
-//            } else {
-//                System.out.println("WRONG:" + line + " " + parts[1]);
-//            }
-
-            parentInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1]) + "\"");
-        } //check relations
-        else if (line.startsWith(Keywords.DEPENDS_ON + " ") && parts.length > 1) {
-            if (parts[2].trim().startsWith("!")) {
-                EntityInstance relatedEntity = diagram.getCache(removeSpacesAndQuotes(parts[2].trim().substring(1)));
-                if (relatedEntity == null) {
-                    relatedEntity = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CONFIG_CLASS), removeSpacesAndQuotes(parts[2].trim().substring(1)));
-                }
-
-                diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON_NS), parentInstance, relatedEntity);
-            } else {
-
-                EntityInstance relatedEntity = diagram.getCache(removeSpacesAndQuotes(parts[2].trim()));
-                if (relatedEntity == null) {
-                    relatedEntity = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CONFIG_CLASS), removeSpacesAndQuotes(parts[2].trim()));
-                }
-
-                diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON), parentInstance, relatedEntity);
-            }
-
-        } else if (Pattern.matches(Keywords.CONFIG + "\\s.*", line.trim()) && parts.length == 2) {
-            EntityInstance configInstance = parseConfig(parentInstance, line);
-            if (relnClass != null) {
-                diagram.addEdge(relnClass, parentInstance, configInstance);
-            }
-        } else if (line.startsWith(Keywords.SELECT + " ") && parts.length > 1) {
-            try {
-
-                EntityInstance relatedEntity = diagram.getCache(removeSpacesAndQuotes(parts[1].trim()));
-
-                if (relatedEntity == null) {
-                    relatedEntity = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CONFIG_CLASS), removeSpacesAndQuotes(parts[1]));
-                }
-
-                RelationInstance relnInstance = diagram.addEdge(diagram.getRelationClass(TARelation.SELECT), parentInstance, relatedEntity);
-
-                if (parts.length > 2) {
-
-                    String condName = parts[3].trim();
-                    if (condName.startsWith("(!")) {
-                        condName = condName.substring(1, condName.length() - 1);
-                    }
-
-                    relnInstance.addAttribute(TaAttribute.SELECT_CONDITION, "\"" + removeQuotes(condName) + "\"");
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-
-            }
-        } else if (line.trim().equals(Keywords.HELP) || line.trim().equals(Keywords.OTHER_HELP)) {
-            dis.mark(10000);
-            String inputLine = dis.readLine();
-            String helpText = "";
-
-            while (!isKeyword(inputLine.trim())) {
-                helpText += inputLine.trim() + "\n";
-                dis.mark(10000);
-                inputLine = dis.readLine();
-            }
-
-            parentInstance.addAttribute(Keywords.HELP, "\"" + removeBracketsAndQuotes(helpText) + "\"");
-            System.out.println("resetting: " + inputLine);
-            dis.reset();
-        } else if (line.startsWith(Keywords.IF) && parts.length == 2) {
-            parseIF(parentInstance, line);
-        }//default for now
-        else {
-            parseContainer(parentInstance, line, diagram.getRelationClass(TARelation.CONTAINS));
-            System.out.println("Returned to parseentry");
-        }
-
-        System.out.println("exit parseEntryContents()");
-
     }
 
     private boolean isHelp(String line) {
