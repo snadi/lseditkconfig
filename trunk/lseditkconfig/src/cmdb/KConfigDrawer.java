@@ -52,7 +52,7 @@ public class KConfigDrawer extends BasicReader {
                 init(diagram);
                                        
          
-            KConfigParser parser = new KConfigParser("Kconfig_full_clean.txt", diagram);
+            KConfigParser parser = new KConfigParser("kconfig_full-clean.txt", diagram);
             parser.parse();
 
                 addRootAttributes();
