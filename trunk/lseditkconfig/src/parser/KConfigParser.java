@@ -328,45 +328,73 @@ public class KConfigParser {
     }
 
     private void addDependency(EntityInstance parentInstance, String line) {
-        String dependencyName = "";
-        String parts[] = line.split(" ");
-        if (parts[2].trim().startsWith("!")) {
-            dependencyName = parts[2].trim().substring(1);
-            if (dependencyName.contains("!=")) {
-                int index = dependencyName.indexOf("!=");
-                dependencyName = dependencyName.substring(0, index);
-            } else if (dependencyName.contains("=")) {
-                int index = dependencyName.indexOf("=");
-                dependencyName = dependencyName.substring(0, index);
-            }
+        String dependency = line.substring(11).trim();
+        
+        if (dependency.matches("(.*)")) {
+            dependency = dependency.substring(1, dependency.length());
+       }
 
-            EntityInstance relatedEntity = getConfigInstance(dependencyName);
+        if (dependency.contains("!=")) {
+            System.out.println("IGNORING DEPENDENCY:" + line);
+        } else if (dependency.contains("=")) {
+            System.out.println("IGNORING DEPENDENCY:" + line);       
+        } else if(dependency.contains("&&")){
+//            String parts[] = dependency.split("&&");
+//
+//            String dependency1 = parts[0].trim();
+//            String dependency2 = parts[1].trim();
+//            RelationClass relation1= null;
+//            RelationClass relation2 = null;
+//
+//            if(dependency1.startsWith("!")){
+//                dependency1 = dependency1.substring(1);
+//                relation1 = diagram.getRelationClass(TARelation.DEPENDS_ON_NS);
+//            }else{
+//                relation1 = diagram.getRelationClass(TARelation.DEPENDS_ON);
+//            }
+//
+//            if(dependency2.startsWith("!")){
+//                dependency2 = dependency2.substring(1);
+//                relation2 = diagram.getRelationClass(TARelation.DEPENDS_ON_NS);
+//            }else{
+//                relation2 = diagram.getRelationClass(TARelation.DEPENDS_ON);
+//            }
 
-            diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON_NS), parentInstance, relatedEntity);
+
+
+//            EntityInstance relatedEntity = getEntityInstance(dependency1, TAEntityClass.CONFIG_CLASS);
+//
+//            diagram.addEdge(relation1, parentInstance, relatedEntity);
+//
+//            relatedEntity = getEntityInstance(dependency2, TAEntityClass.CONFIG_CLASS);
+//            diagram.addEdge(relation2, parentInstance, relatedEntity);
+
+        } else if(dependency.contains("||")){
+            System.out.println("IGNORD RELATION: " + line);
         } else {
-            dependencyName = parts[2].trim();
-            if (dependencyName.contains("!=")) {
-                int index = dependencyName.indexOf("!=");
-                dependencyName = dependencyName.substring(0, index);
-            } else if (dependencyName.contains("=")) {
-                int index = dependencyName.indexOf("=");
-                dependencyName = dependencyName.substring(0, index);
-            }
-            EntityInstance relatedEntity = getConfigInstance(dependencyName);
+            //simple depends on expression
+
+            if(dependency.startsWith("!")){
+                EntityInstance relatedEntity = getEntityInstance(dependency.substring(1), TAEntityClass.CONFIG_CLASS);
 
             diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON), parentInstance, relatedEntity);
+            }else{
+                EntityInstance relatedEntity = getEntityInstance(dependency, TAEntityClass.CONFIG_CLASS);
+
+            diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON), parentInstance, relatedEntity);
+            }           
         }
     }
 
     private void addVisibility(EntityInstance parentInstance, String line) {
         String parts[] = line.split(" ");
         if (parts[2].trim().startsWith("!")) {
-            EntityInstance relatedEntity = getConfigInstance(parts[2].trim().substring(1));//, TAEntityClass.CONFIG_CLASS);
+            EntityInstance relatedEntity = getEntityInstance(parts[2].trim().substring(1), TAEntityClass.CONFIG_CLASS);
 
             diagram.addEdge(diagram.getRelationClass(TARelation.VISIBLE_IF_NS), parentInstance, relatedEntity);
         } else {
 
-            EntityInstance relatedEntity = getConfigInstance(parts[2].trim());// TAEntityClass.CONFIG_CLASS);
+            EntityInstance relatedEntity = getEntityInstance(parts[2].trim(), TAEntityClass.CONFIG_CLASS);
 
             diagram.addEdge(diagram.getRelationClass(TARelation.VISIBLE_IF_SELECTED), parentInstance, relatedEntity);
         }
@@ -454,14 +482,7 @@ public class KConfigParser {
         return Pattern.matches(Keywords.SOURCE + "\\s\".*\"", line);
     }
 
-    private EntityInstance getConfigInstance(String originalName) {
-        int index = originalName.lastIndexOf("/");
-        String[] names = new String[2];
-        names[0] = originalName.substring(0, index + 1);
-        names[1] = originalName.substring(index + 1);
-        EntityInstance configInstance = getEntityInstance(names[1], TAEntityClass.CONFIG_CLASS);
-        configInstance.addAttribute(TaAttribute.PATH, names[0]);
-        return configInstance;
+    private void loadSource(String fileName) {
     }
 
     private EntityInstance parseConfig(EntityInstance container, String configStart) throws Exception {
@@ -471,8 +492,7 @@ public class KConfigParser {
         String parts[] = configStart.split(" ");
 
 
-        configInstance = getConfigInstance(parts[1].trim());
-
+        configInstance = getEntityInstance(parts[1].trim(), TAEntityClass.CONFIG_CLASS);
 
 
 
@@ -492,7 +512,7 @@ public class KConfigParser {
 
         if (isSelect(line)) {
             System.out.println("SELECT LINE: " + line);
-            EntityInstance relatedEntity =  getConfigInstance(parts[1].trim());
+            EntityInstance relatedEntity = getEntityInstance(parts[1].trim(), TAEntityClass.CONFIG_CLASS);
 
             RelationInstance relnInstance = diagram.addEdge(diagram.getRelationClass(TARelation.SELECT), entityInstance, relatedEntity);
 
@@ -642,8 +662,7 @@ public class KConfigParser {
             ifName = ifName.substring(0, index);
         }
 
-        EntityInstance ifInstance = getConfigInstance(ifName);
-
+        EntityInstance ifInstance = getEntityInstance(ifName, TAEntityClass.CONFIG_CLASS);
         String nextLine = readLine();
 
         while (nextLine != null && !nextLine.equals(Keywords.END_IF)) {
@@ -750,6 +769,8 @@ public class KConfigParser {
         output = output.replaceAll("\\(", " ");
         output = output.replaceAll("\\)", " ");
         output = output.replaceAll("'", "");
+        output = output.replaceAll(":", "");
+        output = output.replaceAll("/", "");
         output = output.trim();
         return output.replaceAll(" ", "_");
     }
