@@ -23,6 +23,7 @@ public class TaAttribute {
     public static String USER_SELECTABLE = "user_selectable";
     public static String PROMPT = "prompt";
     public static String SELECT_CONDITION = "select_condition";
+    public static String PATH = "path";
 
     public TaAttribute(String attributeName, String attributeValue) {
         this.attributeName = attributeName;
