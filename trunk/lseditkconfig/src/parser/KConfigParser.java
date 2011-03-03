@@ -10,9 +10,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import lsedit.EntityInstance;
 import lsedit.Ta;
@@ -58,7 +56,7 @@ public class KConfigParser {
     }
 
     public void parse() throws Exception {
-        System.out.println("enter parse()");
+        //System.out.println("enter parse()");
 
         File file = new File(fileName);
         FileInputStream fis = null;
@@ -78,7 +76,7 @@ public class KConfigParser {
                 line = line.trim();
 
                 parentContainer = parseContainer(parentContainer, line, null);
-                System.out.println("return to parse");
+        //        System.out.println("return to parse");
             }
 
 
@@ -86,7 +84,7 @@ public class KConfigParser {
             bis.close();
             dis.close();
 
-            System.out.println("exit parse()");
+            //    System.out.println("exit parse()");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -95,7 +93,7 @@ public class KConfigParser {
     }
 
     private EntityInstance parseContainer(EntityInstance parent, String line, RelationClass relnClass) throws Exception {
-        System.out.println("enter parseContainer() with: " + line);
+        //   System.out.println("enter parseContainer() with: " + line);
         EntityInstance entityInstance = null;
         line = line.trim();
         String parts[] = line.split(" ");
@@ -105,30 +103,33 @@ public class KConfigParser {
                 entityInstance = parseMenu(parent, line);
             } else if (Pattern.matches(Keywords.MENUCONFIG + "\\s.*", line) && parts.length == 2) {
                 entityInstance = parseMenuConfig(parent, line);
-                System.out.println("returned from menuconfgi");
+          //      System.out.println("returned from menuconfgi");
             } else if (line.startsWith(Keywords.IF) && parts.length == 2) {
                 entityInstance = parseIF(parent, line);
-                System.out.println("returned from if");
+            //    System.out.println("returned from if");
             } else if (line.equals(Keywords.CHOICE)) {
                 entityInstance = parseChoice(parent, line);
             } else if (Pattern.matches(Keywords.CONFIG + "\\s.*", line.trim()) && parts.length == 2) {
                 entityInstance = parseConfig(parent, line);
             } else {
-                System.out.println("IGNORED: " + line);
+              //  System.out.println("IGNORED: " + line);
             }
         } else {
-            System.out.println("IGNORED" + line);
+            //System.out.println("IGNORED" + line);
         }
 
         //  if (parent != null && entityInstance != null && relnClass != null) {
         //    diagram.addEdge(relnClass, parent, entityInstance);
         //}
 
-        System.out.println("exit parseContainer()");
+        //  System.out.println("exit parseContainer()");
         return entityInstance;
     }
 
     private EntityInstance getEntityInstance(String name, String type) {
+        if(removeSpacesAndQuotes(name).equals("")){
+            System.out.println("ADDING EMPTY NAME: "+ name);
+        }
         EntityInstance entityInstance = diagram.getCache(removeSpacesAndQuotes(name));
 
         if (entityInstance == null) {
@@ -139,7 +140,7 @@ public class KConfigParser {
     }
 
     private EntityInstance parseMenu(EntityInstance parent, String line) throws Exception {
-        System.out.println("enter parseMenu() with: " + line);
+        //  System.out.println("enter parseMenu() with: " + line);
         String menuName = line.trim().substring(line.indexOf("\"") + 1, line.lastIndexOf("\""));
 
         EntityInstance menuInstance = getEntityInstance(menuName, TAEntityClass.MENU_CLASS);
@@ -156,7 +157,7 @@ public class KConfigParser {
             newLine = readLine();
         }
 
-        System.out.println("line: " + newLine);
+     //   System.out.println("line: " + newLine);
         if (!isEndMenu(newLine)) {
             dis.reset();
         }
@@ -167,7 +168,7 @@ public class KConfigParser {
             diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), parent, menuInstance);
         }
 
-        System.out.println("exit parseMenu()");
+        //  System.out.println("exit parseMenu()");
         return menuInstance;
 
     }
@@ -197,7 +198,7 @@ public class KConfigParser {
     }
 
     private EntityInstance parseChoice(EntityInstance parent, String line) throws Exception {
-        System.out.println("enter parseChoice() with: " + line);
+        //     System.out.println("enter parseChoice() with: " + line);
         String prompt = "";
         EntityInstance choiceInstance = null;
 
@@ -229,13 +230,13 @@ public class KConfigParser {
         }
 
 
-        System.out.println("exit parseChoice() with: " + line);
+        //     System.out.println("exit parseChoice() with: " + line);
         return choiceInstance;
 
     }
 
     private void loadChoice(EntityInstance choiceInstance) throws Exception {
-        System.out.println("enter loadChoice()");
+        //    System.out.println("enter loadChoice()");
         String line = readLine();
 
 
@@ -262,7 +263,7 @@ public class KConfigParser {
             dis.reset();
         }
 
-        System.out.println("exit loadChoice() with: " + line);
+        //    System.out.println("exit loadChoice() with: " + line);
 
     }
 
@@ -328,17 +329,19 @@ public class KConfigParser {
     }
 
     private void addDependency(EntityInstance parentInstance, String line) {
-        String dependency = line.substring(11).trim();
-        
-        if (dependency.matches("(.*)")) {
+        String dependency = line.trim().substring(10).trim();
+System.out.println("dependency : " + dependency);
+       /* if (dependency.matches("(.*)")) {
+            System.out.println("dependency was: " + dependency);
             dependency = dependency.substring(1, dependency.length());
-       }
+            System.out.println("dependency became: " + dependency);
+        }*/
 
         if (dependency.contains("!=")) {
-            System.out.println("IGNORING DEPENDENCY:" + line);
+       //     System.out.println("IGNORING DEPENDENCY:" + line);
         } else if (dependency.contains("=")) {
-            System.out.println("IGNORING DEPENDENCY:" + line);       
-        } else if(dependency.contains("&&")){
+     //       System.out.println("IGNORING DEPENDENCY:" + line);
+        } else if (dependency.contains("&&")) {
 //            String parts[] = dependency.split("&&");
 //
 //            String dependency1 = parts[0].trim();
@@ -359,30 +362,34 @@ public class KConfigParser {
 //            }else{
 //                relation2 = diagram.getRelationClass(TARelation.DEPENDS_ON);
 //            }
-
-
-
 //            EntityInstance relatedEntity = getEntityInstance(dependency1, TAEntityClass.CONFIG_CLASS);
 //
 //            diagram.addEdge(relation1, parentInstance, relatedEntity);
 //
 //            relatedEntity = getEntityInstance(dependency2, TAEntityClass.CONFIG_CLASS);
 //            diagram.addEdge(relation2, parentInstance, relatedEntity);
-
-        } else if(dependency.contains("||")){
-            System.out.println("IGNORD RELATION: " + line);
+        } else if (dependency.contains("||")) {
+           // System.out.println("IGNORD RELATION: " + line);
         } else {
             //simple depends on expression
-
-            if(dependency.startsWith("!")){
+            //System.out.println("adding dependency: " + line);
+            if (dependency.startsWith("!")) {                
                 EntityInstance relatedEntity = getEntityInstance(dependency.substring(1), TAEntityClass.CONFIG_CLASS);
 
-            diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON), parentInstance, relatedEntity);
-            }else{
+                if(dependency.substring(1).equals("")){
+                    System.out.println("PROB IN : "+ line + " !dep " + dependency);
+                }
+
+                diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON), parentInstance, relatedEntity);
+            } else {
                 EntityInstance relatedEntity = getEntityInstance(dependency, TAEntityClass.CONFIG_CLASS);
 
-            diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON), parentInstance, relatedEntity);
-            }           
+                if(dependency.equals("")){
+                    System.out.println("PROB IN : "+ line + " dep " + dependency);
+                }
+
+                diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON), parentInstance, relatedEntity);
+            }
         }
     }
 
@@ -401,7 +408,7 @@ public class KConfigParser {
     }
 
     private void loadMenu(EntityInstance menuInstance) throws Exception {
-        System.out.println("enter loadMeny() with: ");
+        //    System.out.println("enter loadMeny() with: ");
 
         String line = readLine();
 
@@ -421,9 +428,9 @@ public class KConfigParser {
             } else if (isComment(line)) {
                 menuEntry = parseComment(menuInstance, line);
             } else if (isSource(line)) {
-                System.out.println("SHOULD LOAD SOURCE: " + line);
+         //       System.out.println("SHOULD LOAD SOURCE: " + line);
             } else {
-                System.out.println("IGNORED: " + line);
+            //    System.out.println("IGNORED: " + line);
             }
 
             if (menuInstance != null && menuEntry != null) {
@@ -431,10 +438,10 @@ public class KConfigParser {
             }
 
             line = readLine();
-            System.out.println("READ IN PARSEMENU:" + line);
+        //    System.out.println("READ IN PARSEMENU:" + line);
         }
 
-        System.out.println("exit loadMenu()");
+        //  System.out.println("exit loadMenu()");
     }
 
     private EntityInstance parseComment(EntityInstance parent, String line) {
@@ -486,7 +493,7 @@ public class KConfigParser {
     }
 
     private EntityInstance parseConfig(EntityInstance container, String configStart) throws Exception {
-        System.out.println("enter parseConfig() with: " + configStart);
+        //      System.out.println("enter parseConfig() with: " + configStart);
         EntityInstance configInstance = null;
 
         String parts[] = configStart.split(" ");
@@ -506,12 +513,13 @@ public class KConfigParser {
         //System.out.println("exit parseConfig() with: "+ line);
         return configInstance;
     }
-
+ 
     private void addRelation(EntityInstance entityInstance, String line) {
         String parts[] = line.split(" ");
 
         if (isSelect(line)) {
-            System.out.println("SELECT LINE: " + line);
+
+
             EntityInstance relatedEntity = getEntityInstance(parts[1].trim(), TAEntityClass.CONFIG_CLASS);
 
             RelationInstance relnInstance = diagram.addEdge(diagram.getRelationClass(TARelation.SELECT), entityInstance, relatedEntity);
@@ -559,11 +567,11 @@ public class KConfigParser {
         }
 
         if (line != null && (isNewEntry(line) || isEndOfEntry(line))) {
-            System.out.println("Resetting in attr to:" + line);
+        //    System.out.println("Resetting in attr to:" + line);
             dis.reset();
         }
 
-        System.out.println("Exiting read attr with: " + line);
+        //   System.out.println("Exiting read attr with: " + line);
         return true;
     }
 
@@ -604,7 +612,7 @@ public class KConfigParser {
     }
 
     private EntityInstance parseMenuConfig(EntityInstance parent, String line) throws Exception {
-        System.out.println("enter parseMenuConfig() with: " + line);
+        //      System.out.println("enter parseMenuConfig() with: " + line);
         String parts[] = line.trim().split(" ");
         String menuName = parts[1].trim();
 
@@ -619,7 +627,7 @@ public class KConfigParser {
             diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), parent, menuInstance);
         }
 
-        System.out.println("exit parseMenuConfig()");
+        //     System.out.println("exit parseMenuConfig()");
         return menuInstance;
     }
 
@@ -634,14 +642,14 @@ public class KConfigParser {
         }
 
         entityInstance.addAttribute(Keywords.HELP, "\"" + removeBracketsAndQuotes(helpText) + "\"");
-        System.out.println("resetting in help: " + inputLine);
+        //   System.out.println("resetting in help: " + inputLine);
         dis.reset();
     }
 
     private EntityInstance parseIF(EntityInstance parent, String line) throws Exception {
-        System.out.println("enter parseIf() with: " + line);
+        //    System.out.println("enter parseIf() with: " + line);
         String parts[] = line.trim().split(" ");
-        System.out.println("Parsing if: " + line);
+        //    System.out.println("Parsing if: " + line);
 
         String ifName = "";
         RelationClass relationClass = null;
@@ -684,7 +692,7 @@ public class KConfigParser {
             diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), parent, ifInstance);
         }
 
-        System.out.println("exit parseIF()");
+        //    System.out.println("exit parseIF()");
         return ifInstance;
     }
 
@@ -768,6 +776,7 @@ public class KConfigParser {
         String output = input.replaceAll("\"", " ");
         output = output.replaceAll("\\(", " ");
         output = output.replaceAll("\\)", " ");
+        output = output.replaceAll("\\\\", "");
         output = output.replaceAll("'", "");
         output = output.replaceAll(":", "");
         output = output.replaceAll("/", "");
