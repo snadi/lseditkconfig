@@ -184,7 +184,7 @@ public class KConfigParser {
 
     private void addPrompt(EntityInstance entityInstace, String line) {
         String parts[] = line.trim().split("\"");
-        entityInstace.addAttribute(TaAttribute.PROMPT, "\"" + removeSpacesAndQuotes(parts[1].trim()) + "\"");
+     //   entityInstace.addAttribute(TaAttribute.PROMPT, "\"" + removeSpacesAndQuotes(parts[1].trim()) + "\"");
     }
 
     private void addDefault(EntityInstance entityInstance, String line) {
@@ -549,9 +549,9 @@ System.out.println("dependency : " + dependency);
                 addType(entityInstance, line);
             } else if (isDefBool(line)) {
 
-                entityInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.BOOL + "\"");
-                entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1].trim()) + "\"");
-                entityInstance.addAttribute(TaAttribute.USER_SELECTABLE, "\"false\"");
+               // entityInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.BOOL + "\"");
+              //  entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1].trim()) + "\"");
+               // entityInstance.addAttribute(TaAttribute.USER_SELECTABLE, "\"false\"");
             } else if (isDefault(line)) {
                 addDefaultValue(entityInstance, line);
             } else if (isPrompt(line)) {
@@ -588,7 +588,7 @@ System.out.println("dependency : " + dependency);
 
         String parts[] = line.split(" ");
 
-        entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1]) + "\"");
+      //  entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1]) + "\"");
     }
 
     private boolean isTriState(String line) {
@@ -597,16 +597,16 @@ System.out.println("dependency : " + dependency);
 
     private void addType(EntityInstance entityInstance, String line) {
         if (isBool(line)) {
-            entityInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.BOOL + "\"");
+          //  entityInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.BOOL + "\"");
             checkDefPrompt(entityInstance, line);
         } else if (isTriState(line)) {
-            entityInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.TRISTATE + "\"");
+         //   entityInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.TRISTATE + "\"");
             checkDefPrompt(entityInstance, line);
         } else if (isString(line)) {
-            entityInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.STRING + "\"");
+        //    entityInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.STRING + "\"");
             checkDefPrompt(entityInstance, line);
         } else if (isInteger(line)) {
-            entityInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.INTEGER + "\"");
+       //     entityInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.INTEGER + "\"");
             checkDefPrompt(entityInstance, line);
         }
     }
@@ -641,7 +641,7 @@ System.out.println("dependency : " + dependency);
             inputLine = dis.readLine();
         }
 
-        entityInstance.addAttribute(Keywords.HELP, "\"" + removeBracketsAndQuotes(helpText) + "\"");
+        //entityInstance.addAttribute(Keywords.HELP, "\"" + removeBracketsAndQuotes(helpText) + "\"");
         //   System.out.println("resetting in help: " + inputLine);
         dis.reset();
     }
@@ -705,10 +705,10 @@ System.out.println("dependency : " + dependency);
         String parts[] = line.trim().split("\"");
 
         if (parts.length > 1) {
-            instance.addAttribute(TaAttribute.USER_SELECTABLE, "\"true\"");
-            instance.addAttribute(TaAttribute.PROMPT, "\"" + parts[1] + "\"");
+           // instance.addAttribute(TaAttribute.USER_SELECTABLE, "\"true\"");
+            //instance.addAttribute(TaAttribute.PROMPT, "\"" + parts[1] + "\"");
         } else {
-            instance.addAttribute(TaAttribute.USER_SELECTABLE, "\"false\"");
+          //  instance.addAttribute(TaAttribute.USER_SELECTABLE, "\"false\"");
         }
 
     }
