@@ -102,4 +102,10 @@ if IA64_HP_SIM
 config HZ
 	default 32
 endif
+config INSTRUCTION_DECODER
+	def_bool (KPROBES || PERF_EVENTS)
+config CALGARY_IOMMU
+	bool "IBM Calgary IOMMU support"
+	select SWIOTLB
+	depends on X86_64 && PCI && EXPERIMENTAL
 endmenu

@@ -1,0 +1,12 @@
+menu "Processor type and features"
+config SARAH
+	bool "sarah"
+	select KARIM	
+config KARIM
+	bool
+	select GHADA
+config GHADA
+	bool
+	select KARIM
+	select SARAH	
+endmenu

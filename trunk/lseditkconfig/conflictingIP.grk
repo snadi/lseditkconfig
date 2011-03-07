@@ -1,0 +1,16 @@
+getta("kconfig.ta")
+circular = { }
+domSelects = dom selects
+for parent in domSelects{
+	corresponding = {parent} . selects
+	for child in corresponding{
+		reversedRelns= {child} . selects
+		for reversedReln in reversedRelns{
+			if (reversedReln == parent){
+				circular = circular + {parent} X {child}				
+			}
+		}
+	}
+}		
+print("1 degree circular")
+print(circular)
