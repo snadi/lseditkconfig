@@ -116,19 +116,21 @@ CHOICE{
 FACT TUPLE :
 
 $INSTANCE Processor_type_and_features MENU
-$INSTANCE SARAH CONFIG
-$INSTANCE KARIM CONFIG
-$INSTANCE GHADA CONFIG
-contain Processor_type_and_features SARAH
-contain Processor_type_and_features SARAH
-contain Processor_type_and_features KARIM
-contain Processor_type_and_features KARIM
-contain Processor_type_and_features GHADA
-contain Processor_type_and_features GHADA
-selects SARAH KARIM
-selects KARIM GHADA
-selects GHADA KARIM
-selects GHADA SARAH
+$INSTANCE S CONFIG
+$INSTANCE K CONFIG
+$INSTANCE A CONFIG
+$INSTANCE G CONFIG
+$INSTANCE X CONFIG
+$INSTANCE Y CONFIG
+contain Processor_type_and_features S
+contain Processor_type_and_features K
+contain Processor_type_and_features G
+selects S K
+selects K A
+selects A G
+selects G S
+selects K X
+selects X Y
 
 
 FACT ATTRIBUTE :
