@@ -54,6 +54,7 @@ public class KConfigParser {
         diagram.addEntityClass(TAEntityClass.IF_CLASS);
         diagram.addEntityClass(TAEntityClass.MENU_CONFIG_CLASS);
         diagram.addEntityClass("GROUPING");
+        diagram.addEntityClass(TAEntityClass.SOURCE_CLASS);
     }
 
     public void parse() throws Exception {
@@ -70,11 +71,11 @@ public class KConfigParser {
             dis = new DataInputStream(bis);
 
             EntityInstance parentContainer = diagram.getRootInstance();
-          //  diagram.newCachedEntity(diagram.getEntityClass("GROUPING"), "not_selectable");
+            //  diagram.newCachedEntity(diagram.getEntityClass("GROUPING"), "not_selectable");
 
             while (dis.available() != 0) {
                 String line = dis.readLine();
-                line = line.trim();                
+                line = line.trim();
                 //parentContainer = parseContainer(parentContainer, line, diagram.getRelationClass(TARelation.CONTAINS));
                 parseContainer(parentContainer, line, diagram.getRelationClass(TARelation.CONTAINS));
                 //        System.out.println("return to parse");
@@ -100,17 +101,19 @@ public class KConfigParser {
         String parts[] = line.split(" ");
 
         if (isNewEntry(line)) {
-            if (Pattern.matches(Keywords.MENU + "\\s\".*\"", line)) {
+            if (isSource(line)) {
+                entityInstance = parseSource(null, line);
+            } else if (isMenu(line)) {
                 entityInstance = parseMenu(null, line);
-            } else if (Pattern.matches(Keywords.MENUCONFIG + "\\s.*", line) && parts.length == 2) {
+            } else if (isMenuConfig(line)) {
                 entityInstance = parseMenuConfig(null, line);
                 //      System.out.println("returned from menuconfgi");
-            } else if (line.startsWith(Keywords.IF) && parts.length == 2) {
+            } else if (isIf(line)) {
                 entityInstance = parseIF(null, line);
                 //    System.out.println("returned from if");
-            } else if (line.equals(Keywords.CHOICE)) {
+            } else if (isChoice(line)) {
                 entityInstance = parseChoice(null, line);
-            } else if (Pattern.matches(Keywords.CONFIG + "\\s.*", line.trim()) && parts.length == 2) {
+            } else if (isConfig(line)) {
                 entityInstance = parseConfig(null, line);
             } else {
                 //  System.out.println("IGNORED: " + line);
@@ -127,11 +130,6 @@ public class KConfigParser {
         return entityInstance;
     }
 
-    private boolean isContainer(EntityInstance entityInstace) {
-        return entityInstace.getClassLabel().equals(TAEntityClass.MENU_CLASS)
-                || entityInstace.getClassLabel().equals(TAEntityClass.CHOICE_CLASS);
-    }
-
     private EntityInstance getEntityInstance(String name, String type) {
         if (removeSpacesAndQuotes(name).equals("")) {
             System.out.println("ADDING EMPTY NAME: " + name);
@@ -146,7 +144,66 @@ public class KConfigParser {
         return entityInstance;
     }
 
-    private EntityInstance parseMenu(EntityInstance parent, String line) throws Exception {        
+    //source
+    private EntityInstance parseSource(EntityInstance parent, String line) throws Exception {
+        String sourceName = line.trim().substring(line.indexOf("\"") + 1, line.lastIndexOf("\""));
+
+        sourceName = removeSpacesAndQuotes(sourceName);
+        EntityInstance sourceInstance = getEntityInstance(sourceName, TAEntityClass.SOURCE_CLASS);
+
+        loadSource(sourceInstance);
+
+
+        if (parent != null) {
+            diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), parent, sourceInstance);
+        }
+
+        //  System.out.println("exit parseMenu()");
+        return sourceInstance;
+
+    }
+
+    private void loadSource(EntityInstance sourceInstance) throws Exception {
+        //    System.out.println("enter loadMeny() with: ");
+
+        String line = readLine();
+
+
+        while (line != null && !isEndSource(line)) {
+            EntityInstance sourceEntry = null;
+            if (isMenu(line)) {
+                sourceEntry = parseMenu(sourceInstance, line);
+            } else if (isConfig(line)) {
+                sourceEntry = parseConfig(sourceInstance, line);
+            } else if (isIf(line)) {
+                sourceEntry = parseIF(sourceInstance, line);
+            } else if (isMenuConfig(line)) {
+                sourceEntry = parseMenuConfig(sourceInstance, line);
+            } else if (isChoice(line)) {
+                sourceEntry = parseChoice(sourceInstance, line);
+            } else if (isComment(line)) {
+                sourceEntry = parseComment(sourceInstance, line);
+            } else if (isSource(line)) {
+                sourceEntry = parseSource(sourceInstance, line);
+            } else {
+                //    System.out.println("IGNORED: " + line);
+            }
+
+            if (sourceInstance != null && sourceEntry != null) {
+                diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), sourceInstance, sourceEntry);
+            }
+
+            line = readLine();
+            //    System.out.println("READ IN PARSEMENU:" + line);
+        }
+
+        if (!isEndSource(line)) {
+            dis.reset();
+        }
+    }
+
+    //Menu
+    private EntityInstance parseMenu(EntityInstance parent, String line) throws Exception {
         String menuName = line.trim().substring(line.indexOf("\"") + 1, line.lastIndexOf("\""));
 
         EntityInstance menuInstance = getEntityInstance(menuName, TAEntityClass.MENU_CLASS);
@@ -168,7 +225,7 @@ public class KConfigParser {
 
             loadMenu(menuInstance);
         }
-       
+
         if (parent != null && isContainer(parent)) {
             diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), parent, menuInstance);
         }
@@ -178,30 +235,69 @@ public class KConfigParser {
 
     }
 
-    private String readLine() throws Exception {
-        dis.mark(10000);
-        String line = dis.readLine();
-        if (line != null) {
-            line = line.trim();
+    private void loadMenu(EntityInstance menuInstance) throws Exception {
+        //    System.out.println("enter loadMeny() with: ");
+
+        String line = readLine();
+
+
+        while (line != null && !isEndMenu(line)) {
+            EntityInstance menuEntry = null;
+            if (isMenu(line)) {
+                menuEntry = parseMenu(menuInstance, line);
+            } else if (isConfig(line)) {
+                menuEntry = parseConfig(menuInstance, line);
+            } else if (isIf(line)) {
+                menuEntry = parseIF(menuInstance, line);
+            } else if (isMenuConfig(line)) {
+                menuEntry = parseMenuConfig(menuInstance, line);
+            } else if (isChoice(line)) {
+                menuEntry = parseChoice(menuInstance, line);
+            } else if (isComment(line)) {
+                menuEntry = parseComment(menuInstance, line);
+            } else if (isSource(line)) {
+                menuEntry = parseSource(menuInstance, line);
+            } else {
+                //    System.out.println("IGNORED: " + line);
+            }
+
+            if (menuInstance != null && menuEntry != null) {
+                diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), menuInstance, menuEntry);
+            }
+
+            line = readLine();
+            //    System.out.println("READ IN PARSEMENU:" + line);
         }
-        return line;
+
+        if (!isEndMenu(line)) {
+            dis.reset();
+        }
     }
 
-    private void addPrompt(EntityInstance entityInstace, String line) {
-        String parts[] = line.trim().split("\"");
-        //   entityInstace.addAttribute(TaAttribute.PROMPT, "\"" + removeSpacesAndQuotes(parts[1].trim()) + "\"");
+    //Config
+    private EntityInstance parseConfig(EntityInstance container, String configStart) throws Exception {
+        //      System.out.println("enter parseConfig() with: " + configStart);
+        EntityInstance configInstance = null;
+
+        String parts[] = configStart.split(" ");
+
+
+        configInstance = getEntityInstance(parts[1].trim(), TAEntityClass.CONFIG_CLASS);
+
+
+
+        loadGeneralAttributes(configInstance);
+
+
+        if (container != null && isContainer(container)) {
+            diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), container, configInstance);
+        }
+
+        //System.out.println("exit parseConfig() with: "+ line);
+        return configInstance;
     }
 
-    private void addDefault(EntityInstance entityInstance, String line) {
-        //TODO: ADD MULTIPLE DEFAULT VALUES
-        String parts[] = line.split(" ");
-        entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1].trim()) + "\"");
-    }
-
-    private boolean isEndChoice(String line) {
-        return line != null && line.equals(Keywords.END_CHOICE);
-    }
-
+    //Choice
     private EntityInstance parseChoice(EntityInstance parent, String line) throws Exception {
         //     System.out.println("enter parseChoice() with: " + line);
         String prompt = "";
@@ -270,65 +366,86 @@ public class KConfigParser {
 
     }
 
-    private boolean isGeneralAttribute(String line) {
-        return isType(line) || isDefault(line) || isDefBool(line) || isRelation(line) || isHelp(line) || isPrompt(line);
+    //Comment
+    private EntityInstance parseComment(EntityInstance parent, String line) {
+        return null;
     }
 
-    private boolean isRelation(String line) {
-        return isDependsOn(line) || isSelect(line);
+    //MenuConfig
+    private EntityInstance parseMenuConfig(EntityInstance parent, String line) throws Exception {
+        //      System.out.println("enter parseMenuConfig() with: " + line);
+        String parts[] = line.trim().split(" ");
+        String menuName = parts[1].trim();
+
+        EntityInstance menuInstance = getEntityInstance(menuName, TAEntityClass.MENU_CONFIG_CLASS);
+
+        loadGeneralAttributes(menuInstance);
+
+        //TO DO: HOW TO DEAL WITH MENU CONFIG
+        //loadMenuConfig(menuInstance);
+
+        if (parent != null && isContainer(parent)) {
+            diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), parent, menuInstance);
+        }
+
+        //     System.out.println("exit parseMenuConfig()");
+        return menuInstance;
     }
 
-    private boolean isType(String line) {
-        return (isBool(line) || isTristate(line) || isString(line) || isInteger(line));
+    //IF
+    private EntityInstance parseIF(EntityInstance parent, String line) throws Exception {
+        //    System.out.println("enter parseIf() with: " + line);
+        line = line.trim().substring(2).trim();
+        RelationClass relationClass = null;
+
+        relationClass = diagram.getRelationClass(TARelation.DEPENDS_ON);
+
+
+        line = line.replaceAll("\\(", "");
+        line = line.replaceAll("\\)", "");
+        line = line.replaceAll("!=", " ");
+        line = line.replaceAll("=", " ");
+        line = line.replaceAll("&&", " ");
+        line = line.replaceAll("\\|\\|", " ");
+
+        String ifDependencies[] = line.split(" ");
+
+
+
+        String nextLine = readLine();
+
+        while (nextLine != null && !nextLine.equals(Keywords.END_IF)) {
+            EntityInstance ifEntry = null;
+            if (isMenu(nextLine)) {
+                ifEntry = parseMenu(parent, nextLine);
+            } else if (isConfig(nextLine)) {
+                ifEntry = parseConfig(parent, nextLine);
+            }
+
+            for (int i = 0; i < ifDependencies.length; i++) {
+                EntityInstance ifDependency = getEntityInstance(ifDependencies[i], TAEntityClass.CONFIG_CLASS);
+                if (ifEntry != null && ifDependency != null) {
+                    diagram.addEdge(relationClass, ifEntry, ifDependency);
+                }
+            }
+
+            nextLine = readLine();
+        }
+
+        //    System.out.println("exit parseIF()");
+        return null;
     }
 
-    private boolean isInteger(String line) {
-        return line.equals(Keywords.INTEGER) || Pattern.matches(Keywords.INTEGER + "\\s\".*\"", line);
+    //adding attributes and relations
+    private void addPrompt(EntityInstance entityInstace, String line) {
+        String parts[] = line.trim().split("\"");
+        //   entityInstace.addAttribute(TaAttribute.PROMPT, "\"" + removeSpacesAndQuotes(parts[1].trim()) + "\"");
     }
 
-    private boolean isBool(String line) {
-        return line.equals(Keywords.BOOL)
-                || Pattern.matches(Keywords.BOOL + "\\s\".*\"", line);
-    }
-
-    private boolean isTristate(String line) {
-        return line.equals(Keywords.TRISTATE)
-                || Pattern.matches(Keywords.TRISTATE + "\\s\".*\"", line);
-    }
-
-    private boolean isString(String line) {
-        return line.equals(Keywords.STRING) || Pattern.matches(Keywords.STRING + "\\s\".*\"", line);
-    }
-
-    private boolean isChoiceAttribute(String line) {
-        return (isPrompt(line) || isDefault(line));
-    }
-
-    private boolean isPrompt(String line) {
-        return Pattern.matches(Keywords.PROMPT + "\\s\".*\"", line);
-    }
-
-    private boolean isDefault(String line) {
+    private void addDefault(EntityInstance entityInstance, String line) {
+        //TODO: ADD MULTIPLE DEFAULT VALUES
         String parts[] = line.split(" ");
-        return (line.startsWith(Keywords.DEFAULT + " ") && parts.length > 1);
-    }
-
-    private boolean isEndMenu(String line) {
-        return line!= null && line.equals(Keywords.END_MENU);
-    }
-
-    private boolean isMenuAttribute(String line) {
-        return line!= null && (isDependsOn(line) || isVisibeIf(line));
-    }
-
-    private boolean isDependsOn(String line) {
-        String parts[] = line.split(" ");
-        return line != null && line.startsWith(Keywords.DEPENDS_ON + " ") && parts.length > 1;
-    }
-
-    private boolean isVisibeIf(String line) {
-        String parts[] = line.split(" ");
-        return line != null && line.startsWith(Keywords.VISIBLE_IF + " ") && parts.length > 1;
+        entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1].trim()) + "\"");
     }
 
     private void addDoubleDependency(String dependency, String split, EntityInstance parentInstance) {
@@ -348,20 +465,6 @@ public class KConfigParser {
             }
         }
 
-    }
-
-    private boolean isComplexDep(String dependency) {
-        return (dependency.contains("=") || dependency.contains("!=") || dependency.contains("&&") || dependency.contains("||"));
-    }
-
-    private String fixDepName(String originalName) {
-        originalName = originalName.trim();
-
-        originalName = originalName.replaceAll("\\(", "");
-        originalName = originalName.replaceAll("\\)", "");
-        originalName = originalName.replaceAll("!", "");
-
-        return originalName;
     }
 
     private void addDependency(EntityInstance parentInstance, String line) {
@@ -404,112 +507,6 @@ public class KConfigParser {
 
             diagram.addEdge(diagram.getRelationClass(TARelation.VISIBLE_IF_SELECTED), parentInstance, relatedEntity);
         }
-    }
-
-    private void loadMenu(EntityInstance menuInstance) throws Exception {
-        //    System.out.println("enter loadMeny() with: ");
-
-        String line = readLine();
-
-
-        while (line != null && !isEndMenu(line)) {
-            EntityInstance menuEntry = null;            
-            if (isMenu(line)) {
-                menuEntry = parseMenu(menuInstance, line);
-            } else if (isConfig(line)) {
-                menuEntry = parseConfig(menuInstance, line);
-            } else if (isIf(line)) {
-                menuEntry = parseIF(menuInstance, line);
-            } else if (isMenuConfig(line)) {
-                menuEntry = parseMenuConfig(menuInstance, line);
-            } else if (isChoice(line)) {
-                menuEntry = parseChoice(menuInstance, line);
-            } else if (isComment(line)) {
-                menuEntry = parseComment(menuInstance, line);
-            } else if (isSource(line)) {
-                //       System.out.println("SHOULD LOAD SOURCE: " + line);
-            } else {
-                //    System.out.println("IGNORED: " + line);
-            }
-
-            if (menuInstance != null && menuEntry != null) {
-                diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), menuInstance, menuEntry);
-            }
-
-            line = readLine();
-            //    System.out.println("READ IN PARSEMENU:" + line);
-        }
-
-        if(!isEndMenu(line)){
-            dis.reset();
-        }
-    }
-
-    private EntityInstance parseComment(EntityInstance parent, String line) {
-        return null;
-    }
-
-    private boolean isConfig(String line) {
-        String parts[] = line.split(" ");
-        return (Pattern.matches(Keywords.CONFIG + "\\s.*", line.trim()) && parts.length == 2);
-    }
-
-    private boolean isMenu(String line) {
-        return Pattern.matches(Keywords.MENU + "\\s\".*\"", line);
-    }
-
-    private boolean isIf(String line) {
-        String parts[] = line.trim().split(" ");
-        return Pattern.matches(Keywords.IF + "\\s.*", line) && parts.length == 2;
-    }
-
-    private boolean isMenuConfig(String line) {
-        String parts[] = line.trim().split(" ");
-        return line.startsWith(Keywords.MENUCONFIG) && parts.length == 2;
-    }
-
-    private boolean isChoice(String line) {
-        return line.equals(Keywords.CHOICE);
-    }
-
-    private boolean isDefBool(String line) {
-        return line.startsWith(Keywords.DEFAULT_BOOL);
-    }
-
-    private boolean isSelect(String line) {
-        String parts[] = line.split(" ");
-        return (line.startsWith(Keywords.SELECT + " ") && parts.length > 1);
-    }
-
-    private boolean isComment(String line) {
-        return Pattern.matches(Keywords.COMMENT + "\\s\".*\"", line);
-
-    }
-
-    private boolean isSource(String line) {
-        return Pattern.matches(Keywords.SOURCE + "\\s\".*\"", line);
-    }
-
-    private EntityInstance parseConfig(EntityInstance container, String configStart) throws Exception {
-        //      System.out.println("enter parseConfig() with: " + configStart);
-        EntityInstance configInstance = null;
-
-        String parts[] = configStart.split(" ");
-
-
-        configInstance = getEntityInstance(parts[1].trim(), TAEntityClass.CONFIG_CLASS);
-
-
-
-        loadGeneralAttributes(configInstance);
-
-
-        if (container != null && isContainer(container)) {            
-            diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), container, configInstance);
-        }
-
-        //System.out.println("exit parseConfig() with: "+ line);
-        return configInstance;
     }
 
     private void addRelation(EntityInstance entityInstance, String line) {
@@ -573,26 +570,6 @@ public class KConfigParser {
         return true;
     }
 
-    private boolean isEndOfEntry(String line) {
-        return isEndChoice(line) || isEndMenu(line) || isEndIf(line);
-    }
-
-    private boolean isEndIf(String line) {
-        return line != null && line.equals(Keywords.END_IF);
-    }
-
-    private void addDefaultValue(EntityInstance entityInstance, String line) {
-        String defaultValue = "";
-
-        String parts[] = line.split(" ");
-
-        //  entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1]) + "\"");
-    }
-
-    private boolean isTriState(String line) {
-        return line.equals(Keywords.TRISTATE) || Pattern.matches(Keywords.TRISTATE + "\\s\".*\"", line);
-    }
-
     private void addType(EntityInstance entityInstance, String line) {
         if (isBool(line)) {
             entityInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.BOOL + "\"");
@@ -607,26 +584,6 @@ public class KConfigParser {
             entityInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.INTEGER + "\"");
             checkDefPrompt(entityInstance, line);
         }
-    }
-
-    private EntityInstance parseMenuConfig(EntityInstance parent, String line) throws Exception {
-        //      System.out.println("enter parseMenuConfig() with: " + line);
-        String parts[] = line.trim().split(" ");
-        String menuName = parts[1].trim();
-
-        EntityInstance menuInstance = getEntityInstance(menuName, TAEntityClass.MENU_CONFIG_CLASS);
-
-        loadGeneralAttributes(menuInstance);
-
-        //TO DO: HOW TO DEAL WITH MENU CONFIG
-        //loadMenuConfig(menuInstance);
-
-        if (parent != null && isContainer(parent)) {
-            diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), parent, menuInstance);
-        }
-
-        //     System.out.println("exit parseMenuConfig()");
-        return menuInstance;
     }
 
     private void addHelp(EntityInstance entityInstance) throws Exception {
@@ -644,52 +601,12 @@ public class KConfigParser {
         dis.reset();
     }
 
-    private EntityInstance parseIF(EntityInstance parent, String line) throws Exception {
-        //    System.out.println("enter parseIf() with: " + line);
-        line = line.trim().substring(2).trim();
-        RelationClass relationClass = null;
+    private void addDefaultValue(EntityInstance entityInstance, String line) {
+        String defaultValue = "";
 
-        relationClass = diagram.getRelationClass(TARelation.DEPENDS_ON);
+        String parts[] = line.split(" ");
 
-
-        line = line.replaceAll("\\(", "");
-        line = line.replaceAll("\\)", "");
-        line = line.replaceAll("!=", " ");
-        line = line.replaceAll("=", " ");
-        line = line.replaceAll("&&", " ");
-        line = line.replaceAll("\\|\\|", " ");
-
-        String ifDependencies[] = line.split(" ");
-
-
-
-        String nextLine = readLine();
-
-        while (nextLine != null && !nextLine.equals(Keywords.END_IF)) {
-            EntityInstance ifEntry = null;
-            if (isMenu(nextLine)) {
-                ifEntry = parseMenu(parent, nextLine);
-            } else if (isConfig(nextLine)) {
-                ifEntry = parseConfig(parent, nextLine);
-            }
-
-            for (int i = 0; i < ifDependencies.length; i++) {
-                EntityInstance ifDependency = getEntityInstance(ifDependencies[i], TAEntityClass.CONFIG_CLASS);
-                if (ifEntry != null && ifDependency != null) {
-                    diagram.addEdge(relationClass, ifEntry, ifDependency);
-                }
-            }
-
-            nextLine = readLine();
-        }
-
-        //    System.out.println("exit parseIF()");
-        return null;
-    }
-
-    private boolean isHelp(String line) {
-        return (line.equals(Keywords.HELP) || line.equals(Keywords.OTHER_HELP));
-
+        //  entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1]) + "\"");
     }
 
     private void checkDefPrompt(EntityInstance instance, String line) {
@@ -701,10 +618,64 @@ public class KConfigParser {
         } else {
 //            if (instance != null && instance.getContainedBy() == null)
 //                diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), diagram.getCache("not_selectable"), instance);
-                //  instance.addAttribute(TaAttribute.USER_SELECTABLE, "\"false\"");
-        }                                    
+            //  instance.addAttribute(TaAttribute.USER_SELECTABLE, "\"false\"");
+        }
     }
 
+    //Utilities
+    private String readLine() throws Exception {
+        dis.mark(10000);
+        String line = dis.readLine();
+        if (line != null) {
+            line = line.trim();
+        }
+        return line;
+    }
+
+    private String fixDepName(String originalName) {
+        originalName = originalName.trim();
+
+        originalName = originalName.replaceAll("\\(", "");
+        originalName = originalName.replaceAll("\\)", "");
+        originalName = originalName.replaceAll("!", "");
+
+        return originalName;
+    }
+
+    //formatting strings to be compatible with LSEdit & Grok
+    private String removeSpacesAndQuotes(String input) {
+        String output = input.trim().replaceAll("\"", " ");
+        output = output.replaceAll("\\(", " ");
+        output = output.replaceAll("\\)", " ");
+        output = output.replaceAll("\\\\", " ");
+        output = output.replaceAll("'", " ");
+        output = output.replaceAll(":", " ");
+        output = output.replaceAll("/", " ");
+        output = output.trim();
+        return output.replaceAll(" ", "_");
+    }
+
+    private String removeBrackets(String input) {
+        String output = input.trim().replaceAll("\\(", "[");
+        output = output.replaceAll("\\)", "]");
+        output = output.replaceAll("'", "");
+        output = output.trim();
+        return output;
+
+    }
+
+    private String removeBracketsAndQuotes(String input) {
+        return removeBrackets(removeQuotes(input));
+    }
+
+    private String removeQuotes(String input) {
+        String output = input.replaceAll("\"", " ");
+        output = output.replaceAll("'", "");
+        output = output.trim();
+        return output;
+    }
+
+    //checking different entries
     private boolean isNewEntry(String line) {
 
         if (line == null) {
@@ -764,35 +735,139 @@ public class KConfigParser {
         return false;
     }
 
-    private String removeSpacesAndQuotes(String input) {
-        String output = input.trim().replaceAll("\"", " ");
-        output = output.replaceAll("\\(", " ");
-        output = output.replaceAll("\\)", " ");
-        output = output.replaceAll("\\\\", "");
-        output = output.replaceAll("'", "");
-        output = output.replaceAll(":", "");
-        output = output.replaceAll("/", "");
-        output = output.trim();
-        return output.replaceAll(" ", "_");
+    private boolean isTriState(String line) {
+        return line.equals(Keywords.TRISTATE) || Pattern.matches(Keywords.TRISTATE + "\\s\".*\"", line);
     }
 
-    private String removeBrackets(String input) {
-        String output = input.trim().replaceAll("\\(", "[");
-        output = output.replaceAll("\\)", "]");
-        output = output.replaceAll("'", "");
-        output = output.trim();
-        return output;
+    private boolean isHelp(String line) {
+        return (line.equals(Keywords.HELP) || line.equals(Keywords.OTHER_HELP));
 
     }
 
-    private String removeBracketsAndQuotes(String input) {
-        return removeBrackets(removeQuotes(input));
+    private boolean isEndOfEntry(String line) {
+        return isEndChoice(line) || isEndMenu(line) || isEndIf(line) || isEndSource(line);
     }
 
-    private String removeQuotes(String input) {
-        String output = input.replaceAll("\"", " ");
-        output = output.replaceAll("'", "");
-        output = output.trim();
-        return output;
+    private boolean isEndIf(String line) {
+        return line != null && line.equals(Keywords.END_IF);
+    }
+
+    private boolean isConfig(String line) {
+        String parts[] = line.split(" ");
+        return (Pattern.matches(Keywords.CONFIG + "\\s.*", line.trim()) && parts.length == 2);
+    }
+
+    private boolean isMenu(String line) {
+        return Pattern.matches(Keywords.MENU + "\\s\".*\"", line);
+    }
+
+    private boolean isIf(String line) {
+        String parts[] = line.trim().split(" ");
+        return Pattern.matches(Keywords.IF + "\\s.*", line) && parts.length == 2;
+    }
+
+    private boolean isMenuConfig(String line) {
+        String parts[] = line.trim().split(" ");
+        return line.startsWith(Keywords.MENUCONFIG) && parts.length == 2;
+    }
+
+    private boolean isChoice(String line) {
+        return line.equals(Keywords.CHOICE);
+    }
+
+    private boolean isDefBool(String line) {
+        return line.startsWith(Keywords.DEFAULT_BOOL);
+    }
+
+    private boolean isSelect(String line) {
+        String parts[] = line.split(" ");
+        return (line.startsWith(Keywords.SELECT + " ") && parts.length > 1);
+    }
+
+    private boolean isComment(String line) {
+        return Pattern.matches(Keywords.COMMENT + "\\s\".*\"", line);
+
+    }
+
+    private boolean isSource(String line) {
+        return Pattern.matches(Keywords.SOURCE + "\\s\".*\"", line);
+    }
+
+    private boolean isInteger(String line) {
+        return line.equals(Keywords.INTEGER) || Pattern.matches(Keywords.INTEGER + "\\s\".*\"", line);
+    }
+
+    private boolean isBool(String line) {
+        return line.equals(Keywords.BOOL)
+                || Pattern.matches(Keywords.BOOL + "\\s\".*\"", line);
+    }
+
+    private boolean isTristate(String line) {
+        return line.equals(Keywords.TRISTATE)
+                || Pattern.matches(Keywords.TRISTATE + "\\s\".*\"", line);
+    }
+
+    private boolean isString(String line) {
+        return line.equals(Keywords.STRING) || Pattern.matches(Keywords.STRING + "\\s\".*\"", line);
+    }
+
+    private boolean isChoiceAttribute(String line) {
+        return (isPrompt(line) || isDefault(line));
+    }
+
+    private boolean isPrompt(String line) {
+        return Pattern.matches(Keywords.PROMPT + "\\s\".*\"", line);
+    }
+
+    private boolean isDefault(String line) {
+        String parts[] = line.split(" ");
+        return (line.startsWith(Keywords.DEFAULT + " ") && parts.length > 1);
+    }
+
+    private boolean isEndMenu(String line) {
+        return line != null && line.equals(Keywords.END_MENU);
+    }
+
+    private boolean isEndSource(String line) {
+        return line != null && line.equals(Keywords.END_SOURCE);
+    }
+
+    private boolean isMenuAttribute(String line) {
+        return line != null && (isDependsOn(line) || isVisibeIf(line));
+    }
+
+    private boolean isDependsOn(String line) {
+        String parts[] = line.split(" ");
+        return line != null && line.startsWith(Keywords.DEPENDS_ON + " ") && parts.length > 1;
+    }
+
+    private boolean isVisibeIf(String line) {
+        String parts[] = line.split(" ");
+        return line != null && line.startsWith(Keywords.VISIBLE_IF + " ") && parts.length > 1;
+    }
+
+    private boolean isGeneralAttribute(String line) {
+        return isType(line) || isDefault(line) || isDefBool(line) || isRelation(line) || isHelp(line) || isPrompt(line);
+    }
+
+    private boolean isRelation(String line) {
+        return isDependsOn(line) || isSelect(line);
+    }
+
+    private boolean isType(String line) {
+        return (isBool(line) || isTristate(line) || isString(line) || isInteger(line));
+    }
+
+    private boolean isComplexDep(String dependency) {
+        return (dependency.contains("=") || dependency.contains("!=") || dependency.contains("&&") || dependency.contains("||"));
+    }
+
+    private boolean isContainer(EntityInstance entityInstance) {
+        return entityInstance.getClassLabel().equals(TAEntityClass.MENU_CLASS)
+                || entityInstance.getClassLabel().equals(TAEntityClass.CHOICE_CLASS) || entityInstance.getClassLabel().equals(TAEntityClass.SOURCE_CLASS);
+    }
+
+    private boolean isEndChoice(String line) {
+        return line != null && line.equals(Keywords.END_CHOICE);
     }
 }

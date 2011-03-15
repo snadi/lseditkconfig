@@ -21,6 +21,7 @@ public abstract class Keywords {
     public static String MENUCONFIG = "menuconfig";
     public static String IF = "if";
     public static String END_IF = "endif";
+    public static String END_SOURCE = "endsource";
 
     //config types
     public static String BOOL = "bool";
@@ -51,5 +52,7 @@ public abstract class Keywords {
 
 
     }
+
+    
 
 }
