@@ -178,6 +178,7 @@ config KTIME_SCALAR
 config ARCH_CPU_PROBE_RELEASE
 	def_bool y
 	depends on HOTPLUG_CPU
+source "init/Kconfig"
 config ARCH
 	string
 	option env="ARCH"
@@ -309,6 +310,7 @@ config AUDIT_TREE
 	def_bool y
 	depends on AUDITSYSCALL
 	select FSNOTIFY
+source "kernel/irq/Kconfig"
 config HAVE_GENERIC_HARDIRQS
 	def_bool n
 if HAVE_GENERIC_HARDIRQS
@@ -334,6 +336,7 @@ config SPARSE_IRQ
 	depends on HAVE_SPARSE_IRQ
 endmenu
 endif
+endsource
 menu "RCU Subsystem"
 choice
 	prompt "RCU Implementation"
@@ -387,6 +390,7 @@ config RCU_BOOST_DELAY
 	range 0 3000
 	depends on RCU_BOOST
 	default 500
+endmenu
 config IKCONFIG
 	tristate "Kernel .config support"
 config IKCONFIG_PROC
@@ -446,6 +450,7 @@ config RT_GROUP_SCHED
 	depends on EXPERIMENTAL
 	depends on CGROUP_SCHED
 	default n
+endif
 config BLK_CGROUP
 	tristate "Block IO controller"
 	depends on BLOCK
@@ -454,6 +459,7 @@ config DEBUG_BLK_CGROUP
 	bool "Enable Block IO controller debugging"
 	depends on BLK_CGROUP
 	default n
+endif
 menuconfig NAMESPACES
 	bool "Namespaces support" if EXPERT
 	default !EXPERT
@@ -476,6 +482,7 @@ config NET_NS
 	bool "Network namespace"
 	depends on NET
 	default y
+endif
 config SCHED_AUTOGROUP
 	bool "Automatic process group scheduling"
 	select EVENTFD
@@ -499,6 +506,7 @@ config BLK_DEV_INITRD
 	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
 	depends on BROKEN || !FRV
 if BLK_DEV_INITRD
+source "usr/Kconfig"
 config INITRAMFS_SOURCE
 	string "Initramfs source file(s)"
 	default ""
@@ -555,6 +563,7 @@ config INITRAMFS_COMPRESSION_LZO
 	bool "LZO"
 	depends on RD_LZO
 endchoice
+endsource
 endif
 config CC_OPTIMIZE_FOR_SIZE
 	bool "Optimize for size"
@@ -685,6 +694,7 @@ config PROFILING
 	bool "Profiling support"
 config TRACEPOINTS
 	bool
+source "arch/Kconfig"
 config OPROFILE
 	tristate "OProfile system profiling"
 	depends on PROFILING
@@ -755,6 +765,7 @@ config HAVE_ARCH_JUMP_LABEL
 	bool
 config HAVE_ARCH_MUTEX_CPU_RELAX
 	bool
+source "kernel/gcov/Kconfig"
 menu "GCOV-based kernel profiling"
 config GCOV_KERNEL
 	bool "Enable gcov-based kernel profiling"
@@ -766,6 +777,8 @@ config GCOV_PROFILE_ALL
 	depends on S390 || X86 || (PPC && EXPERIMENTAL) || MICROBLAZE
 	default n
 endmenu
+endsource
+endsource
 endmenu
 config HAVE_GENERIC_DMA_COHERENT
 	bool
@@ -796,12 +809,14 @@ config MODVERSIONS
 	bool "Module versioning support"
 config MODULE_SRCVERSION_ALL
 	bool "Source checksum for all modules"
+endif
 config INIT_ALL_POSSIBLE
 	bool
 config STOP_MACHINE
 	bool
 	default y
 	depends on (SMP && MODULE_UNLOAD) || HOTPLUG_CPU
+source "block/Kconfig"
 menuconfig BLOCK
        bool "Enable the block layer" if EXPERT
        default y
@@ -819,16 +834,19 @@ config BLK_DEV_THROTTLING
 	bool "Block layer bio throttling support"
 	depends on BLK_CGROUP=y && EXPERIMENTAL
 	default n
+endif
 config BLOCK_COMPAT
 	bool
 	depends on BLOCK && COMPAT
 	default y
 source block/Kconfig.iosched
+endsource
 config PREEMPT_NOTIFIERS
 	bool
 config PADATA
 	depends on SMP
 	bool
+source "kernel/Kconfig.locks"
 config ARCH_INLINE_SPIN_TRYLOCK
 	bool
 config ARCH_INLINE_SPIN_TRYLOCK_BH
@@ -952,9 +970,14 @@ config INLINE_WRITE_UNLOCK_IRQRESTORE
 	def_bool !DEBUG_SPINLOCK && ARCH_INLINE_WRITE_UNLOCK_IRQRESTORE
 config MUTEX_SPIN_ON_OWNER
 	def_bool SMP && !DEBUG_MUTEXES && !HAVE_DEFAULT_NO_SPIN_MUTEXES
+endsource
+endsource
+source "kernel/Kconfig.freezer"
 config FREEZER
 	def_bool PM_SLEEP || CGROUP_FREEZER
+endsource
 menu "Processor type and features"
+source "kernel/time/Kconfig"
 config TICK_ONESHOT
 	bool
 config NO_HZ
@@ -969,6 +992,7 @@ config GENERIC_CLOCKEVENTS_BUILD
 	bool
 	default y
 	depends on GENERIC_CLOCKEVENTS || GENERIC_CLOCKEVENTS_MIGR
+endsource
 config SMP
 	bool "Symmetric multi-processing support"
 config X86_X2APIC
@@ -1071,6 +1095,7 @@ config SCHED_OMIT_FRAME_POINTER
 menuconfig PARAVIRT_GUEST
 	bool "Paravirtualized guest support"
 if PARAVIRT_GUEST
+source "arch/x86/xen/Kconfig"
 config XEN
 	bool "Xen guest support"
 	select PARAVIRT
@@ -1106,6 +1131,7 @@ config KVM_CLOCK
 config KVM_GUEST
 	bool "KVM Guest support"
 	select PARAVIRT
+source "arch/x86/lguest/Kconfig"
 config LGUEST_GUEST
 	bool "Lguest guest support"
 	select PARAVIRT
@@ -1135,6 +1161,7 @@ config X86_SUMMIT_NUMA
 config X86_CYCLONE_TIMER
 	def_bool y
 	depends on X86_32_NON_STANDARD
+source "arch/x86/Kconfig.cpu"
 if !X86_ELAN
 choice
 	prompt "Processor family"
@@ -1386,6 +1413,7 @@ config SCHED_MC
 config IRQ_TIME_ACCOUNTING
 	bool "Fine granularity task level IRQ time accounting"
 	default n
+source "kernel/Kconfig.preempt"
 choice
 	prompt "Preemption Model"
 	default PREEMPT_NONE
@@ -1396,6 +1424,7 @@ config PREEMPT_VOLUNTARY
 config PREEMPT
 	bool "Preemptible Kernel (Low-Latency Desktop)"
 endchoice
+endsource
 config X86_UP_APIC
 	bool "Local APIC support on uniprocessors"
 	depends on X86_32 && !SMP && !X86_32_NON_STANDARD
@@ -1593,6 +1622,7 @@ config ILLEGAL_POINTER_VALUE
        hex
        default 0 if X86_32
        default 0xdead000000000000 if X86_64
+source "mm/Kconfig"
 config SELECT_MEMORY_MODEL
 	def_bool y
 	depends on EXPERIMENTAL || ARCH_SELECT_MEMORY_MODEL
@@ -1732,6 +1762,7 @@ config NEED_PER_CPU_KM
 	depends on !SMP
 	bool
 	default y
+endsource
 config HIGHPTE
 	bool "Allocate 3rd-level pagetables from highmem"
 	depends on HIGHMEM
@@ -1835,6 +1866,7 @@ menu "Power management and ACPI options"
 config ARCH_HIBERNATION_HEADER
 	def_bool y
 	depends on X86_64 && HIBERNATION
+source "kernel/power/Kconfig"
 config PM
 	bool "Power Management support"
 	depends on !IA64_HP_SIM
@@ -1913,6 +1945,7 @@ config PM_OPP
 	bool "Operating Performance Point (OPP) Layer library"
 	depends on PM
 	depends on ARCH_HAS_OPP
+source "drivers/acpi/Kconfig"
 menuconfig ACPI
 	bool "ACPI (Advanced Configuration and Power Interface) Support"
 	depends on !IA64_HP_SIM
@@ -2036,6 +2069,7 @@ config ACPI_SBS
 	select POWER_SUPPLY
 config ACPI_HED
 	tristate "Hardware Error Device"
+source "drivers/acpi/apei/Kconfig"
 config ACPI_APEI
 	bool "ACPI Platform Error Interface (APEI)"
 	depends on X86
@@ -2049,6 +2083,9 @@ config ACPI_APEI_EINJ
 config ACPI_APEI_ERST_DEBUG
 	tristate "APEI Error Record Serialization Table (ERST) Debug Support"
 	depends on ACPI_APEI
+endif
+endsource
+source "drivers/sfi/Kconfig"
 menuconfig SFI
 	bool "SFI (Simple Firmware Interface) Support"
 config X86_APM_BOOT
@@ -2068,7 +2105,10 @@ config APM_DISPLAY_BLANK
 	bool "Enable console blanking using APM"
 config APM_ALLOW_INTS
 	bool "Allow interrupts during APM BIOS calls"
+endif
+source "arch/x86/kernel/cpu/cpufreq/Kconfig"
 menu "CPU Frequency scaling"
+source "drivers/cpufreq/Kconfig"
 config CPU_FREQ
 	bool "CPU Frequency scaling"
 if CPU_FREQ
@@ -2118,6 +2158,8 @@ config CPU_FREQ_GOV_ONDEMAND
 config CPU_FREQ_GOV_CONSERVATIVE
 	tristate "'conservative' cpufreq governor"
 	depends on CPU_FREQ
+endif
+endsource
 if CPU_FREQ
 comment "CPUFreq processor drivers"
 config X86_PCC_CPUFREQ
@@ -2196,7 +2238,10 @@ config X86_SPEEDSTEP_LIB
 config X86_SPEEDSTEP_RELAXED_CAP_CHECK
 	bool "Relaxed speedstep capability checks"
 	depends on X86_32 && (X86_SPEEDSTEP_SMI || X86_SPEEDSTEP_ICH)
+endif
 endmenu
+endsource
+source "drivers/cpuidle/Kconfig"
 config CPU_IDLE
 	bool "CPU idle PM support"
 	default ACPI
@@ -2208,6 +2253,8 @@ config CPU_IDLE_GOV_MENU
 	bool
 	depends on CPU_IDLE && NO_HZ
 	default y
+endsource
+source "drivers/idle/Kconfig"
 config INTEL_IDLE
 	bool "Cpuidle Driver for Intel Processors"
 	depends on CPU_IDLE
@@ -2222,6 +2269,7 @@ config I7300_IDLE
 	select I7300_IDLE_IOAT_CHANNEL
 	depends on EXPERIMENTAL
 endmenu
+endsource
 endmenu
 menu "Bus options (PCI etc.)"
 config PCI
@@ -2286,12 +2334,14 @@ config DMAR_FLOPPY_WA
 config INTR_REMAP
 	bool "Support for Interrupt Remapping (EXPERIMENTAL)"
 	depends on X86_64 && X86_IO_APIC && PCI_MSI && ACPI && EXPERIMENTAL
+source "drivers/pci/pcie/Kconfig"
 config PCIEPORTBUS
 	bool "PCI Express support"
 	depends on PCI
 config HOTPLUG_PCI_PCIE
 	tristate "PCI Express Hotplug driver"
 	depends on HOTPLUG_PCI && PCIEPORTBUS
+source "drivers/pci/pcie/aer/Kconfig"
 config PCIEAER
 	boolean "Root Port Advanced Error Reporting support"
 	depends on PCIEPORTBUS
@@ -2299,6 +2349,7 @@ config PCIEAER
 config PCIE_ECRC
 	bool "PCI Express ECRC settings control"
 	depends on PCIEAER
+source "drivers/pci/pcie/aer/Kconfig.debug"
 config PCIEAER_INJECT
 	tristate "PCIe AER error injector support"
 	depends on PCIEAER
@@ -2314,6 +2365,8 @@ config PCIEASPM_DEBUG
 config PCIE_PME
 	def_bool y
 	depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL && ACPI
+endsource
+source "drivers/pci/Kconfig"
 config ARCH_SUPPORTS_MSI
 	bool
 	default n
@@ -2350,6 +2403,7 @@ config PCI_IOAPIC
 	depends on ACPI
 	depends on HOTPLUG
 	default y
+endsource
 config ISA_DMA_API
 	def_bool y
 if X86_32
@@ -2358,6 +2412,7 @@ config ISA
 config EISA
 	bool "EISA support"
 	depends on ISA
+source "drivers/eisa/Kconfig"
 config EISA_VLB_PRIMING
 	bool "Vesa Local Bus priming"
 	depends on X86 && EISA
@@ -2376,6 +2431,7 @@ config EISA_NAMES
 	default y
 config MCA
 	bool "MCA support"
+source "drivers/mca/Kconfig"
 config MCA_LEGACY
 	bool "Legacy MCA API Support"
 	depends on MCA
@@ -2409,6 +2465,7 @@ endif
 config AMD_NB
 	def_bool y
 	depends on CPU_SUP_AMD && PCI
+source "drivers/pcmcia/Kconfig"
 menuconfig PCCARD
 	tristate "PCCard (PCMCIA/CardBus) support"
 	depends on HOTPLUG
@@ -2543,6 +2600,8 @@ config PCCARD_NONSTATIC
 config PCCARD_IODYN
 	bool
 endif
+endsource
+source "drivers/pci/hotplug/Kconfig"
 menuconfig HOTPLUG_PCI
 	tristate "Support for PCI Hotplug"
 	depends on PCI && HOTPLUG && SYSFS
@@ -2583,8 +2642,11 @@ config HOTPLUG_PCI_RPA_DLPAR
 config HOTPLUG_PCI_SGI
 	tristate "SGI PCI Hotplug Support"
 	depends on IA64_SGI_SN2 || IA64_GENERIC
+endif
+endsource
 endmenu
 menu "Executable file formats / Emulations"
+source "fs/Kconfig.binfmt"
 config BINFMT_ELF
 	bool "Kernel support for ELF binaries"
 	depends on MMU && (BROKEN || !FRV)
@@ -2649,6 +2711,7 @@ config HAVE_ATOMIC_IOMAP
 config HAVE_TEXT_POKE_SMP
 	bool
 	select STOP_MACHINE if SMP
+source "net/Kconfig"
 menuconfig NET
 	bool "Networking support"
 	select NLATTR
@@ -2660,10 +2723,13 @@ config COMPAT_NETLINK_MESSAGES
 	depends on COMPAT
 	depends on WEXT_CORE || WANT_COMPAT_NETLINK_MESSAGES
 menu "Networking options"
+source "net/packet/Kconfig"
 config PACKET
 	tristate "Packet socket"
+source "net/unix/Kconfig"
 config UNIX
 	tristate "Unix domain sockets"
+source "net/xfrm/Kconfig"
 config XFRM
        bool
        select CRYPTO
@@ -2692,6 +2758,7 @@ config NET_KEY_MIGRATE
 	bool "PF_KEY MIGRATE (EXPERIMENTAL)"
 	depends on NET_KEY && EXPERIMENTAL
 	select XFRM_MIGRATE
+source "net/iucv/Kconfig"
 config IUCV
 	tristate "IUCV support (S390 - z/VM only)"
 	depends on S390
@@ -2701,6 +2768,7 @@ config AFIUCV
 config INET
 	bool "TCP/IP networking"
 if INET
+source "net/ipv4/Kconfig"
 config IP_MULTICAST
 	bool "IP: multicasting"
 config IP_ADVANCED_ROUTER
@@ -2906,6 +2974,7 @@ config TCP_MD5SIG
 	depends on EXPERIMENTAL
 	select CRYPTO
 	select CRYPTO_MD5
+source "net/ipv6/Kconfig"
 menuconfig IPV6
 	tristate "The IPv6 protocol"
 	default m
@@ -2999,10 +3068,14 @@ config IPV6_MROUTE_MULTIPLE_TABLES
 config IPV6_PIMSM_V2
 	bool "IPv6: PIM-SM version 2 support (EXPERIMENTAL)"
 	depends on IPV6_MROUTE
+endif
+endsource
+source "net/netlabel/Kconfig"
 config NETLABEL
 	bool "NetLabel subsystem support"
 	depends on SECURITY
 	default n
+endif
 config NETWORK_SECMARK
 	bool "Security Marking"
 config NETWORK_PHY_TIMESTAMPING
@@ -3023,6 +3096,7 @@ config BRIDGE_NETFILTER
 	depends on BRIDGE && NETFILTER && INET
 	depends on NETFILTER_ADVANCED
 	default y
+source "net/netfilter/Kconfig"
 menu "Core Netfilter Configuration"
 	depends on NET && INET && NETFILTER
 config NETFILTER_NETLINK
@@ -3104,6 +3178,7 @@ config NF_CT_NETLINK
 	tristate 'Connection tracking netlink interface'
 	select NETFILTER_NETLINK
 	default m if NETFILTER_ADVANCED=n
+endif
 config NETFILTER_TPROXY
 	tristate "Transparent proxying support (EXPERIMENTAL)"
 	depends on EXPERIMENTAL
@@ -3347,7 +3422,9 @@ config NETFILTER_XT_MATCH_TIME
 config NETFILTER_XT_MATCH_U32
 	tristate '"u32" match support'
 	depends on NETFILTER_ADVANCED
+endif
 endmenu
+source "net/netfilter/ipvs/Kconfig"
 menuconfig IP_VS
 	tristate "IP virtual server support"
 	depends on NET && INET && NETFILTER
@@ -3356,6 +3433,10 @@ if IP_VS
 config	IP_VS_IPV6
 	bool "IPv6 support for IPVS"
 	depends on IPV6 = y || IP_VS = IPV6
+endif
+endsource
+endsource
+source "net/ipv4/netfilter/Kconfig"
 menu "IP: Netfilter Configuration"
 	depends on INET && NETFILTER
 config NF_DEFRAG_IPV4
@@ -3497,6 +3578,7 @@ config IP_NF_SECURITY
 	tristate "Security table"
 	depends on SECURITY
 	depends on NETFILTER_ADVANCED
+endif
 config IP_NF_ARPTABLES
 	tristate "ARP tables support"
 	select NETFILTER_XTABLES
@@ -3506,7 +3588,10 @@ config IP_NF_ARPFILTER
 	tristate "ARP packet filtering"
 config IP_NF_ARP_MANGLE
 	tristate "ARP payload mangling"
+endif
 endmenu
+endsource
+source "net/ipv6/netfilter/Kconfig"
 menu "IPv6: Netfilter Configuration"
 	depends on INET && IPV6 && NETFILTER
 config NF_DEFRAG_IPV6
@@ -3576,13 +3661,18 @@ config IP6_NF_SECURITY
        tristate "Security table"
        depends on SECURITY
        depends on NETFILTER_ADVANCED
+endif
 endmenu
+endsource
+source "net/decnet/netfilter/Kconfig"
 menu "DECnet: Netfilter Configuration"
 	depends on DECNET && NETFILTER && EXPERIMENTAL
 	depends on NETFILTER_ADVANCED
 config DECNET_NF_GRABULATOR
 	tristate "Routing message grabulator (for userland routing daemon)"
 endmenu
+endsource
+source "net/bridge/netfilter/Kconfig"
 menuconfig BRIDGE_NF_EBTABLES
 	tristate "Ethernet Bridge tables (ebtables) support"
 	depends on BRIDGE && BRIDGE_NETFILTER
@@ -3633,6 +3723,9 @@ config BRIDGE_EBT_ULOG
 config BRIDGE_EBT_NFLOG
 	tristate "ebt: nflog support"
 endif
+endsource
+endif
+source "net/dccp/Kconfig"
 menuconfig IP_DCCP
 	tristate "The DCCP Protocol (EXPERIMENTAL)"
 	depends on INET && EXPERIMENTAL
@@ -3641,6 +3734,7 @@ config INET_DCCP_DIAG
 	depends on INET_DIAG
 	def_tristate y if (IP_DCCP = y && INET_DIAG = y)
 	def_tristate m
+source "net/dccp/ccids/Kconfig"
 menu "DCCP CCIDs Configuration (EXPERIMENTAL)"
 	depends on EXPERIMENTAL
 config IP_DCCP_CCID2_DEBUG
@@ -3656,6 +3750,7 @@ config IP_DCCP_TFRC_LIB
 config IP_DCCP_TFRC_DEBUG
 	def_bool y if IP_DCCP_CCID3_DEBUG
 endmenu
+endsource
 menu "DCCP Kernel Hacking"
 	depends on DEBUG_KERNEL=y
 config IP_DCCP_DEBUG
@@ -3665,6 +3760,8 @@ config NET_DCCPPROBE
 	depends on PROC_FS && KPROBES
 endmenu
 endif
+endsource
+source "net/sctp/Kconfig"
 menuconfig IP_SCTP
 	tristate "The SCTP Protocol (EXPERIMENTAL)"
 	depends on INET && EXPERIMENTAL
@@ -3694,6 +3791,8 @@ config SCTP_HMAC_MD5
 	bool "HMAC-MD5"
 endchoice
 endif
+endsource
+source "net/rds/Kconfig"
 config RDS
 	tristate "The RDS Protocol (EXPERIMENTAL)"
 	depends on INET && EXPERIMENTAL
@@ -3707,6 +3806,8 @@ config RDS_DEBUG
         bool "RDS debugging messages"
 	depends on RDS
         default n
+endsource
+source "net/tipc/Kconfig"
 menuconfig TIPC
 	tristate "The TIPC Protocol (EXPERIMENTAL)"
 	depends on INET && EXPERIMENTAL
@@ -3732,6 +3833,9 @@ config TIPC_LOG
 config TIPC_DEBUG
 	bool "Enable debugging support"
 	default n
+endif
+endsource
+source "net/atm/Kconfig"
 config ATM
 	tristate "Asynchronous Transfer Mode (ATM)"
 config ATM_CLIP
@@ -3752,6 +3856,7 @@ config ATM_BR2684
 config ATM_BR2684_IPFILTER
 	bool "Per-VC IP filter kludge"
 	depends on ATM_BR2684
+source "net/l2tp/Kconfig"
 menuconfig L2TP
 	tristate "Layer Two Tunneling Protocol (L2TP)"
 	depends on INET
@@ -3767,12 +3872,15 @@ config L2TP_IP
 config L2TP_ETH
 	tristate "L2TP ethernet pseudowire support for L2TPv3"
 	depends on L2TP_V3
+source "net/802/Kconfig"
 config STP
 	tristate
 	select LLC
 config GARP
 	tristate
 	select STP
+endsource
+source "net/bridge/Kconfig"
 config BRIDGE
 	tristate "802.1d Ethernet Bridging"
 	select LLC
@@ -3782,6 +3890,7 @@ config BRIDGE_IGMP_SNOOPING
 	depends on BRIDGE
 	depends on INET
 	default y
+source "net/dsa/Kconfig"
 menuconfig NET_DSA
 	bool "Distributed Switch Architecture support"
 	default n
@@ -3816,24 +3925,29 @@ config NET_DSA_MV88E6123_61_65
 	select NET_DSA_MV88E6XXX
 	select NET_DSA_TAG_EDSA
 endif
+endsource
+source "net/8021q/Kconfig"
 config VLAN_8021Q
 	tristate "802.1Q VLAN Support"
 config VLAN_8021Q_GVRP
 	bool "GVRP (GARP VLAN Registration Protocol) support"
 	depends on VLAN_8021Q
 	select GARP
+source "net/decnet/Kconfig"
 config DECNET
 	tristate "DECnet Support"
 config DECNET_ROUTER
 	bool "DECnet: router support (EXPERIMENTAL)"
 	depends on DECNET && EXPERIMENTAL
 	select FIB_RULES
+source "net/llc/Kconfig"
 config LLC
 	tristate
 	depends on NET
 config LLC2
 	tristate "ANSI/IEEE 802.2 LLC type 2 Support"
 	select LLC
+source "net/ipx/Kconfig"
 config IPX
 	tristate "The IPX protocol"
 depends on BKL
@@ -3841,6 +3955,7 @@ depends on BKL
 config IPX_INTERN
 	bool "IPX: Full internal IPX network"
 	depends on IPX
+source "drivers/net/appletalk/Kconfig"
 config ATALK
 	tristate "Appletalk protocol support"
 depends on BKL
@@ -3869,13 +3984,16 @@ config IPDDP_ENCAP
 config IPDDP_DECAP
 	bool "Appletalk-IP to IP Decapsulation support"
 	depends on IPDDP
+source "net/x25/Kconfig"
 config X25
 	tristate "CCITT X.25 Packet Layer (EXPERIMENTAL)"
 	depends on EXPERIMENTAL
 depends on BKL
+source "net/lapb/Kconfig"
 config LAPB
 	tristate "LAPB Data Link Driver (EXPERIMENTAL)"
 	depends on EXPERIMENTAL
+source "net/econet/Kconfig"
 config ECONET
 	tristate "Acorn Econet/AUN protocols (EXPERIMENTAL)"
 	depends on EXPERIMENTAL && INET
@@ -3885,18 +4003,22 @@ config ECONET_AUNUDP
 config ECONET_NATIVE
 	bool "Native Econet"
 	depends on ECONET
+source "net/wanrouter/Kconfig"
 config WAN_ROUTER
 	tristate "WAN router"
 	depends on EXPERIMENTAL
+source "net/phonet/Kconfig"
 config PHONET
 	tristate "Phonet protocols family"
 config PHONET_PIPECTRLR
 	bool "Phonet Pipe Controller (EXPERIMENTAL)"
 	depends on PHONET && EXPERIMENTAL
 	default N
+source "net/ieee802154/Kconfig"
 config IEEE802154
 	tristate "IEEE Std 802.15.4 Low-Rate Wireless Personal Area Networks support (EXPERIMENTAL)"
 	depends on EXPERIMENTAL
+source "net/sched/Kconfig"
 menuconfig NET_SCHED
 	bool "QoS and/or fair queueing"
 	select NET_SCH_FIFO
@@ -4034,14 +4156,19 @@ config NET_ACT_CSUM
 config NET_CLS_IND
 	bool "Incoming device classification"
 	depends on NET_CLS_U32 || NET_CLS_FW
+endif
 config NET_SCH_FIFO
 	bool
+endsource
+source "net/dcb/Kconfig"
 config DCB
 	bool "Data Center Bridging support"
 	default n
+source "net/dns_resolver/Kconfig"
 config DNS_RESOLVER
 	tristate "DNS Resolver support"
 	depends on NET && KEYS
+source "net/batman-adv/Kconfig"
 config BATMAN_ADV
 	tristate "B.A.T.M.A.N. Advanced Meshing Protocol"
 	depends on NET
@@ -4069,6 +4196,7 @@ config NET_DROP_MONITOR
 	depends on INET && EXPERIMENTAL && TRACEPOINTS
 endmenu
 endmenu
+source "net/ax25/Kconfig"
 menuconfig HAMRADIO
 	depends on NET && !S390
 	bool "Amateur Radio support"
@@ -4090,6 +4218,7 @@ config ROSE
 	depends on AX25
 menu "AX.25 network device drivers"
 	depends on HAMRADIO && AX25
+source "drivers/net/hamradio/Kconfig"
 config MKISS
 	tristate "Serial port KISS driver"
 	depends on AX25
@@ -4132,6 +4261,8 @@ config YAM
 	tristate "YAM driver for AX.25"
 	depends on AX25 && !S390
 endmenu
+endsource
+source "net/can/Kconfig"
 menuconfig CAN
 	depends on NET
 	tristate "CAN bus subsystem support"
@@ -4143,6 +4274,7 @@ config CAN_BCM
 	tristate "Broadcast Manager CAN Protocol (with content filtering)"
 	depends on CAN
 	default N
+source "drivers/net/can/Kconfig"
 menu "CAN Device Drivers"
 	depends on CAN
 config CAN_VCAN
@@ -4184,6 +4316,7 @@ config CAN_FLEXCAN
 config PCH_CAN
 	tristate "PCH CAN"
 	depends on CAN_DEV && PCI
+source "drivers/net/can/mscan/Kconfig"
 config CAN_MSCAN
 	depends on CAN_DEV && (PPC || M68K || M68KNOMMU)
 	tristate "Support for Freescale MSCAN based chips"
@@ -4192,6 +4325,8 @@ config CAN_MPC5XXX
 	tristate "Freescale MPC5xxx onboard CAN controller"
 	depends on (PPC_MPC52xx || PPC_MPC512x)
 endif
+endsource
+source "drivers/net/can/sja1000/Kconfig"
 menuconfig CAN_SJA1000
 	tristate "Philips/NXP SJA1000 devices"
 	depends on CAN_DEV && HAS_IOMEM
@@ -4217,6 +4352,8 @@ config CAN_TSCAN1
 	tristate "TS-CAN1 PC104 boards"
 	depends on ISA
 endif
+endsource
+source "drivers/net/can/usb/Kconfig"
 menu "CAN USB interfaces"
 	depends on USB && CAN_DEV
 config CAN_EMS_USB
@@ -4224,6 +4361,8 @@ config CAN_EMS_USB
 config CAN_ESD_USB2
         tristate "ESD USB/2 CAN/USB interface"
 endmenu
+endsource
+source "drivers/net/can/softing/Kconfig"
 config CAN_SOFTING
 	tristate "Softing Gmbh CAN generic support"
 	depends on CAN_DEV
@@ -4236,16 +4375,22 @@ config CAN_DEBUG_DEVICES
 	depends on CAN
 	default N
 endmenu
+endsource
+endsource
+source "net/irda/Kconfig"
 menuconfig IRDA
 	depends on NET && !S390
 	tristate "IrDA (infrared) subsystem support"
 	select CRC_CCITT
+source "net/irda/irlan/Kconfig"
 config IRLAN
 	tristate "IrLAN protocol"
 	depends on IRDA
+source "net/irda/irnet/Kconfig"
 config IRNET
 	tristate "IrNET protocol"
 	depends on IRDA && PPP
+source "net/irda/ircomm/Kconfig"
 config IRCOMM
 	tristate "IrCOMM protocol"
 	depends on IRDA
@@ -4261,6 +4406,7 @@ config IRDA_FAST_RR
 config IRDA_DEBUG
 	bool "Debug information"
 	depends on IRDA
+source "drivers/net/irda/Kconfig"
 menu "Infrared-port device drivers"
 	depends on IRDA!=n
 comment "SIR device drivers"
@@ -4391,6 +4537,9 @@ config SH_IRDA
 	tristate "SuperH IrDA driver"
 	depends on IRDA && ARCH_SHMOBILE
 endmenu
+endsource
+endsource
+source "net/bluetooth/Kconfig"
 menuconfig BT
 	tristate "Bluetooth subsystem support"
 	depends on NET && !S390
@@ -4402,12 +4551,14 @@ config BT_L2CAP
 config BT_SCO
 	tristate "SCO links support"
 	depends on BT
+source "net/bluetooth/rfcomm/Kconfig"
 config BT_RFCOMM
 	tristate "RFCOMM protocol support"
 	depends on BT && BT_L2CAP
 config BT_RFCOMM_TTY
 	bool "RFCOMM TTY support"
 	depends on BT_RFCOMM
+source "net/bluetooth/bnep/Kconfig"
 config BT_BNEP
 	tristate "BNEP protocol support"
 	depends on BT && BT_L2CAP
@@ -4418,13 +4569,16 @@ config BT_BNEP_MC_FILTER
 config BT_BNEP_PROTO_FILTER
 	bool "Protocol filter support"
 	depends on BT_BNEP
+source "net/bluetooth/cmtp/Kconfig"
 config BT_CMTP
 	tristate "CMTP protocol support"
 	depends on BT && BT_L2CAP && ISDN_CAPI
+source "net/bluetooth/hidp/Kconfig"
 config BT_HIDP
 	tristate "HIDP protocol support"
 	depends on BT && BT_L2CAP && INPUT && HID_SUPPORT
 	select HID
+source "drivers/bluetooth/Kconfig"
 menu "Bluetooth device drivers"
 	depends on BT
 config BT_HCIBTUSB
@@ -4485,6 +4639,9 @@ config BT_ATH3K
 	depends on BT_HCIBTUSB
 	select FW_LOADER
 endmenu
+endsource
+endsource
+source "net/rxrpc/Kconfig"
 config AF_RXRPC
 	tristate "RxRPC session sockets"
 	depends on INET && EXPERIMENTAL
@@ -4508,6 +4665,7 @@ menuconfig WIRELESS
 	depends on !S390
 	default y
 if WIRELESS
+source "net/wireless/Kconfig"
 config WIRELESS_EXT
 	bool
 config WEXT_CORE
@@ -4569,6 +4727,7 @@ config LIB80211_DEBUG
 	bool "lib80211 debugging messages"
 	depends on LIB80211
 	default n
+source "net/mac80211/Kconfig"
 config MAC80211
 	tristate "Generic IEEE 802.11 Networking Stack (mac80211)"
 	depends on CFG80211
@@ -4659,6 +4818,8 @@ config MAC80211_DRIVER_API_TRACER
 	bool "Driver API tracer"
 	depends on MAC80211_DEBUG_MENU
 	depends on EVENT_TRACING
+endif
+source "net/wimax/Kconfig"
 menuconfig WIMAX
 	tristate "WiMAX Wireless Broadband support"
 	depends on RFKILL || !RFKILL
@@ -4666,6 +4827,7 @@ config WIMAX_DEBUG_LEVEL
 	int "WiMAX debug level"
 	depends on WIMAX
 	default 8
+source "net/rfkill/Kconfig"
 menuconfig RFKILL
 	tristate "RF switch subsystem support"
 config RFKILL_LEDS
@@ -4678,6 +4840,8 @@ config RFKILL_INPUT
 	depends on RFKILL
 	depends on INPUT = y || RFKILL = INPUT
 	default y if !EXPERT
+endsource
+source "net/9p/Kconfig"
 menuconfig NET_9P
 	depends on NET && EXPERIMENTAL
 	tristate "Plan 9 Resource Sharing Support (9P2000) (Experimental)"
@@ -4691,6 +4855,8 @@ config NET_9P_RDMA
 config NET_9P_DEBUG
 	bool "Debug information"
 endif
+endsource
+source "net/caif/Kconfig"
 menuconfig CAIF
 	tristate "CAIF support"
 	select CRC_CCITT
@@ -4699,6 +4865,7 @@ config CAIF_NETDEV
 	tristate "CAIF GPRS Network device"
 	depends on CAIF
 	default CAIF
+source "net/ceph/Kconfig"
 config CEPH_LIB
         tristate "Ceph core library (EXPERIMENTAL)"
 	depends on INET && EXPERIMENTAL
@@ -4710,7 +4877,11 @@ config CEPH_LIB_PRETTYDEBUG
 	bool "Include file:line in ceph debug output"
 	depends on CEPH_LIB
 	default n
+endif
+endsource
+source "drivers/Kconfig"
 menu "Device Drivers"
+source "drivers/base/Kconfig"
 menu "Generic Driver Options"
 config UEVENT_HELPER_PATH
 	string "path to uevent helper"
@@ -4752,6 +4923,8 @@ config SYS_HYPERVISOR
 	bool
 	default n
 endmenu
+endsource
+source "drivers/connector/Kconfig"
 menuconfig CONNECTOR
 	tristate "Connector - unified userspace <-> kernelspace linker"
 	depends on NET
@@ -4760,6 +4933,9 @@ config PROC_EVENTS
 	boolean "Report process events to userspace"
 	depends on CONNECTOR=y
 	default y
+endif
+endsource
+source "drivers/mtd/Kconfig"
 menuconfig MTD
 	tristate "Memory Technology Device (MTD) support"
 	depends on HAS_IOMEM
@@ -4788,6 +4964,7 @@ config MTD_REDBOOT_PARTS_UNALLOCATED
 	bool "Include unallocated flash regions"
 config MTD_REDBOOT_PARTS_READONLY
 	bool "Force read-only for RedBoot system images"
+endif
 config MTD_CMDLINE_PARTS
 	bool "Command line partition table parsing"
 	depends on MTD_PARTITIONS = "y" && MTD = "y"
@@ -4799,6 +4976,8 @@ config MTD_OF_PARTS
 	depends on OF
 config MTD_AR7_PARTS
 	tristate "TI AR7 partitioning support"
+endif
+comment "User Modules And Translation Layers"
 config MTD_CHAR
 	tristate "Direct char device access to MTD devices"
 config HAVE_MTD_OTP
@@ -4845,6 +5024,7 @@ config SM_FTL
 	select MTD_NAND_ECC
 config MTD_OOPS
 	tristate "Log panic/oops to an MTD buffer"
+source "drivers/mtd/chips/Kconfig"
 menu "RAM/ROM/Flash chip drivers"
 	depends on MTD!=n
 config MTD_CFI
@@ -4933,6 +5113,8 @@ config MTD_XIP
 	depends on !SMP && (MTD_CFI_INTELEXT || MTD_CFI_AMDSTD) && EXPERIMENTAL && ARCH_MTD_XIP
 	default y if XIP_KERNEL
 endmenu
+endsource
+source "drivers/mtd/maps/Kconfig"
 menu "Mapping drivers for chip access"
 	depends on MTD!=n
 config MTD_COMPLEX_MAPPINGS
@@ -5149,6 +5331,8 @@ config MTD_PISMO
 	depends on I2C
 	depends on ARCH_VERSATILE
 endmenu
+endsource
+source "drivers/mtd/devices/Kconfig"
 menu "Self-contained MTD device drivers"
 	depends on MTD!=n
 config MTD_PMC551
@@ -5239,6 +5423,8 @@ config MTD_DOCPROBE_55AA
 	bool "Probe for 0x55 0xAA BIOS Extension Signature"
 	depends on MTD_DOCPROBE_ADVANCED
 endmenu
+endsource
+source "drivers/mtd/nand/Kconfig"
 config MTD_NAND_ECC
 	tristate
 config MTD_NAND_ECC_SMC
@@ -5371,7 +5557,7 @@ config MTD_NAND_SHARPSL
 	tristate "Support for NAND Flash on Sharp SL Series (C7xx + others)"
 	depends on ARCH_PXA
 config MTD_NAND_CAFE
-	tristate "NAND support for OLPC CAFÃÂ chip"
+	tristate "NAND support for OLPC CAFÃÂÃÂ chip"
 	depends on PCI
 	select REED_SOLOMON
 	select REED_SOLOMON_DEC16
@@ -5454,6 +5640,9 @@ config MTD_NAND_JZ4740
 config MTD_NAND_FSMC
 	tristate "Support for NAND on ST Micros FSMC"
 	depends on PLAT_SPEAR || PLAT_NOMADIK || MACH_U300
+endif
+endsource
+source "drivers/mtd/onenand/Kconfig"
 menuconfig MTD_ONENAND
 	tristate "OneNAND Device Support"
 	depends on MTD
@@ -5476,6 +5665,9 @@ config MTD_ONENAND_2X_PROGRAM
 	bool "OneNAND 2X program support"
 config MTD_ONENAND_SIM
 	tristate "OneNAND simulator support"
+endif
+endsource
+source "drivers/mtd/lpddr/Kconfig"
 menu "LPDDR flash memory drivers"
 	depends on MTD!=n
 config MTD_LPDDR
@@ -5485,6 +5677,8 @@ config MTD_QINFO_PROBE
 	depends on MTD_LPDDR
 	tristate "Detect flash chips by QINFO probe"
 endmenu
+endsource
+source "drivers/mtd/ubi/Kconfig"
 menuconfig MTD_UBI
 	tristate "Enable UBI - Unsorted block images"
 	select CRC32
@@ -5499,6 +5693,8 @@ config MTD_UBI_BEB_RESERVE
 	range 0 25
 config MTD_UBI_GLUEBI
 	tristate "MTD devices emulation driver (gluebi)"
+source "drivers/mtd/ubi/Kconfig.debug"
+comment "UBI debugging options"
 config MTD_UBI_DEBUG
 	bool "UBI debugging"
 	depends on SYSFS
@@ -5525,6 +5721,13 @@ config MTD_UBI_DEBUG_MSG_WL
 	bool "Wear-leveling unit messages"
 config MTD_UBI_DEBUG_MSG_IO
 	bool "Input/output unit messages"
+endif
+endsource
+endif
+endsource
+endif
+endsource
+source "drivers/of/Kconfig"
 config DTC
 	bool
 config OF
@@ -5568,6 +5771,9 @@ config OF_SPI
 config OF_MDIO
 	def_tristate PHYLIB
 	depends on PHYLIB
+endmenu
+endsource
+source "drivers/parport/Kconfig"
 menuconfig PARPORT
 	tristate "Parallel port support"
 	depends on HAS_IOMEM
@@ -5620,6 +5826,8 @@ config PARPORT_1284
 config PARPORT_NOT_PC
 	bool
 endif
+endsource
+source "drivers/pnp/Kconfig"
 menuconfig PNP
 	bool "Plug and Play support"
 	depends on HAS_IOMEM
@@ -5630,9 +5838,11 @@ config PNP_DEBUG_MESSAGES
 	depends on PNP
 if PNP
 comment "Protocols"
+source "drivers/pnp/isapnp/Kconfig"
 config ISAPNP
 	bool "ISA Plug and Play support"
 	depends on ISA
+source "drivers/pnp/pnpbios/Kconfig"
 config PNPBIOS
 	bool "Plug and Play BIOS support (EXPERIMENTAL)"
 	depends on ISA && X86 && EXPERIMENTAL
@@ -5640,10 +5850,14 @@ config PNPBIOS
 config PNPBIOS_PROC_FS
 	bool "Plug and Play BIOS /proc interface"
 	depends on PNPBIOS && PROC_FS
+source "drivers/pnp/pnpacpi/Kconfig"
 config PNPACPI
 	bool
 	default (PNP && ACPI)
+endsource
 endif
+endsource
+source "drivers/block/Kconfig"
 menuconfig BLK_DEV
 	bool "Block devices"
 	depends on BLOCK
@@ -5677,6 +5891,9 @@ config GDROM
 config PARIDE
 	tristate "Parallel port IDE device support"
 	depends on PARPORT_PC
+source "drivers/block/paride/Kconfig"
+comment "Parallel IDE high-level drivers"
+	depends on PARIDE
 config PARIDE_PD
 	tristate "Parallel port IDE disks"
 	depends on PARIDE
@@ -5772,6 +5989,9 @@ config BLK_DEV_CRYPTOLOOP
 	select CRYPTO
 	select CRYPTO_CBC
 	depends on BLK_DEV_LOOP
+source "drivers/block/drbd/Kconfig"
+comment "DRBD disabled because PROC_FS, INET or CONNECTOR not selected"
+	depends on PROC_FS='n' || INET='n' || CONNECTOR='n'
 config BLK_DEV_DRBD
 	tristate "DRBD Distributed Replicated Block Device support"
 	depends on PROC_FS && INET && CONNECTOR
@@ -5829,6 +6049,9 @@ config MG_DISK_RES
 config SUNVDC
 	tristate "Sun Virtual Disk Client support"
 	depends on SUN_LDOMS
+source "drivers/s390/block/Kconfig"
+comment "S/390 block device drivers"
+	depends on S390 && BLOCK
 config BLK_DEV_XPRAM
 	def_tristate m
 	prompt "XPRAM disk support"
@@ -5885,6 +6108,9 @@ config BLK_DEV_RBD
 	select CRYPTO_AES
 	select CRYPTO
 	default n
+endif
+endsource
+source "drivers/misc/Kconfig"
 menuconfig MISC_DEVICES
 	bool "Misc devices"
 if MISC_DEVICES
@@ -6020,6 +6246,7 @@ config BMP085
 config PCH_PHUB
 	tristate "PCH Packet Hub of Intel Topcliff"
 	depends on PCI
+source "drivers/misc/c2port/Kconfig"
 menuconfig C2PORT
 	tristate "Silicon Labs C2 port support (EXPERIMENTAL)"
 	depends on EXPERIMENTAL
@@ -6029,6 +6256,9 @@ config C2PORT_DURAMAR_2150
 	tristate "C2 port support for Eurotech's Duramar 2150 (EXPERIMENTAL)"
 	depends on X86 && C2PORT
 	default no
+endif
+endsource
+source "drivers/misc/eeprom/Kconfig"
 menu "EEPROM support"
 config EEPROM_AT24
 	tristate "I2C EEPROMs from most vendors"
@@ -6045,6 +6275,8 @@ config EEPROM_MAX6875
 config EEPROM_93CX6
 	tristate "EEPROM 93CX6 support"
 endmenu
+endsource
+source "drivers/misc/cb710/Kconfig"
 config CB710_CORE
 	tristate "ENE CB710/720 Flash memory card reader support"
 	depends on PCI
@@ -6056,6 +6288,8 @@ config CB710_DEBUG_ASSUMPTIONS
 	bool
 	depends on CB710_CORE != n
 	default y
+endsource
+source "drivers/misc/iwmc3200top/Kconfig"
 config IWMC3200TOP
         tristate "Intel Wireless MultiCom Top Driver"
         depends on MMC && EXPERIMENTAL
@@ -6066,13 +6300,17 @@ config IWMC3200TOP_DEBUG
 config IWMC3200TOP_DEBUGFS
 	bool "Enable Debugfs debugging interface for iwmc3200top"
 	depends on IWMC3200TOP
+source "drivers/misc/ti-st/Kconfig"
 menu "Texas Instruments shared transport line discipline"
 config TI_ST
 	tristate "Shared transport core driver"
 	depends on RFKILL
 	select FW_LOADER
 endmenu
+endsource
 endif
+endsource
+source "drivers/ide/Kconfig"
 config HAVE_IDE
 	bool
 menuconfig IDE
@@ -6378,6 +6616,8 @@ config BLK_DEV_IDEDMA
 		 BLK_DEV_IDEDMA_ICS || BLK_DEV_IDE_AU1XXX_MDMA2_DBDMA
 	select IDE_XFER_MODE
 endif
+endsource
+source "drivers/scsi/Kconfig"
 menu "SCSI device support"
 config SCSI_MOD
        tristate
@@ -6468,6 +6708,7 @@ config SCSI_SAS_ATTRS
 	tristate "SAS Transport Attributes"
 	depends on SCSI
 	select BLK_DEV_BSG
+source "drivers/scsi/libsas/Kconfig"
 config SCSI_SAS_LIBSAS
 	tristate "SAS Domain Transport Attributes"
 	depends on SCSI
@@ -6507,16 +6748,20 @@ config ISCSI_TCP
 config ISCSI_BOOT_SYSFS
 	tristate "iSCSI Boot Sysfs Interface"
 	default	n
+source "drivers/scsi/cxgbi/Kconfig"
+source "drivers/scsi/cxgbi/cxgb3i/Kconfig"
 config SCSI_CXGB3_ISCSI
 	tristate "Chelsio T3 iSCSI support"
 	depends on CHELSIO_T3_DEPENDS
 	select CHELSIO_T3
 	select SCSI_ISCSI_ATTRS
+source "drivers/scsi/cxgbi/cxgb4i/Kconfig"
 config SCSI_CXGB4_ISCSI
 	tristate "Chelsio T4 iSCSI support"
 	depends on CHELSIO_T4_DEPENDS
 	select CHELSIO_T4
 	select SCSI_ISCSI_ATTRS
+source "drivers/scsi/bnx2i/Kconfig"
 config SCSI_BNX2_ISCSI
 	tristate "Broadcom NetXtreme II iSCSI support"
 	depends on NET
@@ -6525,6 +6770,7 @@ config SCSI_BNX2_ISCSI
 	select NETDEVICES
 	select NETDEV_1000
 	select CNIC
+source "drivers/scsi/be2iscsi/Kconfig"
 config BE2ISCSI
 	tristate "ServerEngines' 10Gbps iSCSI - BladeEngine 2"
 	depends on PCI && SCSI && NET
@@ -6566,6 +6812,7 @@ config SCSI_AHA1740
 config SCSI_AACRAID
 	tristate "Adaptec AACRAID support"
 	depends on SCSI && PCI
+source "drivers/scsi/aic7xxx/Kconfig.aic7xxx"
 config SCSI_AIC7XXX
 	tristate "Adaptec AIC7xxx Fast -> U160 support (New Driver)"
 	depends on (PCI || EISA) && SCSI
@@ -6596,6 +6843,7 @@ config AIC7XXX_REG_PRETTY_PRINT
 config SCSI_AIC7XXX_OLD
 	tristate "Adaptec AIC7xxx support (old driver)"
 	depends on (ISA || EISA || PCI ) && SCSI
+source "drivers/scsi/aic7xxx/Kconfig.aic79xx"
 config SCSI_AIC79XX
 	tristate "Adaptec AIC79xx U320 support"
 	depends on PCI && SCSI
@@ -6623,6 +6871,7 @@ config AIC79XX_REG_PRETTY_PRINT
 	bool "Decode registers during diagnostics"
 	depends on SCSI_AIC79XX
 	default y
+source "drivers/scsi/aic94xx/Kconfig"
 config SCSI_AIC94XX
 	tristate "Adaptec AIC94xx SAS/SATA support"
 	depends on PCI
@@ -6632,6 +6881,7 @@ config AIC94XX_DEBUG
 	bool "Compile in debug mode"
 	default y
 	depends on SCSI_AIC94XX
+source "drivers/scsi/mvsas/Kconfig"
 config SCSI_MVSAS
 	tristate "Marvell 88SE64XX/88SE94XX SAS/SATA support"
 	depends on PCI
@@ -6658,6 +6908,7 @@ config SCSI_ARCMSR_AER
 	bool "Enable PCI Error Recovery Capability in Areca Driver(ARCMSR)"
 	depends on SCSI_ARCMSR && PCIEAER
 	default n
+source "drivers/scsi/megaraid/Kconfig.megaraid"
 config MEGARAID_NEWGEN
 	bool "LSI Logic New Generation RAID Device Drivers"
 	depends on PCI && SCSI
@@ -6673,6 +6924,7 @@ config MEGARAID_LEGACY
 config MEGARAID_SAS
 	tristate "LSI Logic MegaRAID SAS RAID Module"
 	depends on PCI && SCSI
+source "drivers/scsi/mpt2sas/Kconfig"
 config SCSI_MPT2SAS
 	tristate "LSI MPT Fusion SAS 2.0 Device Driver"
 	depends on PCI && SCSI
@@ -6900,11 +7152,13 @@ config SCSI_QLOGIC_1280
 config SCSI_QLOGICPTI
 	tristate "PTI Qlogic, ISP Driver"
 	depends on SBUS && SCSI
+source "drivers/scsi/qla2xxx/Kconfig"
 config SCSI_QLA_FC
 	tristate "QLogic QLA2XXX Fibre Channel Support"
 	depends on PCI && SCSI
 	select SCSI_FC_ATTRS
 	select FW_LOADER
+source "drivers/scsi/qla4xxx/Kconfig"
 config SCSI_QLA_ISCSI
 	tristate "QLogic ISP4XXX and ISP82XX host adapter family support"
 	depends on PCI && SCSI
@@ -6971,6 +7225,7 @@ config SCSI_MESH_RESET_DELAY_MS
 config SCSI_MAC53C94
 	tristate "53C94 (Power Mac external SCSI) support"
 	depends on PPC32 && PPC_PMAC && SCSI
+source "drivers/scsi/arm/Kconfig"
 config SCSI_ACORNSCSI_3
 	tristate "Acorn SCSI card (aka30) support"
 	depends on ARCH_ACORN && SCSI
@@ -7087,6 +7342,8 @@ config SCSI_BFA_FC
 	tristate "Brocade BFA Fibre Channel Support"
 	depends on PCI && SCSI
 	select SCSI_FC_ATTRS
+endif
+source "drivers/scsi/pcmcia/Kconfig"
 menuconfig SCSI_LOWLEVEL_PCMCIA
 	bool "PCMCIA SCSI adapter support"
 	depends on SCSI!=n && PCMCIA!=n
@@ -7103,6 +7360,9 @@ config PCMCIA_QLOGIC
 	tristate "Qlogic PCMCIA support"
 config PCMCIA_SYM53C500
 	tristate "Symbios 53c500 PCMCIA support"
+endif
+endsource
+source "drivers/scsi/device_handler/Kconfig"
 menuconfig SCSI_DH
 	tristate "SCSI Device Handlers"
 	depends on SCSI
@@ -7119,6 +7379,7 @@ config SCSI_DH_EMC
 config SCSI_DH_ALUA
 	tristate "SPC-3 ALUA Device Handler (EXPERIMENTAL)"
 	depends on SCSI_DH && EXPERIMENTAL
+source "drivers/scsi/osd/Kconfig"
 config SCSI_OSD_INITIATOR
 	tristate "OSD-Initiator library"
 	depends on SCSI
@@ -7134,6 +7395,8 @@ config SCSI_OSD_DEBUG
 	default n
 	depends on SCSI_OSD_INITIATOR
 endmenu
+endsource
+source "drivers/ata/Kconfig"
 config HAVE_PATA_PLATFORM
 	bool
 menuconfig ATA
@@ -7364,6 +7627,8 @@ config PATA_PXA
 config PATA_WINBOND
 	tristate "Winbond SL82C105 PATA support"
 	depends on PCI
+endif
+comment "PIO-only SFF controllers"
 config PATA_AT32
 	tristate "Atmel AVR32 PATA support (Experimental)"
 	depends on AVR32 && PLATFORM_AT32AP && EXPERIMENTAL
@@ -7425,6 +7690,10 @@ config ATA_GENERIC
 config PATA_LEGACY
 	tristate "Legacy ISA PATA support (Experimental)"
 	depends on (ISA || PCI) && EXPERIMENTAL
+endif
+endif
+endsource
+source "drivers/md/Kconfig"
 menuconfig MD
 	bool "Multiple devices driver support (RAID and LVM)"
 	depends on BLOCK
@@ -7514,6 +7783,9 @@ config DM_DELAY
 config DM_UEVENT
 	bool "DM uevents (EXPERIMENTAL)"
 	depends on BLK_DEV_DM && EXPERIMENTAL
+endif
+endsource
+source "drivers/target/Kconfig"
 menuconfig TARGET_CORE
 	tristate "Generic Target Core Mod (TCM) and ConfigFS Infrastructure"
 	depends on SCSI && BLOCK
@@ -7527,6 +7799,8 @@ config TCM_FILEIO
 config TCM_PSCSI
 	tristate "TCM/pSCSI Subsystem Plugin for Linux/SCSI"
 endif
+endsource
+source "drivers/message/fusion/Kconfig"
 menuconfig FUSION
 	bool "Fusion MPT device support"
 	depends on PCI
@@ -7555,6 +7829,9 @@ config FUSION_LAN
 	depends on FUSION_FC && NET_FC
 config FUSION_LOGGING
 	bool "Fusion MPT logging facility"
+endif
+endsource
+source "drivers/firewire/Kconfig"
 menu "IEEE 1394 (FireWire) support"
 	depends on PCI || BROKEN
 
@@ -7579,6 +7856,8 @@ config FIREWIRE_NOSY
 	tristate "Nosy - a FireWire traffic sniffer for PCILynx cards"
 	depends on PCI
 endmenu
+endsource
+source "drivers/message/i2o/Kconfig"
 menuconfig I2O
 	tristate "I2O device support"
 	depends on PCI
@@ -7610,6 +7889,9 @@ config I2O_SCSI
 	depends on SCSI
 config I2O_PROC
 	tristate "I2O /proc support"
+endif
+endsource
+source "drivers/macintosh/Kconfig"
 menuconfig MACINTOSH_DRIVERS
 	bool "Macintosh device drivers"
 	depends on PPC || MAC || X86
@@ -7719,6 +8001,9 @@ config SENSORS_AMS_I2C
 	bool "I2C variant"
 	depends on SENSORS_AMS && I2C
 	default y
+endif
+endsource
+source "drivers/net/Kconfig"
 config HAVE_NET_MACB
 	bool
 menuconfig NETDEVICES
@@ -7751,6 +8036,7 @@ config VETH
 config NET_SB1000
 	tristate "General Instruments Surfboard 1000"
 	depends on PNP
+source "drivers/net/arcnet/Kconfig"
 menuconfig ARCNET
 	depends on NETDEVICES && (ISA || PCI)
 	tristate "ARCnet support"
@@ -7778,8 +8064,10 @@ config ARCNET_COM20020_PCI
 	tristate "Support for COM20020 on PCI"
 	depends on ARCNET_COM20020 && PCI
 endif
+endsource
 config MII
 	tristate "Generic Media Independent Interface device support"
+source "drivers/net/phy/Kconfig"
 menuconfig PHYLIB
 	tristate "PHY Device support and infrastructure"
 	depends on !S390
@@ -7829,6 +8117,8 @@ config MDIO_OCTEON
 	tristate "Support for MDIO buses on Octeon SOCs"
 	depends on  CPU_CAVIUM_OCTEON
 	default y
+endif
+endsource
 menuconfig NET_ETHERNET
 	bool "Ethernet (10 or 100Mbit)"
 	depends on !UML
@@ -7837,6 +8127,7 @@ config MACB
 	tristate "Atmel MACB support"
 	depends on HAVE_NET_MACB
 	select PHYLIB
+source "drivers/net/arm/Kconfig"
 config ARM_AM79C961A
 	bool "ARM EBSA110 AM79C961A support"
 	depends on ARM && ARCH_EBSA110
@@ -8197,6 +8488,7 @@ config DNET
 	tristate "Dave ethernet support (DNET)"
 	depends on NET_ETHERNET && HAS_IOMEM
 	select PHYLIB
+source "drivers/net/tulip/Kconfig"
 menuconfig NET_TULIP
 	bool "\"Tulip\" family network device support"
 	depends on PCI || EISA || CARDBUS
@@ -8249,6 +8541,8 @@ config ULI526X
 config PCMCIA_XIRCOM
 	tristate "Xircom CardBus support"
 	depends on CARDBUS
+endif
+endsource
 config AT1700
 	tristate "AT1700/1720 support (EXPERIMENTAL)"
 	depends on (ISA || MCA_LEGACY) && EXPERIMENTAL
@@ -8311,6 +8605,7 @@ config IBMLANA
 config IBMVETH
 	tristate "IBM LAN Virtual Ethernet support"
 	depends on PPC_PSERIES
+source "drivers/net/ibm_newemac/Kconfig"
 config IBM_NEW_EMAC
 	tristate "IBM EMAC Ethernet support"
 	depends on PPC_DCR
@@ -8360,6 +8655,7 @@ config IBM_NEW_EMAC_MAL_CLR_ICINTSTAT
 config IBM_NEW_EMAC_MAL_COMMON_ERR
 	bool
 	default n
+endsource
 config NET_PCI
 	bool "EISA, VLB, PCI and on board controllers"
 	depends on ISA || EISA || PCI
@@ -8592,6 +8888,7 @@ config BCM63XX_ENET
 	depends on BCM63XX
 	select MII
 	select PHYLIB
+source "drivers/net/fs_enet/Kconfig"
 config FS_ENET
        tristate "Freescale Ethernet Driver"
        depends on CPM1 || CPM2 || PPC_MPC512x
@@ -8620,12 +8917,15 @@ config FS_ENET_MDIO_FCC
 	tristate "MDIO driver for FCC"
 	depends on FS_ENET && CPM2
 	select MDIO_BITBANG
+endsource
+source "drivers/net/octeon/Kconfig"
 config OCTEON_MGMT_ETHERNET
 	tristate "Octeon Management port ethernet driver (CN5XXX, CN6XXX)"
 	depends on  CPU_CAVIUM_OCTEON
 	select PHYLIB
 	select MDIO_OCTEON
 	default y
+endif
 menuconfig NETDEV_1000
 	bool "Ethernet (1000 Mbit)"
 	depends on !UML
@@ -8661,6 +8961,7 @@ config IGB_DCA
 config IGBVF
 	tristate "Intel(R) 82576 Virtual Function Ethernet support"
 	depends on PCI
+source "drivers/net/ixp2000/Kconfig"
 config ENP2611_MSF_NET
 	tristate "Radisys ENP2611 MSF network interface support"
 	depends on ARCH_ENP2611
@@ -8800,6 +9101,7 @@ config S6GMAC
 	tristate "S6105 GMAC ethernet support"
 	depends on XTENSA_VARIANT_S6000
 	select PHYLIB
+source "drivers/net/stmmac/Kconfig"
 config STMMAC_ETH
 	tristate "STMicroelectronics 10/100/1000 Ethernet driver"
 	select MII
@@ -8829,10 +9131,12 @@ config STMMAC_RTC_TIMER
         depends on RTC_CLASS
 endchoice
 endif
+endsource
 config PCH_GBE
 	tristate "PCH Gigabit Ethernet"
 	depends on PCI
 	select MII
+endif
 menuconfig NETDEV_10000
 	bool "Ethernet (10000 Mbit)"
 	depends on !UML
@@ -8964,6 +9268,7 @@ config QLGE
 config BNA
 	tristate "Brocade 1010/1020 10Gb Ethernet Driver support"
 	depends on PCI
+source "drivers/net/sfc/Kconfig"
 config SFC
 	tristate "Solarflare Solarstorm SFC4000/SFC9000-family support"
 	depends on PCI && INET
@@ -8975,9 +9280,12 @@ config SFC_MTD
 	bool "Solarflare Solarstorm SFC4000/SFC9000-family MTD support"
 	depends on SFC && MTD && !(SFC=y && MTD=m)
 	default y
+source "drivers/net/benet/Kconfig"
 config BE2NET
 	tristate "ServerEngines' 10Gbps NIC - BladeEngine"
 	depends on PCI && INET
+endif
+source "drivers/net/tokenring/Kconfig"
 menuconfig TR
 	tristate "Token Ring driver support"
 	depends on NETDEVICES && !UML
@@ -9018,6 +9326,9 @@ config MADGEMC
 config SMCTR
 	tristate "SMC ISA/MCA adapter support"
 	depends on (ISA || MCA_LEGACY) && (BROKEN || !64BIT)
+endif
+endsource
+source "drivers/net/wireless/Kconfig"
 menuconfig WLAN
 	bool "Wireless LAN"
 	depends on !S390
@@ -9101,6 +9412,7 @@ config USB_NET_RNDIS_WLAN
 	select USB_USBNET
 	select USB_NET_CDCETHER
 	select USB_NET_RNDIS_HOST
+source "drivers/net/wireless/rtl818x/Kconfig"
 config RTL8180
 	tristate "Realtek 8180/8185 PCI support"
 	depends on MAC80211 && PCI && EXPERIMENTAL
@@ -9113,6 +9425,7 @@ config RTL8187_LEDS
 	bool
 	depends on RTL8187 && MAC80211_LEDS && (LEDS_CLASS = y || LEDS_CLASS = RTL8187)
 	default y
+endsource
 config ADM8211
 	tristate "ADMtek ADM8211 support"
 	depends on MAC80211 && PCI && EXPERIMENTAL
@@ -9124,12 +9437,14 @@ config MAC80211_HWSIM
 config MWL8K
 	tristate "Marvell 88W8xxx PCI/PCIe Wireless support"
 	depends on MAC80211 && PCI && EXPERIMENTAL
+source "drivers/net/wireless/ath/Kconfig"
 menuconfig ATH_COMMON
 	tristate "Atheros Wireless Cards"
 	depends on CFG80211
 if ATH_COMMON
 config ATH_DEBUG
 	bool "Atheros wireless debugging"
+source "drivers/net/wireless/ath/ath5k/Kconfig"
 config ATH5K
 	tristate "Atheros 5xxx wireless cards support"
 	depends on (PCI || ATHEROS_AR231X) && MAC80211
@@ -9148,6 +9463,7 @@ config ATH5K_AHB
 config ATH5K_PCI
 	bool "Atheros 5xxx PCI bus support"
 	depends on (!ATHEROS_AR231X && PCI)
+source "drivers/net/wireless/ath/ath9k/Kconfig"
 config ATH9K_HW
 	tristate
 config ATH9K_COMMON
@@ -9178,6 +9494,7 @@ config ATH9K_HTC
 config ATH9K_HTC_DEBUGFS
 	bool "Atheros ath9k_htc debugging"
 	depends on ATH9K_HTC && DEBUG_FS
+source "drivers/net/wireless/ath/ar9170/Kconfig"
 config AR9170_USB
 	tristate "Atheros AR9170 802.11n USB support"
 	depends on USB && MAC80211
@@ -9186,6 +9503,8 @@ config AR9170_LEDS
 	bool
 	depends on AR9170_USB && MAC80211_LEDS && (LEDS_CLASS = y || LEDS_CLASS = AR9170_USB)
 	default y
+endsource
+source "drivers/net/wireless/ath/carl9170/Kconfig"
 config CARL9170
 	tristate "Linux Community AR9170 802.11n USB support"
 	depends on USB && MAC80211 && EXPERIMENTAL
@@ -9206,7 +9525,10 @@ config CARL9170_WPC
 	bool
 	depends on CARL9170 && (INPUT = y || INPUT = CARL9170)
 	default y
+endsource
 endif
+endsource
+source "drivers/net/wireless/b43/Kconfig"
 config B43
 	tristate "Broadcom 43xx wireless support (mac80211 stack)"
 	depends on SSB_POSSIBLE && MAC80211 && HAS_DMA
@@ -9257,6 +9579,7 @@ config B43_DEBUG
 config B43_FORCE_PIO
 	bool "Force usage of PIO instead of DMA"
 	depends on B43 && B43_DEBUG
+source "drivers/net/wireless/b43legacy/Kconfig"
 config B43LEGACY
 	tristate "Broadcom 43xx-legacy wireless support (mac80211 stack)"
 	depends on SSB_POSSIBLE && MAC80211 && HAS_DMA
@@ -9306,6 +9629,8 @@ config B43LEGACY_PIO_MODE
 	bool "PIO (Programmed I/O) only"
 	select B43LEGACY_PIO
 endchoice
+endsource
+source "drivers/net/wireless/hostap/Kconfig"
 config HOSTAP
 	tristate "IEEE 802.11 for Host AP (Prism2/2.5/3 and WEP/TKIP/CCMP)"
 	select WIRELESS_EXT
@@ -9337,6 +9662,7 @@ config HOSTAP_PCI
 config HOSTAP_CS
 	tristate "Host AP driver for Prism2/2.5/3 PC Cards"
 	depends on PCMCIA && HOSTAP
+source "drivers/net/wireless/ipw2x00/Kconfig"
 config IPW2100
 	tristate "Intel PRO/Wireless 2100 Network Connection"
 	depends on PCI && CFG80211
@@ -9396,6 +9722,7 @@ config LIBIPW
 config LIBIPW_DEBUG
 	bool "Full debugging output for the LIBIPW component"
 	depends on LIBIPW
+source "drivers/net/wireless/iwlwifi/Kconfig"
 config IWLWIFI
 	tristate "Intel Wireless Wifi"
 	depends on PCI && MAC80211
@@ -9428,6 +9755,7 @@ config IWL5000
 config IWL3945
 	tristate "Intel PRO/Wireless 3945ABG/BG Network Connection (iwl3945)"
 	depends on IWLWIFI
+source "drivers/net/wireless/iwmc3200wifi/Kconfig"
 config IWM
 	tristate "Intel Wireless Multicomm 3200 WiFi driver"
 	depends on MMC && EXPERIMENTAL
@@ -9440,6 +9768,7 @@ config IWM_DEBUG
 config IWM_TRACING
 	bool "Enable event tracing for iwmc3200wifi"
 	depends on IWM && EVENT_TRACING
+source "drivers/net/wireless/libertas/Kconfig"
 config LIBERTAS
 	tristate "Marvell 8xxx Libertas WLAN driver support"
 	depends on CFG80211
@@ -9465,6 +9794,7 @@ config LIBERTAS_DEBUG
 config LIBERTAS_MESH
 	bool "Enable mesh support"
 	depends on LIBERTAS
+source "drivers/net/wireless/orinoco/Kconfig"
 config HERMES
 	tristate "Hermes chipset 802.11b support (Orinoco/Prism2/Symbol)"
 	depends on (PPC_PMAC || PCI || PCMCIA)
@@ -9507,6 +9837,7 @@ config ORINOCO_USB
 	tristate "Agere Orinoco USB support"
 	depends on USB && HERMES
 	select FW_LOADER
+source "drivers/net/wireless/p54/Kconfig"
 config P54_COMMON
 	tristate "Softmac Prism54 support"
 	depends on MAC80211 && EXPERIMENTAL
@@ -9530,6 +9861,8 @@ config P54_LEDS
 	bool
 	depends on P54_COMMON && MAC80211_LEDS && (LEDS_CLASS = y || LEDS_CLASS = P54_COMMON)
 	default y
+endsource
+source "drivers/net/wireless/rt2x00/Kconfig"
 menuconfig RT2X00
 	tristate "Ralink driver support"
 	depends on MAC80211
@@ -9637,6 +9970,8 @@ config RT2X00_DEBUG
 	bool "Ralink debug output"
 	depends on RT2X00_LIB
 endif
+endsource
+source "drivers/net/wireless/rtlwifi/Kconfig"
 config RTL8192CE
 	tristate "Realtek RTL8192CE/RTL8188SE Wireless Network Adapter"
 	depends on MAC80211 && EXPERIMENTAL
@@ -9646,6 +9981,8 @@ config RTLWIFI
 	tristate
 	depends on RTL8192CE
 	default m
+endsource
+source "drivers/net/wireless/wl1251/Kconfig"
 menuconfig WL1251
 	tristate "TI wl1251 driver support"
 	depends on MAC80211 && EXPERIMENTAL && GENERIC_HARDIRQS
@@ -9657,6 +9994,7 @@ config WL1251_SPI
 config WL1251_SDIO
 	tristate "TI wl1251 SDIO support"
 	depends on WL1251 && MMC
+source "drivers/net/wireless/wl12xx/Kconfig"
 menuconfig WL12XX_MENU
 	tristate "TI wl12xx driver support"
 	depends on MAC80211 && EXPERIMENTAL
@@ -9684,6 +10022,8 @@ config WL12XX_PLATFORM_DATA
 	bool
 	depends on WL12XX_SDIO != n || WL1251_SDIO != n
 	default y
+endsource
+source "drivers/net/wireless/zd1211rw/Kconfig"
 config ZD1211RW
 	tristate "ZyDAS ZD1211/ZD1211B USB-wireless support"
 	depends on USB && MAC80211 && EXPERIMENTAL
@@ -9691,8 +10031,14 @@ config ZD1211RW
 config ZD1211RW_DEBUG
 	bool "ZyDAS ZD1211 debugging"
 	depends on ZD1211RW
+endif
+endsource
+source "drivers/net/wimax/Kconfig"
+comment "Enable WiMAX (Networking options) to see the WiMAX drivers"
+	depends on WIMAX = n
 if WIMAX
 menu "WiMAX Wireless Broadband devices"
+source "drivers/net/wimax/i2400m/Kconfig"
 config WIMAX_I2400M
 	tristate
 	depends on WIMAX
@@ -9719,6 +10065,8 @@ config WIMAX_I2400M_DEBUG_LEVEL
 	default 8
 endmenu
 endif
+endsource
+source "drivers/net/usb/Kconfig"
 comment "Networking support is needed for USB Network Adapter support"
 	depends on USB && !NET
 menu "USB Network Adapters"
@@ -9836,6 +10184,8 @@ config USB_SIERRA_NET
 	tristate "USB-to-WWAN Driver for Sierra Wireless modems"
 	depends on USB_USBNET
 endmenu
+endsource
+source "drivers/net/pcmcia/Kconfig"
 menuconfig NET_PCMCIA
 	bool "PCMCIA network device support"
 	depends on PCMCIA
@@ -9865,6 +10215,9 @@ config ARCNET_COM20020_CS
 config PCMCIA_IBMTR
 	tristate "IBM PCMCIA tokenring adapter support"
 	depends on IBMTR!=y && TR
+endif
+endsource
+source "drivers/net/wan/Kconfig"
 menuconfig WAN
 	bool "Wan interfaces support"
 if WAN
@@ -9969,6 +10322,9 @@ config SBNI
 config SBNI_MULTILINE
 	bool "Multiple line feature support"
 	depends on SBNI
+endif
+endsource
+source "drivers/atm/Kconfig"
 menuconfig ATM_DRIVERS
 	bool "ATM drivers"
 	depends on NETDEVICES && ATM
@@ -10090,6 +10446,9 @@ config ATM_SOLOS
 	tristate "Solos ADSL2+ PCI Multiport card driver"
 	depends on PCI
 	select FW_LOADER
+endif
+endsource
+source "drivers/ieee802154/Kconfig"
 menuconfig IEEE802154_DRIVERS
 	tristate "IEEE 802.15.4 drivers"
 	depends on NETDEVICES && IEEE802154
@@ -10097,6 +10456,7 @@ menuconfig IEEE802154_DRIVERS
 config IEEE802154_FAKEHARD
 	tristate "Fake LR-WPAN driver with several interconnected devices"
 	depends on  IEEE802154_DRIVERS
+source "drivers/s390/net/Kconfig"
 menu "S/390 network device drivers"
 	depends on NETDEVICES && S390
 config LCS
@@ -10141,6 +10501,8 @@ config CCWGROUP
 	tristate
 	default (LCS || CTCM || QETH || CLAW)
 endmenu
+endsource
+source "drivers/net/caif/Kconfig"
 comment "CAIF transport drivers"
 config CAIF_TTY
 	tristate "CAIF TTY transport driver"
@@ -10289,6 +10651,9 @@ config VIRTIO_NET
 config VMXNET3
 	tristate "VMware VMXNET3 ethernet driver"
 	depends on PCI && INET
+endif
+endsource
+source "drivers/isdn/Kconfig"
 menuconfig ISDN
 	bool "ISDN support"
 	depends on NET
@@ -10296,6 +10661,7 @@ menuconfig ISDN
 if ISDN
 menuconfig ISDN_I4L
 	tristate "Old ISDN4Linux (deprecated)"
+source "drivers/isdn/i4l/Kconfig"
 if ISDN_I4L
 config ISDN_PPP
 	bool "Support synchronous PPP"
@@ -10329,6 +10695,7 @@ config ISDN_DIVERSION
 	tristate "Support isdn diversion services"
 endmenu
 comment "ISDN4Linux hardware drivers"
+source "drivers/isdn/hisax/Kconfig"
 menu "Passive cards"
 config ISDN_DRV_HISAX
 	tristate "HiSax SiemensChipSet driver support"
@@ -10468,24 +10835,31 @@ config HISAX_AVM_A1_PCMCIA
 	default y
 endif
 endmenu
+endsource
 menu "Active cards"
+source "drivers/isdn/icn/Kconfig"
 config ISDN_DRV_ICN
 	tristate "ICN 2B and 4B support"
 	depends on ISA
+source "drivers/isdn/pcbit/Kconfig"
 config ISDN_DRV_PCBIT
 	tristate "PCBIT-D support"
 	depends on ISA && (BROKEN || X86)
+source "drivers/isdn/sc/Kconfig"
 config ISDN_DRV_SC
 	tristate "Spellcaster support"
 	depends on ISA
+source "drivers/isdn/act2000/Kconfig"
 config ISDN_DRV_ACT2000
 	tristate "IBM Active 2000 support"
 	depends on ISA
 endmenu
 endif
+endsource
 menuconfig ISDN_CAPI
 	tristate "CAPI 2.0 subsystem"
 if ISDN_CAPI
+source "drivers/isdn/capi/Kconfig"
 config ISDN_DRV_AVMB1_VERBOSE_REASON
 	bool "Verbose reason code reporting"
 	default y
@@ -10506,6 +10880,9 @@ config ISDN_CAPI_CAPIFS
 config ISDN_CAPI_CAPIDRV
 	tristate "CAPI2.0 capidrv interface support"
 	depends on ISDN_I4L
+source "drivers/isdn/hardware/Kconfig"
+comment "CAPI hardware drivers"
+source "drivers/isdn/hardware/avm/Kconfig"
 menuconfig CAPI_AVM
 	bool "Active AVM cards"
 if CAPI_AVM
@@ -10533,6 +10910,9 @@ config ISDN_DRV_AVMB1_T1PCI
 config ISDN_DRV_AVMB1_C4
 	tristate "AVM C4/C2 support"
 	depends on PCI
+endif
+endsource
+source "drivers/isdn/hardware/eicon/Kconfig"
 menuconfig CAPI_EICON
 	bool "Active Eicon DIVA Server cards"
 if CAPI_EICON
@@ -10551,6 +10931,12 @@ config ISDN_DIVAS_USERIDI
 config ISDN_DIVAS_MAINT
 	tristate "DIVA Maint driver support"
 	depends on m
+endif
+endif
+endsource
+endsource
+endif
+source "drivers/isdn/gigaset/Kconfig"
 menuconfig ISDN_DRV_GIGASET
 	tristate "Siemens Gigaset support"
 	select CRC_CCITT
@@ -10577,12 +10963,16 @@ config GIGASET_M101
 	tristate "Gigaset M101 support"
 config GIGASET_DEBUG
 	bool "Gigaset debugging"
+endif
+endsource
+source "drivers/isdn/hysdn/Kconfig"
 config HYSDN
 	tristate "Hypercope HYSDN cards (Champ, Ergo, Metro) support (module only)"
 	depends on m && PROC_FS && PCI
 config HYSDN_CAPI
 	bool "HYSDN CAPI 2.0 support"
 	depends on HYSDN && ISDN_CAPI
+source "drivers/isdn/mISDN/Kconfig"
 menuconfig MISDN
 	tristate "Modular ISDN driver"
 config MISDN_DSP
@@ -10591,6 +10981,8 @@ config MISDN_DSP
 config MISDN_L1OIP
 	tristate "ISDN over IP tunnel"
 	depends on MISDN
+source "drivers/isdn/hardware/mISDN/Kconfig"
+comment "mISDN hardware drivers"
 config MISDN_HFCPCI
 	tristate "Support for HFC PCI cards"
 	depends on MISDN
@@ -10641,12 +11033,16 @@ config MISDN_IPAC
 config MISDN_ISAR
 	tristate
 	depends on MISDN
+endsource
 endif
+endsource
 config ISDN_HDLC
 	tristate
 	select CRC_CCITT
 	select BITREVERSE
 endif
+endsource
+source "drivers/telephony/Kconfig"
 menuconfig PHONE
 	tristate "Telephony support"
 	depends on HAS_IOMEM
@@ -10657,6 +11053,9 @@ config PHONE_IXJ
 config PHONE_IXJ_PCMCIA
 	tristate "QuickNet Internet LineJack/PhoneJack PCMCIA support"
 	depends on PHONE_IXJ && PCMCIA
+endif
+endsource
+source "drivers/input/Kconfig"
 menu "Input device support"
 	depends on !S390
 config INPUT
@@ -10698,6 +11097,7 @@ config XEN_KBDDEV_FRONTEND
 	depends on XEN_FBDEV_FRONTEND
 	default y
 	select XEN_XENBUS_FRONTEND
+source "drivers/input/keyboard/Kconfig"
 menuconfig INPUT_KEYBOARD
 	bool "Keyboards" if EXPERT || !X86
 	default y
@@ -10854,6 +11254,8 @@ config KEYBOARD_W90P910
 	tristate "W90P910 Matrix Keypad support"
 	depends on ARCH_W90X900
 endif
+endsource
+source "drivers/input/mouse/Kconfig"
 menuconfig INPUT_MOUSE
 	bool "Mice"
 	default y
@@ -10947,6 +11349,8 @@ config MOUSE_SYNAPTICS_I2C
 	tristate "Synaptics I2C Touchpad support"
 	depends on I2C
 endif
+endsource
+source "drivers/input/joystick/Kconfig"
 menuconfig INPUT_JOYSTICK
 	bool "Joysticks/Gamepads"
 if INPUT_JOYSTICK
@@ -10983,6 +11387,7 @@ config JOYSTICK_SIDEWINDER
 config JOYSTICK_TMDC
 	tristate "ThrustMaster DirectConnect joysticks and gamepads"
 	select GAMEPORT
+source "drivers/input/joystick/iforce/Kconfig"
 config JOYSTICK_IFORCE
 	tristate "I-Force devices"
 	depends on INPUT && INPUT_JOYSTICK
@@ -11050,6 +11455,8 @@ config JOYSTICK_MAPLE
 	tristate "Dreamcast control pad"
 	depends on MAPLE
 endif
+endsource
+source "drivers/input/tablet/Kconfig"
 menuconfig INPUT_TABLET
 	bool "Tablets"
 if INPUT_TABLET
@@ -11077,6 +11484,8 @@ config TABLET_USB_WACOM
 	depends on USB_ARCH_HAS_HCD
 	select USB
 endif
+endsource
+source "drivers/input/touchscreen/Kconfig"
 menuconfig INPUT_TOUCHSCREEN
 	bool "Touchscreens"
 if INPUT_TOUCHSCREEN
@@ -11307,6 +11716,8 @@ config TOUCHSCREEN_TPS6507X
 	tristate "TPS6507x based touchscreens"
 	depends on I2C
 endif
+endsource
+source "drivers/input/misc/Kconfig"
 menuconfig INPUT_MISC
 	bool "Miscellaneous devices"
 if INPUT_MISC
@@ -11453,8 +11864,10 @@ config INPUT_CMA3000_I2C
 	tristate "Support I2C bus connection"
 	depends on INPUT_CMA3000 && I2C
 endif
+endsource
 endif
 menu "Hardware I/O ports"
+source "drivers/input/serio/Kconfig"
 config SERIO
 	tristate "Serial I/O support" if EXPERT || !X86
 	default y
@@ -11523,6 +11936,8 @@ config SERIO_AMS_DELTA
 config SERIO_PS2MULT
 	tristate "TQC PS/2 multiplexer"
 endif
+endsource
+source "drivers/input/gameport/Kconfig"
 config GAMEPORT
 	tristate "Gameport support"
 if GAMEPORT
@@ -11537,8 +11952,11 @@ config GAMEPORT_FM801
 	tristate "ForteMedia FM801 gameport support"
 	depends on PCI
 endif
+endsource
 endmenu
 endmenu
+endsource
+source "drivers/char/Kconfig"
 menu "Character devices"
 config VT
 	bool "Virtual terminal" if EXPERT
@@ -11655,6 +12073,7 @@ config SGI_TIOCX
 config SGI_MBCS
        tristate "SGI FPGA Core Services driver support"
        depends on SGI_TIOCX
+source "drivers/tty/serial/Kconfig"
 menu "Serial drivers"
 	depends on HAS_IOMEM
 config SERIAL_8250
@@ -12336,6 +12755,7 @@ config SERIAL_PCH_UART
 	select SERIAL_CORE
 	select PCH_DMA
 endmenu
+endsource
 config UNIX98_PTYS
 	bool "Unix98 PTY support" if EXPERT
 	default y
@@ -12430,6 +12850,7 @@ config HVCS
 config IBM_BSR
 	tristate "IBM POWER Barrier Synchronization Register support"
 	depends on PPC_PSERIES
+source "drivers/char/ipmi/Kconfig"
 menuconfig IPMI_HANDLER
        tristate 'IPMI top-level message handler'
        depends on HAS_IOMEM
@@ -12447,6 +12868,8 @@ config IPMI_WATCHDOG
        tristate 'IPMI Watchdog Timer'
 config IPMI_POWEROFF
        tristate 'IPMI Poweroff'
+endif
+endsource
 config DS1620
 	tristate "NetWinder thermometer support"
 	depends on ARCH_NETWINDER
@@ -12459,6 +12882,7 @@ config NWBUTTON_REBOOT
 config NWFLASH
 	tristate "NetWinder flash support"
 	depends on ARCH_NETWINDER
+source "drivers/char/hw_random/Kconfig"
 config HW_RANDOM
 	tristate "Hardware Random Number Generator Core support"
 	default m
@@ -12537,6 +12961,7 @@ config EFI_RTC
 config DS1302
 	tristate "DS1302 RTC support"
 	depends on M32R && (PLAT_M32700UT || PLAT_OPSPUT)
+endif
 config DTLK
 	tristate "Double Talk PC internal speech card support"
 	depends on ISA
@@ -12555,6 +12980,7 @@ config GPIO_TB0219
 	tristate "TANBAC TB0219 GPIO support"
 	depends on TANBAC_TB022X
 	select GPIO_VR41XX
+source "drivers/char/pcmcia/Kconfig"
 menu "PCMCIA character devices"
 	depends on HOTPLUG && PCMCIA!=n
 config SYNCLINK_CS
@@ -12572,6 +12998,7 @@ config IPWIRELESS
 	depends on PCMCIA && NETDEVICES
 	select PPP
 endmenu
+endsource
 config MWAVE
 	tristate "ACP Modem (Mwave) support"
 	depends on X86
@@ -12616,6 +13043,7 @@ config UV_MMTIMER
 	tristate "UV_MMTIMER Memory mapped RTC for SGI UV"
 	depends on X86_UV
 	default m
+source "drivers/char/tpm/Kconfig"
 menuconfig TCG_TPM
 	tristate "TPM Hardware Support"
 	depends on HAS_IOMEM
@@ -12631,6 +13059,8 @@ config TCG_ATMEL
 config TCG_INFINEON
 	tristate "Infineon Technologies TPM Interface"
 	depends on PNP
+endif
+endsource
 config TELCLOCK
 	tristate "Telecom clock driver for ATCA SBC"
 	depends on EXPERIMENTAL && X86
@@ -12640,6 +13070,7 @@ config DEVPORT
 	depends on !M68K
 	depends on ISA || PCI
 	default y
+source "drivers/s390/char/Kconfig"
 comment "S/390 character device drivers"
 	depends on S390
 config TN3270
@@ -12733,6 +13164,8 @@ config RAMOOPS
 	depends on HAS_IOMEM
 	default n
 endmenu
+endsource
+source "drivers/i2c/Kconfig"
 menuconfig I2C
 	tristate "I2C support"
 	depends on HAS_IOMEM
@@ -12760,6 +13193,9 @@ config I2C_DEBUG_ALGO
 	bool "I2C Algorithm debugging messages"
 config I2C_DEBUG_BUS
 	bool "I2C Bus debugging messages"
+endif
+endsource
+source "drivers/spi/Kconfig"
 menuconfig SPI
 	bool "SPI support"
 	depends on HAS_IOMEM
@@ -12940,6 +13376,10 @@ config SPI_SPIDEV
 config SPI_TLE62X0
 	tristate "Infineon TLE62X0 (for power switching)"
 	depends on SYSFS
+endif
+endif
+endsource
+source "drivers/pps/Kconfig"
 menu "PPS support"
 config PPS
 	tristate "PPS support"
@@ -12951,6 +13391,8 @@ config NTP_PPS
 	bool "PPS kernel consumer support"
 	depends on PPS && !NO_HZ
 endmenu
+endsource
+source "drivers/gpio/Kconfig"
 config ARCH_WANT_OPTIONAL_GPIOLIB
 	bool
 config ARCH_REQUIRE_GPIOLIB
@@ -13088,6 +13530,8 @@ config GPIO_JANZ_TTL
 	tristate "Janz VMOD-TTL Digital IO Module"
 	depends on MFD_JANZ_CMODIO
 endif
+endsource
+source "drivers/w1/Kconfig"
 menuconfig W1
 	tristate "Dallas's 1-wire support"
 	depends on HAS_IOMEM
@@ -13107,6 +13551,8 @@ config W1_CON
 source drivers/w1/masters/Kconfig
 source drivers/w1/slaves/Kconfig
 endif
+endsource
+source "drivers/power/Kconfig"
 menuconfig POWER_SUPPLY
 	tristate "Power supply class support"
 if POWER_SUPPLY
@@ -13193,6 +13639,9 @@ config CHARGER_TWL4030
 config CHARGER_GPIO
 	tristate "GPIO charger"
 	depends on GPIOLIB
+endif
+endsource
+source "drivers/hwmon/Kconfig"
 menuconfig HWMON
 	tristate "Hardware Monitoring support"
 	depends on HAS_IOMEM
@@ -13548,6 +13997,10 @@ config SENSORS_LIS3LV02D
 	select NEW_LEDS
 	select LEDS_CLASS
 	default n
+endif
+endif
+endsource
+source "drivers/thermal/Kconfig"
 menuconfig THERMAL
 	tristate "Generic Thermal sysfs driver"
 	depends on NET
@@ -13555,6 +14008,7 @@ config THERMAL_HWMON
 	bool "Hardware monitoring support"
 	depends on THERMAL
 	depends on HWMON=y || HWMON=THERMAL
+source "drivers/watchdog/Kconfig"
 menuconfig WATCHDOG
 	bool "Watchdog Timer Support"
 if WATCHDOG
@@ -13868,6 +14322,9 @@ config WDTPCI
 config USBPCWATCHDOG
 	tristate "Berkshire Products USB-PC Watchdog"
 	depends on USB
+endif
+endsource
+source "drivers/ssb/Kconfig"
 config SSB_POSSIBLE
 	bool
 	depends on HAS_IOMEM && HAS_DMA
@@ -13945,6 +14402,8 @@ config SSB_DRIVER_GIGE
 	bool "SSB Broadcom Gigabit Ethernet driver"
 	depends on SSB_PCIHOST_POSSIBLE && SSB_EMBEDDED && MIPS
 endmenu
+endsource
+source "drivers/mfd/Kconfig"
 menuconfig MFD_SUPPORT
 	bool "Multifunction device drivers"
 	depends on HAS_IOMEM
@@ -14209,6 +14668,7 @@ config MFD_WL1273_CORE
 	depends on I2C
 	select MFD_CORE
 	default n
+endif
 menu "Multimedia Capabilities Port drivers"
 	depends on ARCH_SA1100
 config MCP
@@ -14224,6 +14684,8 @@ config MCP_UCB1200_TS
 	tristate "Touchscreen interface support"
 	depends on MCP_UCB1200 && INPUT
 endmenu
+endsource
+source "drivers/regulator/Kconfig"
 menuconfig REGULATOR
 	bool "Voltage and Current Regulator Support"
 if REGULATOR
@@ -14326,6 +14788,8 @@ config REGULATOR_TPS6524X
 	tristate "TI TPS6524X Power regulators"
 	depends on SPI
 endif
+endsource
+source "drivers/media/Kconfig"
 menuconfig MEDIA_SUPPORT
 	tristate "Multimedia support"
 	depends on HAS_IOMEM
@@ -14345,6 +14809,7 @@ config VIDEO_MEDIA
 	tristate
 	default (DVB_CORE && (VIDEO_DEV = n)) || (VIDEO_DEV && (DVB_CORE = n)) || (DVB_CORE && VIDEO_DEV)
 comment "Multimedia drivers"
+source "drivers/media/common/Kconfig"
 config VIDEO_SAA7146
 	tristate
 	depends on I2C && PCI
@@ -14353,6 +14818,8 @@ config VIDEO_SAA7146_VV
 	depends on VIDEO_V4L2
 	select VIDEOBUF_DMA_SG
 	select VIDEO_SAA7146
+endsource
+source "drivers/media/rc/Kconfig"
 menuconfig RC_CORE
 	tristate "Remote Controller adapters"
 	depends on INPUT
@@ -14361,6 +14828,7 @@ if RC_CORE
 config LIRC
 	tristate
 	default y
+source "drivers/media/rc/keymaps/Kconfig"
 config RC_MAP
 	tristate "Compile Remote Controller keymap modules"
 	depends on RC_CORE
@@ -14433,6 +14901,9 @@ config IR_WINBOND_CIR
 config RC_LOOPBACK
 	tristate "Remote Control Loopback Driver"
 	depends on RC_CORE
+endif
+endsource
+source "drivers/media/common/tuners/Kconfig"
 config MEDIA_ATTACH
 	bool "Load and attach frontend and tuner driver modules as needed"
 	depends on VIDEO_MEDIA
@@ -14537,6 +15008,8 @@ config MEDIA_TUNER_TDA18218
 	depends on VIDEO_MEDIA && I2C
 	default m if MEDIA_TUNER_CUSTOMISE
 endmenu
+endsource
+source "drivers/media/video/Kconfig"
 config VIDEO_V4L2
 	tristate
 	depends on VIDEO_DEV && VIDEO_V4L2_COMMON
@@ -14679,6 +15152,7 @@ config VIDEO_TVP7002
 config VIDEO_VPX3220
 	tristate "vpx3220a, vpx3216b & vpx3214c video decoders"
 	depends on VIDEO_V4L2 && I2C
+source "drivers/media/video/cx25840/Kconfig"
 config VIDEO_CX25840
 	tristate "Conexant CX2584x audio/video decoders"
 	depends on VIDEO_V4L2 && I2C
@@ -14712,6 +15186,7 @@ config VIDEO_UPD64031A
 config VIDEO_UPD64083
 	tristate "NEC Electronics uPD64083 3-Dimensional Y/C separation"
 	depends on VIDEO_V4L2 && I2C
+endmenu
 config VIDEO_SH_VOU
 	tristate "SuperH VOU video output driver"
 	depends on VIDEO_DEV && ARCH_SHMOBILE
@@ -14728,6 +15203,7 @@ config VIDEO_VIVI
 	select FONT_8x16
 	select VIDEOBUF_VMALLOC
 	default n
+source "drivers/media/video/davinci/Kconfig"
 config DISPLAY_DAVINCI_DM646X_EVM
 	tristate "DM646x EVM Video Display"
 	depends on VIDEO_DEV && MACH_DAVINCI_DM6467_EVM
@@ -14765,6 +15241,7 @@ config VIDEO_ISIF
 	depends on ARCH_DAVINCI_DM365 && VIDEO_VPFE_CAPTURE
 	select VIDEO_VPSS_SYSTEM
 	default y
+source "drivers/media/video/omap/Kconfig"
 config VIDEO_OMAP2_VOUT
 	tristate "OMAP2/OMAP3 V4L2-Display driver"
 	depends on ARCH_OMAP2 || ARCH_OMAP3
@@ -14774,6 +15251,7 @@ config VIDEO_OMAP2_VOUT
 	select OMAP2_VRAM
 	select OMAP2_VRFB
 	default n
+source "drivers/media/video/bt8xx/Kconfig"
 config VIDEO_BT848
 	tristate "BT848 Video For Linux"
 	depends on VIDEO_DEV && PCI && I2C && VIDEO_V4L2
@@ -14803,6 +15281,7 @@ config VIDEO_CQCAM
 config VIDEO_W9966
 	tristate "W9966CF Webcam (FlyCam Supra and others) Video For Linux"
 	depends on PARPORT_1284 && PARPORT && VIDEO_V4L2
+source "drivers/media/video/cpia2/Kconfig"
 config VIDEO_CPIA2
 	tristate "CPiA2 Video For Linux"
 	depends on VIDEO_DEV && USB && VIDEO_V4L2
@@ -14810,6 +15289,7 @@ config VIDEO_VINO
 	tristate "SGI Vino Video For Linux (EXPERIMENTAL)"
 	depends on I2C && SGI_IP22 && EXPERIMENTAL && VIDEO_V4L2
 	select VIDEO_SAA7191 if VIDEO_HELPER_CHIPS_AUTO
+source "drivers/media/video/zoran/Kconfig"
 config VIDEO_ZORAN
 	tristate "Zoran ZR36057/36067 Video For Linux"
 	depends on PCI && I2C_ALGOBIT && VIDEO_V4L2 && VIRT_TO_BUS
@@ -14850,6 +15330,7 @@ config VIDEO_ZORAN_AVS6EYES
 config VIDEO_MEYE
 	tristate "Sony Vaio Picturebook Motion Eye Video For Linux"
 	depends on PCI && SONY_LAPTOP && VIDEO_V4L2
+source "drivers/media/video/saa7134/Kconfig"
 config VIDEO_SAA7134
 	tristate "Philips SAA7134 support"
 	depends on VIDEO_DEV && PCI && I2C
@@ -14914,6 +15395,7 @@ config VIDEO_TIMBERDALE
 	select TIMB_DMA
 	select VIDEO_ADV7180
 	select VIDEOBUF_DMA_CONTIG
+source "drivers/media/video/cx88/Kconfig"
 config VIDEO_CX88
 	tristate "Conexant 2388x (bt878 successor) support"
 	depends on VIDEO_DEV && PCI && I2C && RC_CORE
@@ -14960,6 +15442,7 @@ config VIDEO_CX88_VP3054
 	tristate "VP-3054 Secondary I2C Bus Support"
 	default m
 	depends on VIDEO_CX88_DVB && DVB_MT352
+source "drivers/media/video/cx23885/Kconfig"
 config VIDEO_CX23885
 	tristate "Conexant cx23885 (2388x successor) support"
 	depends on DVB_CORE && VIDEO_DEV && PCI && I2C && INPUT
@@ -14988,6 +15471,7 @@ config VIDEO_CX23885
 	select MEDIA_TUNER_TDA8290 if !MEDIA_TUNER_CUSTOMISE
 	select MEDIA_TUNER_TDA18271 if !MEDIA_TUNER_CUSTOMISE
 	select MEDIA_TUNER_XC5000 if !MEDIA_TUNER_CUSTOMISE
+source "drivers/media/video/au0828/Kconfig"
 config VIDEO_AU0828
 	tristate "Auvitek AU0828 support"
 	depends on I2C && INPUT && DVB_CORE && USB && VIDEO_V4L2
@@ -14998,6 +15482,7 @@ config VIDEO_AU0828
 	select MEDIA_TUNER_XC5000 if !MEDIA_TUNER_CUSTOMISE
 	select MEDIA_TUNER_MXL5007T if !MEDIA_TUNER_CUSTOMISE
 	select MEDIA_TUNER_TDA18271 if !MEDIA_TUNER_CUSTOMISE
+source "drivers/media/video/ivtv/Kconfig"
 config VIDEO_IVTV
 	tristate "Conexant cx23416/cx23415 MPEG encoder/decoder support"
 	depends on VIDEO_V4L2 && PCI && I2C
@@ -15024,6 +15509,7 @@ config VIDEO_FB_IVTV
 	select FB_CFB_FILLRECT
 	select FB_CFB_COPYAREA
 	select FB_CFB_IMAGEBLIT
+source "drivers/media/video/cx18/Kconfig"
 config VIDEO_CX18
 	tristate "Conexant cx23418 MPEG encoder support"
 	depends on VIDEO_V4L2 && DVB_CORE && PCI && I2C && EXPERIMENTAL
@@ -15039,6 +15525,7 @@ config VIDEO_CX18_ALSA
 	tristate "Conexant 23418 DMA audio support"
 	depends on VIDEO_CX18 && SND && EXPERIMENTAL
 	select SND_PCM
+source "drivers/media/video/saa7164/Kconfig"
 config VIDEO_SAA7164
 	tristate "NXP SAA7164 support"
 	depends on DVB_CORE && PCI && I2C
@@ -15161,22 +15648,27 @@ menuconfig V4L_USB_DRIVERS
 	depends on USB
 	default y
 if V4L_USB_DRIVERS && USB
+source "drivers/media/video/uvc/Kconfig"
 config USB_VIDEO_CLASS
 	tristate "USB Video Class (UVC)"
 config USB_VIDEO_CLASS_INPUT_EVDEV
 	bool "UVC input events device support"
 	default y
 	depends on USB_VIDEO_CLASS=INPUT || INPUT=y
+source "drivers/media/video/gspca/Kconfig"
 menuconfig USB_GSPCA
 	tristate "GSPCA based webcams"
 	depends on VIDEO_V4L2
 	default m
+source "drivers/media/video/gspca/m5602/Kconfig"
 config USB_M5602
 	tristate "ALi USB m5602 Camera Driver"
 	depends on VIDEO_V4L2 && USB_GSPCA
+source "drivers/media/video/gspca/stv06xx/Kconfig"
 config USB_STV06XX
 	tristate "STV06XX USB Camera Driver"
 	depends on USB_GSPCA
+source "drivers/media/video/gspca/gl860/Kconfig"
 config USB_GL860
 	tristate "GL860 USB Camera Driver"
 	depends on VIDEO_V4L2 && USB_GSPCA
@@ -15292,6 +15784,8 @@ config USB_GSPCA_ZC3XX
 	tristate "ZC3XX USB Camera Driver"
 	depends on VIDEO_V4L2 && USB_GSPCA
 endif
+endsource
+source "drivers/media/video/pvrusb2/Kconfig"
 config VIDEO_PVRUSB2
 	tristate "Hauppauge WinTV-PVR USB2 support"
 	depends on VIDEO_V4L2 && I2C
@@ -15322,9 +15816,11 @@ config VIDEO_PVRUSB2_DVB
 config VIDEO_PVRUSB2_DEBUGIFC
 	bool "pvrusb2 debug interface"
 	depends on VIDEO_PVRUSB2_SYSFS
+source "drivers/media/video/hdpvr/Kconfig"
 config VIDEO_HDPVR
 	tristate "Hauppauge HD PVR support"
 	depends on VIDEO_DEV
+source "drivers/media/video/em28xx/Kconfig"
 config VIDEO_EM28XX
 	tristate "Empia EM28xx USB video capture support"
 	depends on VIDEO_DEV && I2C
@@ -15348,6 +15844,7 @@ config VIDEO_EM28XX_DVB
 	select DVB_TDA10023 if !DVB_FE_CUSTOMISE
 	select DVB_S921 if !DVB_FE_CUSTOMISE
 	select VIDEOBUF_DVB
+source "drivers/media/video/tlg2300/Kconfig"
 config VIDEO_TLG2300
 	tristate "Telegent TLG2300 USB video capture support"
 	depends on VIDEO_DEV && I2C && SND && DVB_CORE
@@ -15357,6 +15854,7 @@ config VIDEO_TLG2300
 	select VIDEOBUF_VMALLOC
 	select SND_PCM
 	select VIDEOBUF_DVB
+source "drivers/media/video/cx231xx/Kconfig"
 config VIDEO_CX231XX
 	tristate "Conexant cx231xx USB video capture support"
 	depends on VIDEO_DEV && I2C
@@ -15382,18 +15880,22 @@ config VIDEO_CX231XX_DVB
 	select MEDIA_TUNER_XC5000 if !DVB_FE_CUSTOMISE
 	select MEDIA_TUNER_NXP18271 if !DVB_FE_CUSTOMISE
 	select DVB_MB86A20S if !DVB_FE_CUSTOMISE
+source "drivers/media/video/usbvision/Kconfig"
 config VIDEO_USBVISION
 	tristate "USB video devices based on Nogatech NT1003/1004/1005"
 	depends on I2C && VIDEO_V4L2
 	select VIDEO_TUNER
 	select VIDEO_SAA711X if VIDEO_HELPER_CHIPS_AUTO
+source "drivers/media/video/et61x251/Kconfig"
 config USB_ET61X251
 	tristate "USB ET61X[12]51 PC Camera Controller support (DEPRECATED)"
 	depends on VIDEO_V4L2
 	default n
+source "drivers/media/video/sn9c102/Kconfig"
 config USB_SN9C102
 	tristate "USB SN9C1xx PC Camera Controller support (DEPRECATED)"
 	depends on VIDEO_V4L2
+source "drivers/media/video/pwc/Kconfig"
 config USB_PWC
 	tristate "USB Philips Cameras"
 	depends on VIDEO_V4L2
@@ -15417,6 +15919,8 @@ config USB_S2255
 	depends on VIDEO_V4L2
 	select VIDEOBUF_VMALLOC
 	default n
+endif
+endif
 menuconfig V4L_MEM2MEM_DRIVERS
 	bool "Memory-to-memory multimedia devices"
 	depends on VIDEO_V4L2
@@ -15428,6 +15932,9 @@ config VIDEO_MEM2MEM_TESTDEV
 	select VIDEOBUF_VMALLOC
 	select V4L2_MEM2MEM_DEV
 	default n
+endif
+endsource
+source "drivers/media/radio/Kconfig"
 menuconfig RADIO_ADAPTERS
 	bool "Radio Adapters"
 	depends on VIDEO_V4L2
@@ -15529,6 +16036,7 @@ config USB_DSBR
 config RADIO_SI470X
 	bool "Silicon Labs Si470x FM Radio Receiver support"
 	depends on VIDEO_V4L2
+source "drivers/media/radio/si470x/Kconfig"
 config USB_SI470X
 	tristate "Silicon Labs Si470x FM Radio Receiver support with USB"
 	depends on USB && RADIO_SI470X
@@ -15562,6 +16070,9 @@ config RADIO_WL1273
 	depends on I2C && VIDEO_V4L2
 	select MFD_WL1273_CORE
 	select FW_LOADER
+endif
+endsource
+source "drivers/media/dvb/Kconfig"
 config DVB_MAX_ADAPTERS
 	int "maximum number of DVB/ATSC adapters"
 	depends on DVB_CORE
@@ -15575,6 +16086,7 @@ menuconfig DVB_CAPTURE_DRIVERS
 	bool "DVB/ATSC adapters"
 	depends on DVB_CORE
 	default y
+source "drivers/media/dvb/ttpci/Kconfig"
 config TTPCI_EEPROM
 	tristate
 	depends on I2C
@@ -15650,6 +16162,7 @@ config DVB_BUDGET_PATCH
 	select DVB_STV0299 if !DVB_FE_CUSTOMISE
 	select DVB_VES1X93 if !DVB_FE_CUSTOMISE
 	select DVB_TDA8083 if !DVB_FE_CUSTOMISE
+source "drivers/media/dvb/dvb-usb/Kconfig"
 config DVB_USB
 	tristate "Support for various USB DVB devices"
 	depends on DVB_CORE && USB && I2C && RC_CORE
@@ -15844,6 +16357,7 @@ config DVB_USB_LME2510
 	select DVB_TDA826X if !DVB_FE_CUSTOMISE
 	select DVB_STV0288 if !DVB_FE_CUSTOMISE
 	select DVB_IX2505V if !DVB_FE_CUSTOMISE
+source "drivers/media/dvb/ttusb-budget/Kconfig"
 config DVB_TTUSB_BUDGET
 	tristate "Technotrend/Hauppauge Nova-USB devices"
 	depends on DVB_CORE && USB && I2C && PCI
@@ -15854,10 +16368,12 @@ config DVB_TTUSB_BUDGET
 	select DVB_STV0299 if !DVB_FE_CUSTOMISE
 	select DVB_STV0297 if !DVB_FE_CUSTOMISE
 	select DVB_LNBP21 if !DVB_FE_CUSTOMISE
+source "drivers/media/dvb/ttusb-dec/Kconfig"
 config DVB_TTUSB_DEC
 	tristate "Technotrend/Hauppauge USB DEC devices"
 	depends on DVB_CORE && USB && INPUT && PCI
 	select CRC32
+source "drivers/media/dvb/siano/Kconfig"
 config SMS_SIANO_MDTV
 	tristate "Siano SMS1xxx based MDTV receiver"
 	depends on DVB_CORE && RC_CORE && HAS_DMA
@@ -15871,8 +16387,10 @@ config SMS_SDIO_DRV
 	depends on DVB_CORE && MMC
 endmenu
 endif
+endsource
 comment "Supported FlexCopII (B2C2) Adapters"
 	depends on DVB_CORE && (PCI || USB) && I2C
+source "drivers/media/dvb/b2c2/Kconfig"
 config DVB_B2C2_FLEXCOP
 	tristate "Technisat/B2C2 FlexCopII(b) and FlexCopIII adapters"
 	depends on DVB_CORE && I2C
@@ -15899,6 +16417,7 @@ config DVB_B2C2_FLEXCOP_USB
 config DVB_B2C2_FLEXCOP_DEBUG
 	bool "Enable debug for the B2C2 FlexCop drivers"
 	depends on DVB_B2C2_FLEXCOP
+source "drivers/media/dvb/bt8xx/Kconfig"
 config DVB_BT8XX
 	tristate "BT8xx based PCI cards"
 	depends on DVB_CORE && PCI && I2C && VIDEO_BT848
@@ -15910,11 +16429,13 @@ config DVB_BT8XX
 	select DVB_LGDT330X if !DVB_FE_CUSTOMISE
 	select DVB_ZL10353 if !DVB_FE_CUSTOMISE
 	select MEDIA_TUNER_SIMPLE if !MEDIA_TUNER_CUSTOMISE
+source "drivers/media/dvb/pluto2/Kconfig"
 config DVB_PLUTO2
 	tristate "Pluto2 cards"
 	depends on DVB_CORE && PCI && I2C
 	select I2C_ALGOBIT
 	select DVB_TDA1004X
+source "drivers/media/dvb/dm1105/Kconfig"
 config DVB_DM1105
 	tristate "SDMC DM1105 based PCI cards"
 	depends on DVB_CORE && PCI && I2C
@@ -15926,6 +16447,7 @@ config DVB_DM1105
 	select DVB_SI21XX if !DVB_FE_CUSTOMISE
 	select DVB_DS3000 if !DVB_FE_CUSTOMISE
 	depends on RC_CORE
+source "drivers/media/dvb/firewire/Kconfig"
 config DVB_FIREDTV
 	tristate "FireDTV and FloppyDTV"
 	depends on DVB_CORE && (FIREWIRE || IEEE1394)
@@ -15937,11 +16459,14 @@ config DVB_FIREDTV_IEEE1394
 config DVB_FIREDTV_INPUT
 	def_bool INPUT = y || (INPUT = m && DVB_FIREDTV = m)
 endif
+endsource
 comment "Supported Earthsoft PT1 Adapters"
 	depends on DVB_CORE && PCI && I2C
+source "drivers/media/dvb/pt1/Kconfig"
 config DVB_PT1
 	tristate "PT1 cards"
 	depends on DVB_CORE && PCI && I2C
+	source "drivers/media/dvb/mantis/Kconfig"
 config MANTIS_CORE
 	tristate "Mantis/Hopper PCI bridge based devices"
 	depends on PCI && I2C && INPUT && RC_CORE
@@ -15963,6 +16488,7 @@ config DVB_HOPPER
 	depends on MANTIS_CORE && DVB_CORE && PCI && I2C
 	select DVB_ZL10353 if !DVB_FE_CUSTOMISE
 	select DVB_PLL
+	source "drivers/media/dvb/ngene/Kconfig"
 config DVB_NGENE
 	tristate "Micronas nGene support"
 	depends on DVB_CORE && PCI && I2C
@@ -15971,6 +16497,7 @@ config DVB_NGENE
 	select DVB_STV090x if !DVB_FE_CUSTOMISE
 	select DVB_LGDT330X if !DVB_FE_CUSTOMISE
 	select MEDIA_TUNER_MT2131 if !MEDIA_TUNER_CUSTOMISE
+source "drivers/media/dvb/frontends/Kconfig"
 config DVB_FE_CUSTOMISE
 	bool "Customise the frontend modules to build"
 	depends on DVB_CORE
@@ -16276,8 +16803,12 @@ config DVB_DUMMY_FE
 	tristate "Dummy frontend driver"
 	default n
 endmenu
+endsource
 endif
+endsource
 endif
+endsource
+source "drivers/video/Kconfig"
 menu "Graphics support"
 	depends on HAS_IOMEM
 config HAVE_FB_ATMEL
@@ -16289,6 +16820,7 @@ config SH_MIPI_DSI
 	depends on (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
 config SH_LCD_MIPI_DSI
 	bool
+source "drivers/char/agp/Kconfig"
 menuconfig AGP
 	tristate "/dev/agpgart (AGP Support)"
 	depends on ALPHA || IA64 || PARISC || PPC || X86
@@ -16342,6 +16874,7 @@ config AGP_EFFICEON
 config AGP_SGI_TIOCA
         tristate "SGI TIO chipset AGP support"
         depends on AGP && (IA64_SGI_SN2 || IA64_GENERIC)
+source "drivers/gpu/vga/Kconfig"
 config VGA_ARB
 	bool "VGA Arbitration" if EXPERT
 	default y
@@ -16354,6 +16887,7 @@ config VGA_SWITCHEROO
 	bool "Laptop Hybrid Graphics - GPU switching support"
 	depends on X86
 	depends on ACPI
+source "drivers/gpu/drm/Kconfig"
 menuconfig DRM
 	tristate "Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)"
 	depends on (AGP || AGP=n) && !EMULATED_CMPXCHG && MMU
@@ -16386,6 +16920,7 @@ config DRM_RADEON
         select DRM_TTM
 	select POWER_SUPPLY
 	select HWMON
+source "drivers/gpu/drm/radeon/Kconfig"
 config DRM_RADEON_KMS
 	bool "Enable modesetting on radeon by default - NEW DRIVER"
 	depends on DRM_RADEON
@@ -16436,6 +16971,7 @@ config DRM_VIA
 config DRM_SAVAGE
 	tristate "Savage video cards"
 	depends on DRM && PCI
+source "drivers/gpu/stub/Kconfig"
 config STUB_POULSBO
 	tristate "Intel GMA500 Stub Driver"
 	depends on PCI
@@ -17275,6 +17811,7 @@ config FB_WM8505
 	depends on (FB = y) && ARM && ARCH_VT8500 && VTWM_VERSION_WM8505
 	select FB_WMT_GE_ROPS
 	select FB_SYS_IMAGEBLIT
+source "drivers/video/geode/Kconfig"
 config FB_GEODE
 	bool "AMD Geode family framebuffer support (EXPERIMENTAL)"
 	depends on FB && PCI && EXPERIMENTAL && X86
@@ -17586,6 +18123,7 @@ config FB_JZ4740
 	select FB_SYS_FILLRECT
 	select FB_SYS_COPYAREA
 	select FB_SYS_IMAGEBLIT
+source "drivers/video/omap/Kconfig"
 config FB_OMAP
 	tristate "OMAP frame buffer support (EXPERIMENTAL)"
 	depends on FB && (OMAP2_DSS = "n")
@@ -17635,10 +18173,12 @@ config FB_OMAP_CONSISTENT_DMA_SIZE
 config FB_OMAP_DMA_TUNE
         bool "Set DMA SDRAM access priority high"
         depends on FB_OMAP && ARCH_OMAP1
+source "drivers/video/omap2/Kconfig"
 config OMAP2_VRAM
 	bool
 config OMAP2_VRFB
 	bool
+source "drivers/video/omap2/dss/Kconfig"
 menuconfig OMAP2_DSS
         tristate "OMAP2/3 Display Subsystem support (EXPERIMENTAL)"
         depends on ARCH_OMAP2 || ARCH_OMAP3
@@ -17683,6 +18223,8 @@ config OMAP2_DSS_MIN_FCK_PER_PCK
 	range 0 32
 	default 0
 endif
+endsource
+source "drivers/video/omap2/omapfb/Kconfig"
 menuconfig FB_OMAP2
         tristate "OMAP2/3 frame buffer support (EXPERIMENTAL)"
         depends on FB && OMAP2_DSS
@@ -17700,6 +18242,7 @@ config FB_OMAP2_NUM_FBS
 	range 1 10
 	default 3
 	depends on FB_OMAP2
+source "drivers/video/omap2/displays/Kconfig"
 menu "OMAP2/3 Display Device Drivers"
         depends on OMAP2_DSS
 config PANEL_GENERIC_DPI
@@ -17722,6 +18265,9 @@ config PANEL_ACX565AKM
 	depends on OMAP2_DSS_SDI && SPI
 	select BACKLIGHT_CLASS_DEVICE
 endmenu
+endsource
+endsource
+source "drivers/video/backlight/Kconfig"
 menuconfig BACKLIGHT_LCD_SUPPORT
 	bool "Backlight & LCD device support"
 if BACKLIGHT_LCD_SUPPORT
@@ -17763,6 +18309,7 @@ config LCD_S6E63M0
 	tristate "S6E63M0 AMOLED LCD Driver"
 	depends on SPI && BACKLIGHT_CLASS_DEVICE
 	default n
+endif
 config BACKLIGHT_CLASS_DEVICE
         tristate "Lowlevel Backlight controls"
 	default m
@@ -17841,11 +18388,17 @@ config BACKLIGHT_88PM860X
 config BACKLIGHT_PCF50633
 	tristate "Backlight driver for NXP PCF50633 MFD"
 	depends on BACKLIGHT_CLASS_DEVICE && MFD_PCF50633
+endif
+endif
+endsource
+source "drivers/video/display/Kconfig"
 menu "Display device support"
 config DISPLAY_SUPPORT
 	tristate "Display panel/monitor support"
 endmenu
+endsource
 if VT
+	source "drivers/video/console/Kconfig"
 menu "Console display driver support"
 config VGA_CONSOLE
 	bool "VGA text console" if EXPERT || !X86
@@ -17932,8 +18485,10 @@ config FONT_10x18
 	bool "console 10x18 font (not supported by all drivers)" if FONTS
 	depends on FRAMEBUFFER_CONSOLE
 endmenu
+endsource
 endif
 if FB || SGI_NEWPORT_CONSOLE
+	source "drivers/video/logo/Kconfig"
 menuconfig LOGO
 	bool "Bootup logo"
 	depends on FB || SGI_NEWPORT_CONSOLE
@@ -17996,8 +18551,11 @@ config LOGO_M32R_CLUT224
 	depends on M32R
 	default y
 endif
+endsource
 endif
 endmenu
+endsource
+source "sound/Kconfig"
 menuconfig SOUND
 	tristate "Sound card support"
 	depends on HAS_IOMEM
@@ -18009,6 +18567,7 @@ config SOUND_OSS_CORE_PRECLAIM
 	bool "Preclaim OSS device numbers"
 	depends on SOUND_OSS_CORE
 	default y
+source "sound/oss/dmasound/Kconfig"
 config DMASOUND_ATARI
 	tristate "Atari DMA sound support"
 	depends on ATARI && SOUND
@@ -18024,10 +18583,12 @@ config DMASOUND_Q40
 config DMASOUND
 	tristate
 	select SOUND_OSS_CORE
+endsource
 if !M68K
 menuconfig SND
 	tristate "Advanced Linux Sound Architecture"
 if SND
+source "sound/core/Kconfig"
 config SND_TIMER
 	tristate
 config SND_PCM
@@ -18106,6 +18667,7 @@ config SND_VMASTER
 config SND_DMA_SGBUF
 	def_bool y
 	depends on X86
+source "sound/core/seq/Kconfig"
 config SND_RAWMIDI_SEQ
 	def_tristate SND_SEQUENCER && SND_RAWMIDI
 config SND_OPL3_LIB_SEQ
@@ -18116,6 +18678,9 @@ config SND_SBAWE_SEQ
 	def_tristate SND_SEQUENCER && SND_SBAWE
 config SND_EMU10K1_SEQ
 	def_tristate SND_SEQUENCER && SND_EMU10K1
+endsource
+endsource
+source "sound/drivers/Kconfig"
 config SND_MPU401_UART
         tristate
         select SND_RAWMIDI
@@ -18186,6 +18751,9 @@ config SND_AC97_POWER_SAVE_DEFAULT
 	int "Default time-out for AC97 power-save mode"
 	depends on SND_AC97_POWER_SAVE
 	default 0
+endif
+endsource
+source "sound/isa/Kconfig"
 config SND_WSS_LIB
         tristate
         select SND_PCM
@@ -18372,6 +18940,9 @@ config SND_MSND_CLASSIC
 	select FW_LOADER
 	select SND_MPU401_UART
 	select SND_PCM
+endif
+endsource
+source "sound/pci/Kconfig"
 menuconfig SND_PCI
 	bool "PCI sound devices"
 	depends on PCI
@@ -18580,6 +19151,7 @@ config SND_FM801_TEA575X
 	tristate
 	depends on SND_FM801_TEA575X_BOOL
 	default SND_FM801
+source "sound/pci/hda/Kconfig"
 menuconfig SND_HDA_INTEL
 	tristate "Intel HD Audio"
 	select SND_PCM
@@ -18652,6 +19224,7 @@ config SND_HDA_POWER_SAVE_DEFAULT
 	depends on SND_HDA_POWER_SAVE
 	default 0
 endif
+endsource
 config SND_HDSP
 	tristate "RME Hammerfall DSP Audio"
 	select SND_HWDEP
@@ -18751,6 +19324,9 @@ config SND_YMFPCI
 	select SND_OPL3_LIB
 	select SND_MPU401_UART
 	select SND_AC97_CODEC
+endif
+endsource
+source "sound/ppc/Kconfig"
 menuconfig SND_PPC
 	bool "PowerPC sound devices"
 	depends on PPC
@@ -18775,15 +19351,19 @@ config SND_PS3_DEFAULT_START_DELAY
 	depends on SND_PS3
 	default "2000"
 endif
+endsource
+source "sound/aoa/Kconfig"
 menuconfig SND_AOA
 	tristate "Apple Onboard Audio driver"
 	depends on PPC_PMAC
 	select SND_PCM
 if SND_AOA
+source "sound/aoa/fabrics/Kconfig"
 config SND_AOA_FABRIC_LAYOUT
 	tristate "layout-id fabric"
 	select SND_AOA_SOUNDBUS
 	select SND_AOA_SOUNDBUS_I2S
+source "sound/aoa/codecs/Kconfig"
 config SND_AOA_ONYX
 	tristate "support Onyx chip"
 	select I2C
@@ -18794,12 +19374,16 @@ config SND_AOA_TAS
 	select I2C_POWERMAC
 config SND_AOA_TOONIE
 	tristate "support Toonie chip"
+source "sound/aoa/soundbus/Kconfig"
 config SND_AOA_SOUNDBUS
 	tristate "Apple Soundbus support"
 	select SND_PCM
 config SND_AOA_SOUNDBUS_I2S
 	tristate "I2S bus support"
 	depends on SND_AOA_SOUNDBUS && PCI
+endif
+endsource
+source "sound/arm/Kconfig"
 menuconfig SND_ARM
 	bool "ARM sound devices"
 	depends on ARM
@@ -18825,6 +19409,9 @@ config SND_PXA2XX_AC97
 	select SND_AC97_CODEC
 	select SND_PXA2XX_LIB
 	select SND_PXA2XX_LIB_AC97
+endif
+endsource
+source "sound/atmel/Kconfig"
 menu "Atmel devices (AVR32 and AT91)"
 	depends on AVR32 || ARCH_AT91
 config SND_ATMEL_ABDAC
@@ -18837,6 +19424,8 @@ config SND_ATMEL_AC97C
 	select SND_AC97_CODEC
 	depends on (DW_DMAC && AVR32) || ARCH_AT91
 endmenu
+endsource
+source "sound/spi/Kconfig"
 menuconfig SND_SPI
 	bool "SPI sound devices"
 	depends on SPI
@@ -18851,6 +19440,9 @@ config SND_AT73C213_TARGET_BITRATE
 	depends on SND_AT73C213
 	default "48000"
 	range 8000 50000
+endif
+endsource
+source "sound/mips/Kconfig"
 menuconfig SND_MIPS
 	bool "MIPS sound devices"
 	depends on MIPS
@@ -18867,6 +19459,9 @@ config SND_AU1X00
 	depends on SOC_AU1000 || SOC_AU1100 || SOC_AU1500
 	select SND_PCM
 	select SND_AC97_CODEC
+endif
+endsource
+source "sound/sh/Kconfig"
 menuconfig SND_SUPERH
 	bool "SUPERH sound devices"
 	depends on SUPERH
@@ -18882,6 +19477,9 @@ config SND_SH_DAC_AUDIO
 	depends on SND
 	depends on CPU_SH3 && HIGH_RES_TIMERS
 	select SND_PCM
+endif
+endsource
+source "sound/usb/Kconfig"
 menuconfig SND_USB
 	bool "USB sound devices"
 	depends on USB
@@ -18915,6 +19513,9 @@ config SND_USB_US122L
 	depends on X86 && EXPERIMENTAL
 	select SND_HWDEP
 	select SND_RAWMIDI
+endif
+endsource
+source "sound/pcmcia/Kconfig"
 menuconfig SND_PCMCIA
 	bool "PCMCIA sound devices"
 	depends on PCMCIA
@@ -18925,6 +19526,9 @@ config SND_VXPOCKET
 config SND_PDAUDIOCF
 	tristate "Sound Core PDAudioCF"
 	select SND_PCM
+endif
+endsource
+source "sound/sparc/Kconfig"
 menuconfig SND_SPARC
 	bool "Sparc sound devices"
 	depends on SPARC
@@ -18941,6 +19545,9 @@ config SND_SUN_DBRI
 	tristate "Sun DBRI"
 	depends on SBUS
 	select SND_PCM
+endif
+endsource
+source "sound/parisc/Kconfig"
 menuconfig SND_GSC
 	bool "GSC sound devices"
 	depends on GSC
@@ -18949,6 +19556,9 @@ if SND_GSC
 config SND_HARMONY
 	tristate "Harmony/Vivace sound chip"
 	select SND_PCM
+endif
+endsource
+source "sound/soc/Kconfig"
 menuconfig SND_SOC
 	tristate "ALSA for SoC audio support"
 	select SND_PCM
@@ -18961,6 +19571,7 @@ config SND_SOC_CACHE_LZO
 	select LZO_DECOMPRESS
 config SND_SOC_AC97_BUS
 	bool
+source "sound/soc/atmel/Kconfig"
 config SND_ATMEL_SOC
 	tristate "SoC Audio for the Atmel System-on-Chip"
 	depends on ARCH_AT91 || AVR32
@@ -18987,6 +19598,7 @@ config SND_AT91_SOC_AFEB9260
 	depends on ARCH_AT91 && MACH_AFEB9260 && SND_ATMEL_SOC
 	select SND_ATMEL_SOC_SSC
 	select SND_SOC_TLV320AIC23
+source "sound/soc/au1x/Kconfig"
 config SND_SOC_AU1XPSC
 	tristate "SoC Audio for Au1200/Au1250/Au1550"
 	depends on SOC_AU1200 || SOC_AU1550
@@ -19004,6 +19616,7 @@ config SND_SOC_DB1200
 	select SND_SOC_AC97_CODEC
 	select SND_SOC_AU1XPSC_I2S
 	select SND_SOC_WM8731
+source "sound/soc/blackfin/Kconfig"
 config SND_BF5XX_I2S
 	tristate "SoC I2S Audio for the ADI BF5xx chip"
 	depends on BLACKFIN
@@ -19083,6 +19696,7 @@ config SND_BF5XX_SPORT_NUM
 	range 0 3 if BF54x
 	range 0 1 if !BF54x
 	default 0
+source "sound/soc/davinci/Kconfig"
 config SND_DAVINCI_SOC
 	tristate "SoC Audio for the TI DAVINCI chip"
 	depends on ARCH_DAVINCI
@@ -19123,6 +19737,7 @@ config SND_DAVINCI_SOC_SFFSDR
 	select SND_DAVINCI_SOC_I2S
 	select SND_SOC_PCM3008
 	select SFFSDR_FPGA
+source "sound/soc/ep93xx/Kconfig"
 config SND_EP93XX_SOC
 	tristate "SoC Audio support for the Cirrus Logic EP93xx series"
 	depends on ARCH_EP93XX && SND_SOC
@@ -19142,6 +19757,7 @@ config SND_EP93XX_SOC_SIMONE
 	depends on SND_EP93XX_SOC && MACH_SIM_ONE
 	select SND_EP93XX_SOC_AC97
 	select SND_SOC_AC97_CODEC
+source "sound/soc/fsl/Kconfig"
 config SND_MPC52xx_DMA
 	tristate
 config SND_SOC_POWERPC_SSI
@@ -19183,6 +19799,7 @@ config SND_MPC52xx_SOC_EFIKA
 	depends on PPC_EFIKA
 	select SND_SOC_MPC5200_AC97
 	select SND_SOC_STAC9766
+source "sound/soc/imx/Kconfig"
 menuconfig SND_IMX_SOC
 	tristate "SoC Audio for Freescale i.MX CPUs"
 	depends on ARCH_MXC
@@ -19216,6 +19833,9 @@ config SND_SOC_EUKREA_TLV320
 	select SND_SOC_TLV320AIC23
 	select SND_MXC_SOC_SSI
 	select SND_MXC_SOC_FIQ
+endif
+endsource
+source "sound/soc/jz4740/Kconfig"
 config SND_JZ4740_SOC
 	tristate "SoC Audio for Ingenic JZ4740 SoC"
 	depends on MACH_JZ4740 && SND_SOC
@@ -19227,6 +19847,7 @@ config SND_JZ4740_SOC_QI_LB60
 	depends on SND_JZ4740_SOC && JZ4740_QI_LB60
 	select SND_JZ4740_SOC_I2S
     select SND_SOC_JZ4740_CODEC
+source "sound/soc/nuc900/Kconfig"
 config SND_SOC_NUC900
 	tristate "SoC Audio for NUC900 series"
 	depends on ARCH_W90X900
@@ -19240,6 +19861,7 @@ config SND_SOC_NUC900EVB
 	depends on SND_SOC_NUC900
 	select SND_SOC_NUC900_AC97
 	select SND_SOC_AC97_CODEC
+source "sound/soc/omap/Kconfig"
 config SND_OMAP_SOC
 	tristate "SoC Audio for the Texas Instruments OMAP chips"
 	depends on ARCH_OMAP
@@ -19321,6 +19943,7 @@ config SND_OMAP_SOC_IGEP0020
 	depends on TWL4030_CORE && SND_OMAP_SOC && MACH_IGEP0020
 	select SND_OMAP_SOC_MCBSP
 	select SND_SOC_TWL4030
+source "sound/soc/kirkwood/Kconfig"
 config SND_KIRKWOOD_SOC
 	tristate "SoC Audio for the Marvell Kirkwood chip"
 	depends on ARCH_KIRKWOOD
@@ -19336,6 +19959,7 @@ config SND_KIRKWOOD_SOC_T5325
 	depends on SND_KIRKWOOD_SOC && MACH_T5325
 	select SND_KIRKWOOD_SOC_I2S
 	select SND_SOC_ALC5623
+source "sound/soc/pxa/Kconfig"
 config SND_PXA2XX_SOC
 	tristate "SoC Audio for the Intel PXA2xx chip"
 	depends on ARCH_PXA
@@ -19446,6 +20070,7 @@ config SND_PXA2XX_SOC_IMOTE2
        depends on SND_PXA2XX_SOC && MACH_INTELMOTE2 && I2C
        select SND_PXA2XX_SOC_I2S
        select SND_SOC_WM8940
+source "sound/soc/samsung/Kconfig"
 config SND_SOC_SAMSUNG
 	tristate "ASoC support for Samsung"
 	depends on ARCH_S3C2410 || ARCH_S3C64XX || ARCH_S5PC100 || ARCH_S5PV210 || ARCH_S5P64X0 || ARCH_S5P6442 || ARCH_S5PV310
@@ -19558,6 +20183,7 @@ config SND_SOC_SAMSUNG_SMDK_SPDIF
 	tristate "SoC S/PDIF Audio support for SMDK"
 	depends on SND_SOC_SAMSUNG && (MACH_SMDKC100 || MACH_SMDKC110 || MACH_SMDKV210)
 	select SND_SAMSUNG_SPDIF
+source "sound/soc/s6000/Kconfig"
 config SND_S6000_SOC
 	tristate "SoC Audio for the Stretch s6000 family"
 	depends on XTENSA_VARIANT_S6000
@@ -19568,6 +20194,7 @@ config SND_S6000_SOC_S6IPCAM
 	depends on SND_S6000_SOC && XTENSA_PLATFORM_S6105
 	select SND_S6000_SOC_I2S
 	select SND_SOC_TLV320AIC3X
+source "sound/soc/sh/Kconfig"
 menu "SoC Audio support for SuperH"
 	depends on SUPERH || ARCH_SHMOBILE
 config SND_SOC_PCM_SH7760
@@ -19610,6 +20237,8 @@ config SND_SIU_MIGOR
 	select SND_SOC_SH4_SIU
 	select SND_SOC_WM8978
 endmenu
+endsource
+source "sound/soc/txx9/Kconfig"
 config SND_SOC_TXX9ACLC
 	tristate "SoC Audio for TXx9"
 	depends on HAS_TXX9_ACLC && TXX9_DMAC
@@ -19625,6 +20254,7 @@ config SND_SOC_TXX9ACLC_GENERIC
 	depends on SND_SOC_TXX9ACLC
 	select SND_SOC_TXX9ACLC_AC97
 	select SND_SOC_AC97_CODEC
+source "sound/soc/codecs/Kconfig"
 config SND_SOC_I2C_AND_SPI
 	tristate
 	default m if I2C=m
@@ -19866,12 +20496,15 @@ config SND_SOC_WM2000
 	tristate
 config SND_SOC_WM9090
 	tristate
+endsource
 endif
+endsource
 endif
 menuconfig SOUND_PRIME
 	tristate "Open Sound System (DEPRECATED)"
 	select SOUND_OSS_CORE
 if SOUND_PRIME
+source "sound/oss/Kconfig"
 config SOUND_BCM_CS4297A
 	tristate "Crystal Sound CS4297a (for Swarm)"
 	depends on SIBYTE_SWARM
@@ -20045,11 +20678,13 @@ config SOUND_KAHLUA
 	tristate "XpressAudio Sound Blaster emulation"
 	depends on SOUND_SB
 endif
+endsource
 endif
 endif
 endif
 config AC97_BUS
 	tristate
+source "drivers/hid/Kconfig"
 menuconfig HID_SUPPORT
 	bool "HID Devices"
 	depends on INPUT
@@ -20062,6 +20697,9 @@ config HID
 config HIDRAW
 	bool "/dev/hidraw raw HID device support"
 	depends on HID
+source "drivers/hid/usbhid/Kconfig"
+comment "USB Input Devices"
+	depends on USB
 config USB_HID
 	tristate "USB Human Interface Device (full HID) support"
 	default y
@@ -20081,6 +20719,7 @@ config USB_MOUSE
 	tristate "USB HIDBP Mouse (simple Boot) support"
 	depends on USB && INPUT
 endmenu
+endsource
 menu "Special HID drivers"
 	depends on HID
 config HID_3M_PCT
@@ -20316,6 +20955,8 @@ config HID_ZYDACRON
 	depends on USB_HID
 endmenu
 endif
+endsource
+source "drivers/usb/Kconfig"
 menuconfig USB_SUPPORT
 	bool "USB support"
 	depends on HAS_IOMEM
@@ -20374,6 +21015,7 @@ config USB
 	tristate "Support for Host-side USB"
 	depends on USB_ARCH_HAS_HCD
 select NLS
+source "drivers/usb/core/Kconfig"
 config USB_DEBUG
 	bool "USB verbose debug messages"
 	depends on USB
@@ -20407,9 +21049,11 @@ config USB_OTG_WHITELIST
 config USB_OTG_BLACKLIST_HUB
 	bool "Disable external hubs"
 	depends on USB_OTG || EXPERT
+source "drivers/usb/mon/Kconfig"
 config USB_MON
 	tristate "USB Monitor"
 	depends on USB
+source "drivers/usb/wusbcore/Kconfig"
 config USB_WUSB
 	tristate "Enable Wireless USB extensions (EXPERIMENTAL)"
 	depends on EXPERIMENTAL
@@ -20426,6 +21070,9 @@ config USB_WUSB_CBAF
 config USB_WUSB_CBAF_DEBUG
 	bool "Enable CBA debug messages"
 	depends on USB_WUSB_CBAF
+source "drivers/usb/host/Kconfig"
+comment "USB Host Controller Drivers"
+	depends on USB
 config USB_C67X00_HCD
 	tristate "Cypress C67x00 HCD support"
 	depends on USB
@@ -20617,6 +21264,8 @@ config USB_OCTEON_OHCI
 config USB_OCTEON2_COMMON
 	bool
 	default y if USB_OCTEON_EHCI || USB_OCTEON_OHCI
+endsource
+source "drivers/usb/musb/Kconfig"
 comment "Enable Host or Gadget support to see Inventra options"
 	depends on !USB && USB_GADGET=n
 config USB_MUSB_HDRC
@@ -20694,6 +21343,9 @@ config USB_TUSB_OMAP_DMA
 	depends on USB_MUSB_TUSB6010
 	depends on ARCH_OMAP
 	default y
+source "drivers/usb/class/Kconfig"
+comment "USB Device Class drivers"
+	depends on USB
 config USB_ACM
 	tristate "USB Modem (CDC ACM) support"
 	depends on USB
@@ -20705,6 +21357,10 @@ config USB_WDM
 	depends on USB
 config USB_TMC
 	tristate "USB Test and Measurement Class support"
+	depends on USB
+source "drivers/usb/storage/Kconfig"
+comment "NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may"
+comment "also be needed; see USB_STORAGE Help for more info"
 	depends on USB
 config USB_STORAGE
 	tristate "USB Mass Storage support"
@@ -20752,6 +21408,9 @@ config USB_UAS
 config USB_LIBUSUAL
 	bool "The shared table of common (or usual) storage devices"
 	depends on USB
+source "drivers/usb/image/Kconfig"
+comment "USB Imaging devices"
+	depends on USB
 config USB_MDC800
 	tristate "USB Mustek MDC800 Digital Camera support"
 	depends on USB
@@ -20762,6 +21421,7 @@ config USB_USS720
 	tristate "USS720 parport driver"
 	depends on USB && PARPORT
 	select PARPORT_NOT_PC
+source "drivers/usb/serial/Kconfig"
 menuconfig USB_SERIAL
 	tristate "USB Serial Converter support"
 	depends on USB
@@ -20923,6 +21583,11 @@ config USB_SERIAL_SSU100
 	tristate "USB Quatech SSU-100 Single Port Serial Driver"
 config USB_SERIAL_DEBUG
 	tristate "USB Debugging Device"
+endif
+endsource
+source "drivers/usb/misc/Kconfig"
+comment "USB Miscellaneous drivers"
+	depends on USB
 config USB_EMI62
 	tristate "EMI 6|2m USB Audio interface support"
 	depends on USB
@@ -20965,6 +21630,7 @@ config USB_APPLEDISPLAY
 	depends on USB
 	select BACKLIGHT_LCD_SUPPORT
 	select BACKLIGHT_CLASS_DEVICE
+source "drivers/usb/misc/sisusbvga/Kconfig"
 config USB_SISUSBVGA
 	tristate "USB 2.0 SVGA dongle support (Net2280/SiS315)"
 	depends on USB && (USB_MUSB_HDRC || USB_EHCI_HCD)
@@ -20991,6 +21657,7 @@ config USB_ISIGHTFW
 config USB_YUREX
 	tristate "USB YUREX driver support"
 	depends on USB
+source "drivers/usb/atm/Kconfig"
 menuconfig USB_ATM
 	tristate "USB DSL modem support"
 	depends on USB && ATM
@@ -21008,6 +21675,9 @@ config USB_UEAGLEATM
 	select FW_LOADER
 config USB_XUSBATM
 	tristate "Other USB DSL modem support"
+endif
+endsource
+source "drivers/usb/gadget/Kconfig"
 menuconfig USB_GADGET
 	tristate "USB Gadget Support"
 if USB_GADGET
@@ -21342,6 +22012,8 @@ config USB_G_WEBCAM
 	depends on VIDEO_DEV
 endchoice
 endif
+endsource
+source "drivers/usb/otg/Kconfig"
 comment "OTG and related infrastructure"
 config USB_OTG_UTILS
 	bool
@@ -21381,6 +22053,11 @@ config AB8500_USB
         tristate "AB8500 USB Transceiver Driver"
         depends on AB8500_CORE
         select USB_OTG_UTILS
+endif
+endsource
+endif
+endsource
+source "drivers/uwb/Kconfig"
 menuconfig UWB
 	tristate "Ultra Wideband devices (EXPERIMENTAL)"
 	depends on EXPERIMENTAL
@@ -21397,6 +22074,9 @@ config UWB_I1480U
         tristate "Support for Intel Wireless UWB Link 1480 HWA"
         depends on UWB_HWA
         select FW_LOADER
+endif
+endsource
+source "drivers/mmc/Kconfig"
 menuconfig MMC
 	tristate "MMC/SD/SDIO card support"
 	depends on HAS_IOMEM
@@ -21404,11 +22084,14 @@ config MMC_DEBUG
 	bool "MMC debugging"
 	depends on MMC != n
 if MMC
+source "drivers/mmc/core/Kconfig"
 config MMC_UNSAFE_RESUME
 	bool "Assume MMC/SD cards are non-removable (DANGEROUS)"
 config MMC_CLKGATE
 	bool "MMC host clock gating (EXPERIMENTAL)"
 	depends on EXPERIMENTAL
+source "drivers/mmc/card/Kconfig"
+comment "MMC/SD/SDIO Card Drivers"
 config MMC_BLOCK
 	tristate "MMC block device driver"
 	depends on BLOCK
@@ -21427,6 +22110,8 @@ config SDIO_UART
 config MMC_TEST
 	tristate "MMC host test driver"
 	default n
+source "drivers/mmc/host/Kconfig"
+comment "MMC/SD/SDIO Host Controller Drivers"
 config MMC_ARMMMCI
 	tristate "ARM AMBA Multimedia Card Interface support"
 	depends on ARM_AMBA
@@ -21598,16 +22283,23 @@ config MMC_JZ4740
 config MMC_USHC
 	tristate "USB SD Host Controller (USHC) support"
 	depends on USB
+endif
+endsource
+source "drivers/memstick/Kconfig"
 menuconfig MEMSTICK
 	tristate "Sony MemoryStick card support (EXPERIMENTAL)"
 if MEMSTICK
 config MEMSTICK_DEBUG
 	bool "MemoryStick debugging"
+source "drivers/memstick/core/Kconfig"
+comment "MemoryStick drivers"
 config MEMSTICK_UNSAFE_RESUME
         bool "Allow unsafe resume (DANGEROUS)"
 config MSPRO_BLOCK
 	tristate "MemoryStick Pro block device driver"
 	depends on BLOCK
+source "drivers/memstick/host/Kconfig"
+comment "MemoryStick Host Controller Drivers"
 config MEMSTICK_TIFM_MS
 	tristate "TI Flash Media MemoryStick Interface support  (EXPERIMENTAL)"
 	depends on EXPERIMENTAL && PCI
@@ -21615,6 +22307,9 @@ config MEMSTICK_TIFM_MS
 config MEMSTICK_JMICRON_38X
 	tristate "JMicron JMB38X MemoryStick interface support (EXPERIMENTAL)"
 	depends on EXPERIMENTAL && PCI
+endif
+endsource
+source "drivers/leds/Kconfig"
 menuconfig NEW_LEDS
 	bool "LED Support"
 config LEDS_CLASS
@@ -21803,6 +22498,9 @@ config LEDS_TRIGGER_GPIO
 config LEDS_TRIGGER_DEFAULT_ON
 	tristate "LED Default ON Trigger"
 	depends on LEDS_TRIGGERS
+endif
+endsource
+source "drivers/nfc/Kconfig"
 menuconfig NFC_DEVICES
 	bool "NFC devices"
 	default n
@@ -21812,6 +22510,9 @@ config PN544_NFC
 	depends on I2C
 	select CRC_CCITT
 	default n
+endif
+endsource
+source "drivers/accessibility/Kconfig"
 menuconfig ACCESSIBILITY
 	bool "Accessibility support"
 if ACCESSIBILITY
@@ -21819,6 +22520,9 @@ config A11Y_BRAILLE_CONSOLE
 	bool "Console on braille device"
 	depends on VT
 	depends on SERIAL_CORE_CONSOLE
+endif
+endsource
+source "drivers/infiniband/Kconfig"
 menuconfig INFINIBAND
 	tristate "InfiniBand support"
 	depends on PCI || BROKEN
@@ -21839,6 +22543,7 @@ config INFINIBAND_ADDR_TRANS
 	depends on INET
 	depends on !(INFINIBAND = y && IPV6 = m)
 	default y
+source "drivers/infiniband/hw/mthca/Kconfig"
 config INFINIBAND_MTHCA
 	tristate "Mellanox HCA support"
 	depends on PCI
@@ -21846,15 +22551,19 @@ config INFINIBAND_MTHCA_DEBUG
 	bool "Verbose debugging output" if EXPERT
 	depends on INFINIBAND_MTHCA
 	default y
+source "drivers/infiniband/hw/ipath/Kconfig"
 config INFINIBAND_IPATH
 	tristate "QLogic HTX HCA support"
 	depends on 64BIT && NET && HT_IRQ
+source "drivers/infiniband/hw/qib/Kconfig"
 config INFINIBAND_QIB
 	tristate "QLogic PCIe HCA support"
 	depends on 64BIT && NET
+source "drivers/infiniband/hw/ehca/Kconfig"
 config INFINIBAND_EHCA
 	tristate "eHCA support"
 	depends on IBMEBUS
+source "drivers/infiniband/hw/amso1100/Kconfig"
 config INFINIBAND_AMSO1100
 	tristate "Ammasso 1100 HCA support"
 	depends on PCI && INET
@@ -21862,6 +22571,7 @@ config INFINIBAND_AMSO1100_DEBUG
 	bool "Verbose debugging output"
 	depends on INFINIBAND_AMSO1100
 	default n
+source "drivers/infiniband/hw/cxgb3/Kconfig"
 config INFINIBAND_CXGB3
 	tristate "Chelsio RDMA Driver"
 	depends on CHELSIO_T3 && INET
@@ -21870,14 +22580,17 @@ config INFINIBAND_CXGB3_DEBUG
 	bool "Verbose debugging output"
 	depends on INFINIBAND_CXGB3
 	default n
+source "drivers/infiniband/hw/cxgb4/Kconfig"
 config INFINIBAND_CXGB4
 	tristate "Chelsio T4 RDMA Driver"
 	depends on CHELSIO_T4 && INET
 	select GENERIC_ALLOCATOR
+source "drivers/infiniband/hw/mlx4/Kconfig"
 config MLX4_INFINIBAND
 	tristate "Mellanox ConnectX HCA support"
 	depends on NETDEVICES && NETDEV_10000 && PCI
 	select MLX4_CORE
+source "drivers/infiniband/hw/nes/Kconfig"
 config INFINIBAND_NES
 	tristate "NetEffect RNIC Driver"
 	depends on PCI && INET && INFINIBAND
@@ -21887,6 +22600,7 @@ config INFINIBAND_NES_DEBUG
 	bool "Verbose debugging output"
 	depends on INFINIBAND_NES
 	default n
+source "drivers/infiniband/ulp/ipoib/Kconfig"
 config INFINIBAND_IPOIB
 	tristate "IP-over-InfiniBand"
 	depends on NETDEVICES && INET && (IPV6 || IPV6=n)
@@ -21901,14 +22615,19 @@ config INFINIBAND_IPOIB_DEBUG
 config INFINIBAND_IPOIB_DEBUG_DATA
 	bool "IP-over-InfiniBand data path debugging"
 	depends on INFINIBAND_IPOIB_DEBUG
+source "drivers/infiniband/ulp/srp/Kconfig"
 config INFINIBAND_SRP
 	tristate "InfiniBand SCSI RDMA Protocol"
 	depends on SCSI
 	select SCSI_SRP_ATTRS
+source "drivers/infiniband/ulp/iser/Kconfig"
 config INFINIBAND_ISER
 	tristate "iSCSI Extensions for RDMA (iSER)"
 	depends on SCSI && INET && INFINIBAND_ADDR_TRANS
 	select SCSI_ISCSI_ATTRS
+endif
+endsource
+source "drivers/edac/Kconfig"
 menuconfig EDAC
 	bool "EDAC (Error Detection And Correction) reporting"
 	depends on HAS_IOMEM
@@ -22010,6 +22729,9 @@ config EDAC_AMD8111
 config EDAC_CPC925
 	tristate "IBM CPC925 Memory Controller (PPC970FX)"
 	depends on EDAC_MM_EDAC && PPC64
+endif
+endsource
+source "drivers/rtc/Kconfig"
 config RTC_LIB
 	tristate
 menuconfig RTC_CLASS
@@ -22098,6 +22820,8 @@ config RTC_DRV_RX8581
 	tristate "Epson RX-8581"
 config RTC_DRV_RX8025
 	tristate "Epson RX-8025SA/NB"
+endif
+comment "SPI RTC drivers"
 if SPI_MASTER
 config RTC_DRV_M41T94
 	tristate "ST M41T94"
@@ -22115,6 +22839,8 @@ config RTC_DRV_DS3234
 	tristate "Maxim/Dallas DS3234"
 config RTC_DRV_PCF2123
 	tristate "NXP PCF2123"
+endif
+comment "Platform RTC drivers"
 config RTC_DRV_CMOS
 	tristate "PC-style 'CMOS'"
 	depends on X86 || ALPHA || ARM || M32R || ATARI || PPC || MIPS || SPARC64
@@ -22290,6 +23016,9 @@ config RTC_DRV_JZ4740
 config RTC_DRV_LPC32XX
 	depends on ARCH_LPC32XX
 	tristate "NXP LPC32XX RTC"
+endif
+endsource
+source "drivers/dma/Kconfig"
 menuconfig DMADEVICES
 	bool "DMA Engine support"
 	depends on HAS_DMA
@@ -22417,8 +23146,12 @@ config DMATEST
 	tristate "DMA Test client"
 	depends on DMA_ENGINE
 endif
+endsource
+source "drivers/dca/Kconfig"
 config DCA
 	tristate
+endsource
+source "drivers/auxdisplay/Kconfig"
 menuconfig AUXDISPLAY
 	bool "Auxiliary Display support"
 if AUXDISPLAY
@@ -22448,6 +23181,9 @@ config CFAG12864B_RATE
        int "Refresh rate (hertz)"
 	depends on CFAG12864B
 	default "20"
+endif
+endsource
+source "drivers/uio/Kconfig"
 menuconfig UIO
 	tristate "Userspace I/O drivers"
 	depends on !S390
@@ -22472,6 +23208,8 @@ config UIO_NETX
 	tristate "Hilscher NetX Card driver"
 	depends on PCI
 endif
+endsource
+source "drivers/vlynq/Kconfig"
 menu "TI VLYNQ"
 	depends on AR7 && EXPERIMENTAL
 config VLYNQ
@@ -22480,6 +23218,8 @@ config VLYNQ_DEBUG
 	bool "VLYNQ bus debug"
 	depends on VLYNQ && DEBUG_KERNEL
 endmenu
+endsource
+source "drivers/xen/Kconfig"
 menu "Xen driver support"
 	depends on XEN
 config XEN_BALLOON
@@ -22523,6 +23263,8 @@ config SWIOTLB_XEN
 	depends on PCI
 	select SWIOTLB
 endmenu
+endsource
+source "drivers/staging/Kconfig"
 menuconfig STAGING
 	bool "Staging drivers"
 	default n
@@ -22531,6 +23273,7 @@ config STAGING_EXCLUDE_BUILD
 	bool "Exclude Staging drivers from being built" if STAGING
 	default y
 if !STAGING_EXCLUDE_BUILD
+source "drivers/staging/et131x/Kconfig"
 config ET131X
 	tristate "Agere ET-1310 Gigabit Ethernet support"
 	depends on NETDEV_1000 && PCI
@@ -22539,10 +23282,12 @@ config ET131X_DEBUG
 	bool "Enable et131x debugging"
 	depends on ET131X
 	default n
+source "drivers/staging/slicoss/Kconfig"
 config SLICOSS
 	tristate "Alacritech Gigabit IS-NIC support"
 	depends on PCI && X86 && NETDEV_1000
 	default n
+source "drivers/staging/go7007/Kconfig"
 config VIDEO_GO7007
 	tristate "WIS GO7007 MPEG encoder support"
 	depends on VIDEO_DEV && PCI && I2C
@@ -22591,6 +23336,7 @@ config VIDEO_GO7007_TW2804
 	tristate "TW2804 subdev support"
 	depends on VIDEO_GO7007
 	default N
+source "drivers/staging/cx25821/Kconfig"
 config VIDEO_CX25821
 	tristate "Conexant cx25821 support"
 	depends on DVB_CORE && VIDEO_DEV && PCI && I2C
@@ -22607,6 +23353,7 @@ config VIDEO_CX25821_ALSA
 	tristate "Conexant 25821 DMA audio support"
 	depends on VIDEO_CX25821 && SND && EXPERIMENTAL
 	select SND_PCM
+source "drivers/staging/tm6000/Kconfig"
 config VIDEO_TM6000
 	tristate "TV Master TM5600/6000/6010 driver"
 	depends on VIDEO_DEV && I2C && INPUT && RC_CORE && USB && EXPERIMENTAL
@@ -22622,18 +23369,22 @@ config VIDEO_TM6000_DVB
 	tristate "DVB Support for tm6000 based TV cards"
 	depends on VIDEO_TM6000 && DVB_CORE && USB && EXPERIMENTAL
 	select DVB_ZL10353
+source "drivers/staging/dabusb/Kconfig"
 config USB_DABUSB
 	tristate "DABUSB driver"
 	depends on USB
+source "drivers/staging/se401/Kconfig"
 config USB_SE401
 	tristate "USB SE401 Camera support (DEPRECATED)"
 	depends on VIDEO_DEV && VIDEO_V4L2_COMMON && USB
+source "drivers/staging/usbvideo/Kconfig"
 config VIDEO_USBVIDEO
 	tristate
 config USB_VICAM
 	tristate "USB 3com HomeConnect (aka vicam) support (DEPRECATED)"
 	depends on VIDEO_DEV && VIDEO_V4L2_COMMON && USB
 	select VIDEO_USBVIDEO
+source "drivers/staging/usbip/Kconfig"
 config USB_IP_COMMON
 	tristate "USB IP support (EXPERIMENTAL)"
 	depends on USB && NET && EXPERIMENTAL && BKL
@@ -22650,19 +23401,23 @@ config USB_IP_DEBUG_ENABLE
 	bool "USB-IP Debug Enable"
 	depends on USB_IP_COMMON
 	default N
+source "drivers/staging/winbond/Kconfig"
 config W35UND
 	tristate "IS89C35 WLAN USB driver"
 	depends on MAC80211 && WLAN && USB && EXPERIMENTAL
 	default n
+source "drivers/staging/wlan-ng/Kconfig"
 config PRISM2_USB
 	tristate "Prism2.5/3 USB driver"
 	depends on WLAN && USB && CFG80211
 	select WIRELESS_EXT
 	select WEXT_PRIV
 	default n
+source "drivers/staging/echo/Kconfig"
 config ECHO
 	tristate "Line Echo Canceller support"
 	default n
+source "drivers/staging/brcm80211/Kconfig"
 menuconfig BRCM80211
 	tristate "Broadcom IEEE802.11n WLAN drivers"
 	depends on WLAN
@@ -22682,6 +23437,8 @@ config BRCMFMAC
 	select WIRELESS_EXT
 	select WEXT_PRIV
 endchoice
+endsource
+source "drivers/staging/rt2860/Kconfig"
 config RT2860
 	tristate "Ralink 2860/3090 wireless support"
 	depends on PCI && X86 && WLAN
@@ -22689,6 +23446,7 @@ config RT2860
 	select WEXT_PRIV
 	select CRC_CCITT
 	select FW_LOADER
+source "drivers/staging/rt2870/Kconfig"
 config RT2870
 	tristate "Ralink 2870/3070 wireless support"
 	depends on USB && (X86 || ARM) && WLAN
@@ -22696,6 +23454,7 @@ config RT2870
 	select WEXT_PRIV
 	select CRC_CCITT
 	select FW_LOADER
+source "drivers/staging/comedi/Kconfig"
 config COMEDI
 	tristate "Data acquisition support (comedi)"
 	default N
@@ -22727,6 +23486,7 @@ config COMEDI_SERIAL2002
 config COMEDI_SKEL
 	tristate "Comedi skeleton driver"
 	default N
+endif
 menuconfig COMEDI_ISA_DRIVERS
 	tristate "Comedi ISA and PC/104 drivers"
 	depends on COMEDI && ISA
@@ -22869,6 +23629,7 @@ config COMEDI_MULTIQ3
 config COMEDI_POC
 	tristate "Generic driver for very simple devices"
 	default N
+endif
 menuconfig COMEDI_PCI_DRIVERS
 	tristate "Comedi PCI drivers"
 	depends on COMEDI && PCI
@@ -23067,6 +23828,7 @@ config COMEDI_S626
 config COMEDI_SSV_DNP
 	tristate "SSV Embedded Systems DIL/Net-PC support"
 	default N
+endif
 menuconfig COMEDI_PCMCIA_DRIVERS
 	tristate "Comedi PCMCIA drivers"
 	depends on COMEDI && (PCMCIA || PCCARD)
@@ -23099,6 +23861,7 @@ config COMEDI_NI_MIO_CS
 config COMEDI_QUATECH_DAQP_CS
 	tristate "Quatech DAQP PCMCIA data capture card support"
 	default N
+endif
 menuconfig COMEDI_USB_DRIVERS
 	tristate "Comedi USB drivers"
 	depends on COMEDI && USB
@@ -23116,6 +23879,7 @@ config COMEDI_USBDUXFAST
 config COMEDI_VMK80XX
 	tristate "Velleman VM110/VM140 USB Board support"
 	default N
+endif
 menuconfig COMEDI_NI_COMMON
 	tristate "Comedi National Instruments card support"
 	depends on COMEDI
@@ -23136,6 +23900,7 @@ config COMEDI_NI_LABPC
 	select COMEDI_8255
 	select COMEDI_FC
 	default N
+endif
 config COMEDI_8255
 	tristate "Generic 8255 support"
 	depends on COMEDI
@@ -23149,14 +23914,17 @@ config COMEDI_FC
 	tristate "Comedi shared functions for low-level driver support"
 	depends on COMEDI
 	default N
+source "drivers/staging/olpc_dcon/Kconfig"
 config FB_OLPC_DCON
 	tristate "One Laptop Per Child Display CONtroller support"
 	depends on OLPC && BROKEN
 	select I2C
+source "drivers/staging/asus_oled/Kconfig"
 config ASUS_OLED
 	tristate "Asus OLED driver"
 	depends on USB
 	default N
+source "drivers/staging/panel/Kconfig"
 config PANEL
 	tristate "Parallel port LCD/Keypad Panel support"
 	depends on PARPORT
@@ -23248,6 +24016,7 @@ config PANEL_BOOT_MESSAGE
 	depends on PANEL && PANEL_CHANGE_MESSAGE="y"
 	string "New initialization message"
 	default ""
+source "drivers/staging/rtl8187se/Kconfig"
 config R8187SE
 	tristate "RealTek RTL8187SE Wireless LAN NIC driver"
 	depends on PCI && WLAN
@@ -23256,6 +24025,7 @@ config R8187SE
 	select EEPROM_93CX6
 	select CRYPTO
 	default N
+source "drivers/staging/rtl8192u/Kconfig"
 config RTL8192U
 	tristate "RealTek RTL8192U Wireless LAN NIC driver"
 	depends on PCI && WLAN && USB
@@ -23263,6 +24033,7 @@ config RTL8192U
 	select WEXT_PRIV
 	select CRYPTO
 	default N
+source "drivers/staging/rtl8192e/Kconfig"
 config RTL8192E
 	tristate "RealTek RTL8192E Wireless LAN NIC driver"
 	depends on PCI && WLAN
@@ -23270,6 +24041,7 @@ config RTL8192E
 	select WEXT_PRIV
 	select CRYPTO
 	default N
+source "drivers/staging/rtl8712/Kconfig"
 config R8712U
 	tristate "RealTek RTL8712U (RTL8192SU) Wireless LAN NIC driver"
 	depends on WLAN && USB
@@ -23280,10 +24052,12 @@ config R8712_AP
 	bool "Realtek RTL8712U AP code"
 	depends on R8712U
 	default N
+source "drivers/staging/frontier/Kconfig"
 config TRANZPORT
 	tristate "Frontier Tranzport and Alphatrack support"
 	depends on USB
 	default N
+source "drivers/staging/pohmelfs/Kconfig"
 config POHMELFS
 	tristate "POHMELFS filesystem support"
 	depends on NET
@@ -23298,12 +24072,15 @@ config POHMELFS_DEBUG
 config POHMELFS_CRYPTO
 	bool "POHMELFS crypto support"
 	depends on POHMELFS
+source "drivers/staging/autofs/Kconfig"
 config AUTOFS_FS
 	tristate "Kernel automounter support"
 depends on BKL
+source "drivers/staging/phison/Kconfig"
 config IDE_PHISON
 	tristate "PCIE ATA PS5000 IDE support"
 	depends on PCI && ATA && ATA_SFF && ATA_BMDMA
+source "drivers/staging/line6/Kconfig"
 menuconfig LINE6_USB
 	tristate "Line6 USB support"
 	depends on USB && SND
@@ -23328,6 +24105,9 @@ config LINE6_USB_RAW
 config LINE6_USB_IMPULSE_RESPONSE
 	bool "measure impulse response"
 	default n
+endif
+endsource
+source "drivers/gpu/drm/vmwgfx/Kconfig"
 config DRM_VMWGFX
 	tristate "DRM driver for VMware Virtual GPU"
 	depends on DRM && PCI && FB
@@ -23336,6 +24116,7 @@ config DRM_VMWGFX
 	select FB_CFB_COPYAREA
 	select FB_CFB_IMAGEBLIT
 	select DRM_TTM
+source "drivers/gpu/drm/nouveau/Kconfig"
 config DRM_NOUVEAU
 	tristate "Nouveau (nVidia) cards"
 	depends on DRM && PCI
@@ -23366,14 +24147,18 @@ config DRM_I2C_SIL164
 	tristate "Silicon Image sil164 TMDS transmitter"
 	default m if DRM_NOUVEAU
 endmenu
+endsource
+source "drivers/staging/octeon/Kconfig"
 config OCTEON_ETHERNET
 	tristate "Cavium Networks Octeon Ethernet support"
 	depends on CPU_CAVIUM_OCTEON && NETDEVICES
 	select PHYLIB
 	select MDIO_OCTEON
+source "drivers/staging/serqt_usb2/Kconfig"
 config USB_SERIAL_QUATECH2
 	tristate "USB Quatech ESU-100 8 Port Serial Driver"
 	depends on USB_SERIAL
+source "drivers/staging/spectra/Kconfig"
 menuconfig SPECTRA
 	tristate "Denali Spectra Flash Translation Layer"
 	depends on BLOCK
@@ -23395,19 +24180,23 @@ config SPECTRA_MRST_HW_DMA
        bool
        default n
        depends on SPECTRA_MRST_HW
+source "drivers/staging/quatech_usb2/Kconfig"
 config USB_SERIAL_QUATECH_USB2
 	tristate "USB Quatech xSU2-[14]00 USB Serial Driver"
 	depends on USB_SERIAL
+source "drivers/staging/vt6655/Kconfig"
 config VT6655
    tristate "VIA Technologies VT6655 support"
    depends on PCI && WLAN
    select WIRELESS_EXT
    select WEXT_PRIV
+source "drivers/staging/vt6656/Kconfig"
 config VT6656
 	tristate "VIA Technologies VT6656 support"
 	depends on USB && WLAN
 	select WIRELESS_EXT
 	select WEXT_PRIV
+source "drivers/staging/hv/Kconfig"
 config HYPERV
 	tristate "Microsoft Hyper-V client drivers"
 	depends on X86 && m
@@ -23429,10 +24218,13 @@ config HYPERV_UTILS
 	tristate "Microsoft Hyper-V Utilities driver"
 	default HYPERV
 endif
+endsource
+source "drivers/staging/vme/Kconfig"
 menuconfig VME_BUS
 	tristate "VME bridge support"
 	depends on PCI
 if VME_BUS
+source "drivers/staging/vme/bridges/Kconfig"
 comment "VME Bridge Drivers"
 config VME_CA91CX42
 	tristate "Universe II"
@@ -23440,16 +24232,25 @@ config VME_CA91CX42
 config VME_TSI148
 	tristate "Tempe"
 	depends on VIRT_TO_BUS
+source "drivers/staging/vme/devices/Kconfig"
+comment "VME Device Drivers"
 config VME_USER
 	tristate "VME user space access driver"
+source "drivers/staging/vme/boards/Kconfig"
+comment "VME Board Drivers"
 config VMIVME_7805
 	tristate "VMIVME-7805"
+endif
+endsource
+source "drivers/staging/memrar/Kconfig"
 config MRST_RAR_HANDLER
 	tristate "RAR handler driver for Intel Moorestown platform"
 	depends on RAR_REGISTER
+source "drivers/staging/sep/Kconfig"
 config DX_SEP
 	tristate "Discretix SEP driver"
 	depends on PCI
+source "drivers/staging/iio/Kconfig"
 menuconfig IIO
 	tristate "Industrial I/O support"
 	depends on !S390
@@ -23460,8 +24261,11 @@ if IIO_RING_BUFFER
 config IIO_SW_RING
        select IIO_TRIGGER
 	tristate "Industrial I/O lock free software ring"
+endif
 config IIO_TRIGGER
 	boolean "Enable triggered sampling support"
+source "drivers/staging/iio/accel/Kconfig"
+comment "Accelerometers"
 config ADIS16201
 	tristate "Analog Devices ADIS16201 Dual-Axis Digital Inclinometer and Accelerometer"
 	depends on SPI
@@ -23502,6 +24306,8 @@ config SCA3000
 	depends on IIO_RING_BUFFER
 	depends on SPI
 	tristate "VTI SCA3000 series accelerometers"
+source "drivers/staging/iio/adc/Kconfig"
+comment "Analog to digital convertors"
 config MAX1363
 	tristate "MAXIM max1363 ADC driver"
 	depends on I2C
@@ -23564,6 +24370,8 @@ config ADT7310
 config ADT7410
 	tristate "Analog Devices ADT7410 temperature sensor driver"
 	depends on I2C
+source "drivers/staging/iio/addac/Kconfig"
+comment "Analog digital bi-direction convertors"
 config ADT7316
 	tristate "Analog Devices ADT7316/7/8 ADT7516/7/9 temperature sensor, ADC and DAC driver"
 config ADT7316_SPI
@@ -23573,12 +24381,16 @@ config ADT7316_SPI
 config ADT7316_I2C
 	tristate "support I2C bus connection"
 	depends on I2C && ADT7316
+source "drivers/staging/iio/dac/Kconfig"
+comment "Digital to analog convertors"
 config AD5624R_SPI
 	tristate "Analog Devices AD5624/44/64R DAC spi driver"
 	depends on SPI
 config AD5446
 	tristate "Analog Devices AD5444/6, AD5620/40/60 and AD5541A/12A DAC SPI driver"
 	depends on SPI
+source "drivers/staging/iio/dds/Kconfig"
+comment "Direct Digital Synthesis"
 config AD5930
 	tristate "Analog Devices ad5930/5932 driver"
 	depends on SPI
@@ -23600,6 +24412,8 @@ config AD9910
 config AD9951
 	tristate "Analog Devices ad9951 driver"
 	depends on SPI
+source "drivers/staging/iio/gyro/Kconfig"
+comment "Digital gyroscope sensors"
 config ADIS16060
 	tristate "Analog Devices ADIS16060 Yaw Rate Gyroscope with SPI driver"
 	depends on SPI
@@ -23617,6 +24431,8 @@ config ADIS16260
 config ADIS16251
 	tristate "Analog Devices ADIS16251 Digital Gyroscope Sensor SPI driver"
 	depends on SPI
+source "drivers/staging/iio/imu/Kconfig"
+comment "Inertial measurement units"
 config ADIS16300
 	tristate "Analog Devices ADIS16300 IMU SPI driver"
 	depends on SPI
@@ -23632,6 +24448,8 @@ config ADIS16400
 	depends on SPI
 	select IIO_SW_RING if IIO_RING_BUFFER
 	select IIO_TRIGGER if IIO_RING_BUFFER
+source "drivers/staging/iio/light/Kconfig"
+comment "Light sensors"
 config SENSORS_TSL2563
 	tristate "TAOS TSL256[0-3] ambient light sensor"
 	depends on I2C
@@ -23639,12 +24457,16 @@ config SENSORS_ISL29018
         tristate "ISL 29018 light and proximity sensor"
         depends on I2C
         default n
+source "drivers/staging/iio/magnetometer/Kconfig"
+comment "Magnetometer sensors"
 config SENSORS_AK8975
 	tristate "Asahi Kasei AK8975 3-Axis Magnetometer"
 	depends on I2C
 config SENSORS_HMC5843
 	tristate "Honeywell HMC5843 3-Axis Magnetometer"
 	depends on I2C
+source "drivers/staging/iio/meter/Kconfig"
+comment "Active energy metering IC"
 config ADE7753
 	tristate "Analog Devices ADE7753/6 Single-Phase Multifunction Metering IC Driver"
 	depends on SPI
@@ -23670,6 +24492,8 @@ config ADE7854_SPI
 	tristate "support SPI bus connection"
 	depends on ADE7854 && SPI
 	default y
+source "drivers/staging/iio/resolver/Kconfig"
+comment "Resolver to digital converters"
 config AD2S90
 	tristate "Analog Devices ad2s90 driver"
 	depends on SPI
@@ -23690,6 +24514,8 @@ config AD2S1210_GPIO_OUTPUT
 config AD2S1210_GPIO_NONE
 	bool "take the responsibility by user"
 endchoice
+endsource
+source "drivers/staging/iio/trigger/Kconfig"
 comment "Triggers - standalone"
 if IIO_TRIGGER
 config IIO_PERIODIC_RTC_TRIGGER
@@ -23698,37 +24524,48 @@ config IIO_PERIODIC_RTC_TRIGGER
 config IIO_GPIO_TRIGGER
 	tristate "GPIO trigger"
 	depends on GENERIC_GPIO
+endif
+endsource
+endif
+endsource
+source "drivers/staging/cs5535_gpio/Kconfig"
 config CS5535_GPIO
 	tristate "AMD CS5535/CS5536 GPIO (Geode Companion Device)"
 	depends on X86_32
+source "drivers/staging/zram/Kconfig"
 config ZRAM
 	tristate "Compressed RAM block device support"
 	depends on BLOCK
 	select LZO_COMPRESS
 	select LZO_DECOMPRESS
 	default n
+source "drivers/staging/wlags49_h2/Kconfig"
 config WLAGS49_H2
 	tristate "Agere Systems HERMES II Wireless PC Card Model 0110"
 	depends on WLAN && PCMCIA
 	select WIRELESS_EXT
 	select WEXT_SPY
 	select WEXT_PRIV
+source "drivers/staging/wlags49_h25/Kconfig"
 config WLAGS49_H25
 	tristate "Linksys HERMES II.5 WCF54G_Wireless-G_CompactFlash_Card"
 	depends on WLAN && PCMCIA
 	select WIRELESS_EXT
 	select WEXT_SPY
 	select WEXT_PRIV
+source "drivers/staging/samsung-laptop/Kconfig"
 config SAMSUNG_LAPTOP
 	tristate "Samsung Laptop driver"
 	default n
 	depends on RFKILL && BACKLIGHT_CLASS_DEVICE && X86
+source "drivers/staging/sm7xx/Kconfig"
 config FB_SM7XX
 	tristate "Silicon Motion SM7XX Frame Buffer Support"
 	depends on FB
 	select FB_CFB_FILLRECT
 	select FB_CFB_COPYAREA
 	select FB_CFB_IMAGEBLIT
+source "drivers/staging/dt3155v4l/Kconfig"
 config VIDEO_DT3155
 	tristate "DT3155 frame grabber, Video4Linux interface"
 	depends on PCI && VIDEO_DEV && VIDEO_V4L2
@@ -23738,28 +24575,34 @@ config DT3155_CCIR
 	bool "Selects CCIR/50Hz vertical refresh"
 	depends on VIDEO_DT3155
 	default y
+source "drivers/staging/crystalhd/Kconfig"
 config CRYSTALHD
 	tristate "Broadcom Crystal HD video decoder support"
 	depends on PCI
 	default n
+source "drivers/staging/cxt1e1/Kconfig"
 config CXT1E1
 	tristate "SBE wanPMC-C[421]E1T1 hardware support"
 	depends on HDLC && PCI
 config SBE_PMCC4_NCOMM
 	bool "SBE PMCC4 NCOMM support"
 	depends on CXT1E1
+source "drivers/staging/ti-st/Kconfig"
 menu "Texas Instruments shared transport line discipline"
 config ST_BT
 	tristate "BlueZ bluetooth driver for ST"
 	depends on BT && RFKILL
 	select TI_ST
 endmenu
+endsource
+source "drivers/staging/xgifb/Kconfig"
 config FB_XGI
 	tristate "XGI display support"
 	depends on FB && PCI
 	select FB_CFB_FILLRECT
 	select FB_CFB_COPYAREA
 	select FB_CFB_IMAGEBLIT
+source "drivers/staging/msm/Kconfig"
 config MSM_STAGING
 	tristate "MSM Frame Buffer Support"
 	depends on FB && ARCH_MSM && !FB_MSM
@@ -23842,6 +24685,8 @@ config PMEM_KERNEL_SIZE
         default 2
         depends on ARCH_QSD8X50
 endif
+endsource
+source "drivers/staging/lirc/Kconfig"
 menuconfig LIRC_STAGING
 	bool "Linux Infrared Remote Control IR receiver/transmitter drivers"
 	depends on LIRC
@@ -23884,6 +24729,8 @@ config LIRC_ZILOG
 	tristate "Zilog/Hauppauge IR Transmitter"
 	depends on LIRC && I2C
 endif
+endsource
+source "drivers/staging/smbfs/Kconfig"
 config SMB_FS
 	tristate "SMB file system support (OBSOLETE, please use CIFS)"
 depends on BKL
@@ -23896,13 +24743,16 @@ config SMB_NLS_REMOTE
 	string "Default Remote NLS Option"
 	depends on SMB_NLS_DEFAULT
 	default "cp437"
+source "drivers/staging/easycap/Kconfig"
 config EASYCAP
 	tristate "EasyCAP USB ID 05e1:0408 support"
 	depends on USB && VIDEO_DEV
+source "drivers/staging/solo6x10/Kconfig"
 config SOLO6X10
 	tristate "Softlogic 6x10 MPEG codec cards"
 	depends on PCI && VIDEO_DEV && SND && I2C
 	select VIDEOBUF_DMA_SG
+source "drivers/staging/tidspbridge/Kconfig"
 menuconfig TIDSPBRIDGE
 	tristate "DSP Bridge driver"
 	depends on ARCH_OMAP3
@@ -23937,9 +24787,11 @@ config TIDSPBRIDGE_NTFY_PWRERR
 config TIDSPBRIDGE_BACKTRACE
 	bool "Dump backtraces on fatal errors"
 	depends on TIDSPBRIDGE
+source "drivers/staging/quickstart/Kconfig"
 config ACPI_QUICKSTART
 	tristate "ACPI Quickstart key driver"
 	depends on ACPI && INPUT
+source "drivers/staging/westbridge/Kconfig"
 menuconfig WESTBRIDGE
 	tristate "West Bridge support"
 	depends on WESTBRIDGE_HAL_SELECTED
@@ -23947,12 +24799,19 @@ menuconfig WESTBRIDGE_ASTORIA
 	bool "West Bridge Astoria support"
 	depends on WESTBRIDGE != n && WESTBRIDGE_HAL_SELECTED
 if WESTBRIDGE_ASTORIA
+source "drivers/staging/westbridge/astoria/Kconfig"
+source "drivers/staging/westbridge/astoria/device/Kconfig"
 config WESTBRIDGE_DEVICE_DRIVER
 	tristate "West Bridge Device Driver"
+source "drivers/staging/westbridge/astoria/block/Kconfig"
 config WESTBRIDGE_BLOCK_DRIVER
 	tristate "West Bridge Block Driver"
+source "drivers/staging/westbridge/astoria/gadget/Kconfig"
 config WESTBRIDGE_GADGET_DRIVER
 	tristate "West Bridge Gadget Driver"
+endif
+config	WESTBRIDGE_HAL_SELECTED
+	boolean
 choice
 	prompt "West Bridge HAL"
 config MACH_OMAP3_WESTBRIDGE_AST_PNAND_HAL
@@ -23965,9 +24824,11 @@ endchoice
 config WESTBRIDGE_DEBUG
 	bool "West Bridge debugging"
 	depends on WESTBRIDGE != n
+source "drivers/staging/sbe-2t3e3/Kconfig"
 config SBE_2T3E3
 	tristate "SBE wanPMC-2T3E3 support"
 	depends on HDLC && PCI
+source "drivers/staging/ath6kl/Kconfig"
 config ATH6K_LEGACY
 	tristate "Atheros AR6003 support (non mac80211)"
         depends on MMC && WLAN
@@ -24051,13 +24912,16 @@ config AR600x_DEBUG_UART_TX_PIN
 config ATH6KL_DISABLE_TARGET_DBGLOGS
 	bool "Target Debug support - Disable Debug logs"
 	depends on ATH6KL_DEBUG
+source "drivers/staging/keucr/Kconfig"
 config USB_ENESTORAGE
 	tristate "USB ENE card reader support"
 	depends on USB && SCSI && m
+source "drivers/staging/bcm/Kconfig"
 config BCM_WIMAX
        tristate "Beceem BCS200/BCS220-3 and BCSM250 wimax support"
        depends on USB && NET && EXPERIMENTAL
        default N
+source "drivers/staging/ft1000/Kconfig"
 config FT1000
 	tristate "Drivers for Flarion ft1000 devices"
 if FT1000
@@ -24070,6 +24934,8 @@ config FT1000_PCMCIA
 	depends on PCMCIA && BROKEN
 	depends on NET
 endif
+endsource
+source "drivers/staging/intel_sst/Kconfig"
 config SND_INTEL_SST
 	tristate "Intel SST (LPE) Driver"
 	depends on X86 && INTEL_SCU_IPC
@@ -24082,6 +24948,7 @@ config SND_INTELMID
 	select SND_JACK
 	depends on SND_INTEL_SST
 	default n
+source "drivers/staging/speakup/Kconfig"
 menu "Speakup console speech"
 config SPEAKUP
 	depends on VT
@@ -24118,16 +24985,25 @@ config SPEAKUP_SYNTH_TXPRT
 	tristate "Transport synthesizer support"
 config SPEAKUP_SYNTH_DUMMY
 	tristate "Dummy synthesizer driver (for testing)"
+endif
 endmenu
+endsource
+source "drivers/staging/cptm1217/Kconfig"
 config TOUCHSCREEN_CLEARPAD_TM1217
 	tristate "Synaptics Clearpad TM1217"
 	depends on I2C
 	depends on GPIOLIB
 	depends on INPUT
+source "drivers/staging/ste_rmi4/Kconfig"
 config TOUCHSCREEN_SYNAPTICS_I2C_RMI4
 	tristate "Synaptics i2c rmi4 touchscreen"
 	depends on I2C && INPUT
+endif
+endif
+endsource
+source "drivers/platform/Kconfig"
 if X86
+source "drivers/platform/x86/Kconfig"
 menuconfig X86_PLATFORM_DEVICES
 	bool "X86 Platform Specific Device Drivers"
 	default y
@@ -24358,10 +25234,17 @@ config XO1_RFKILL
 	depends on OLPC
 	depends on RFKILL
 endif
+endsource
+endif
+endsource
+source "drivers/clk/Kconfig"
 config CLKDEV_LOOKUP
 	bool
 	select HAVE_CLK
+endsource
 endmenu
+endsource
+source "drivers/firmware/Kconfig"
 menu "Firmware Drivers"
 config EDD
 	tristate "BIOS Enhanced Disk Drive calls determine boot disk"
@@ -24402,8 +25285,11 @@ config ISCSI_IBFT
 	depends on ISCSI_IBFT_FIND && SCSI && SCSI_LOWLEVEL
 	default	n
 endmenu
+endsource
+source "fs/Kconfig"
 menu "File systems"
 if BLOCK
+source "fs/ext2/Kconfig"
 config EXT2_FS
 	tristate "Second extended fs support"
 config EXT2_FS_XATTR
@@ -24419,6 +25305,7 @@ config EXT2_FS_SECURITY
 config EXT2_FS_XIP
 	bool "Ext2 execute in place support"
 	depends on EXT2_FS && MMU
+source "fs/ext3/Kconfig"
 config EXT3_FS
 	tristate "Ext3 journalling file system support"
 	select JBD
@@ -24437,6 +25324,7 @@ config EXT3_FS_POSIX_ACL
 config EXT3_FS_SECURITY
 	bool "Ext3 Security Labels"
 	depends on EXT3_FS_XATTR
+source "fs/ext4/Kconfig"
 config EXT4_FS
 	tristate "The Extended 4 (ext4) filesystem"
 	select JBD2
@@ -24464,11 +25352,13 @@ config FS_XIP
 	bool
 	depends on EXT2_FS_XIP
 	default y
+source "fs/jbd/Kconfig"
 config JBD
 	tristate
 config JBD_DEBUG
 	bool "JBD (ext3) debugging support"
 	depends on JBD && DEBUG_FS
+source "fs/jbd2/Kconfig"
 config JBD2
 	tristate
 	select CRC32
@@ -24481,6 +25371,7 @@ config FS_MBCACHE
 	default y if EXT3_FS=y && EXT3_FS_XATTR
 	default y if EXT4_FS=y && EXT4_FS_XATTR
 	default m if EXT2_FS_XATTR || EXT3_FS_XATTR || EXT4_FS_XATTR
+source "fs/reiserfs/Kconfig"
 config REISERFS_FS
 	tristate "Reiserfs support"
 	select CRC32
@@ -24500,6 +25391,7 @@ config REISERFS_FS_POSIX_ACL
 config REISERFS_FS_SECURITY
 	bool "ReiserFS Security Labels"
 	depends on REISERFS_FS_XATTR
+source "fs/jfs/Kconfig"
 config JFS_FS
 	tristate "JFS filesystem support"
 	select NLS
@@ -24517,6 +25409,7 @@ config JFS_DEBUG
 config JFS_STATISTICS
 	bool "JFS statistics"
 	depends on JFS_FS
+source "fs/xfs/Kconfig"
 config XFS_FS
 	tristate "XFS filesystem support"
 	depends on BLOCK
@@ -24535,6 +25428,7 @@ config XFS_RT
 config XFS_DEBUG
 	bool "XFS Debugging support (EXPERIMENTAL)"
 	depends on XFS_FS && EXPERIMENTAL
+source "fs/gfs2/Kconfig"
 config GFS2_FS
 	tristate "GFS2 file system support"
 	depends on (64BIT || LBDAF)
@@ -24548,6 +25442,7 @@ config GFS2_FS
 config GFS2_FS_LOCKING_DLM
 	bool "GFS2 DLM locking"
 	depends on (GFS2_FS!=n) && NET && INET && (IPV6 || IPV6=n) && HOTPLUG
+source "fs/ocfs2/Kconfig"
 config OCFS2_FS
 	tristate "OCFS2 file system support"
 	depends on NET && SYSFS && CONFIGFS_FS
@@ -24576,6 +25471,7 @@ config OCFS2_DEBUG_FS
 	bool "OCFS2 expensive checks"
 	depends on OCFS2_FS
 	default n
+source "fs/btrfs/Kconfig"
 config BTRFS_FS
 	tristate "Btrfs filesystem (EXPERIMENTAL) Unstable disk format"
 	depends on EXPERIMENTAL
@@ -24588,10 +25484,12 @@ config BTRFS_FS_POSIX_ACL
 	bool "Btrfs POSIX Access Control Lists"
 	depends on BTRFS_FS
 	select FS_POSIX_ACL
+source "fs/nilfs2/Kconfig"
 config NILFS2_FS
 	tristate "NILFS2 file system support (EXPERIMENTAL)"
 	depends on EXPERIMENTAL
 	select CRC32
+endif
 config FS_POSIX_ACL
 	def_bool n
 config EXPORTFS
@@ -24599,17 +25497,21 @@ config EXPORTFS
 config FILE_LOCKING
 	bool "Enable POSIX file locking API" if EXPERT
 	default y
+source "fs/notify/Kconfig"
 config FSNOTIFY
 	def_bool n
+source "fs/notify/dnotify/Kconfig"
 config DNOTIFY
 	bool "Dnotify support"
 	select FSNOTIFY
 	default y
+source "fs/notify/inotify/Kconfig"
 config INOTIFY_USER
 	bool "Inotify support for userspace"
 	select ANON_INODES
 	select FSNOTIFY
 	default y
+source "fs/notify/fanotify/Kconfig"
 config FANOTIFY
 	bool "Filesystem wide access notification"
 	select FSNOTIFY
@@ -24620,6 +25522,7 @@ config FANOTIFY_ACCESS_PERMISSIONS
 	depends on FANOTIFY
 	depends on SECURITY
 	default n
+source "fs/quota/Kconfig"
 config QUOTA
 	bool "Quota support"
 	select QUOTACTL
@@ -24650,8 +25553,11 @@ config QUOTACTL_COMPAT
 	bool
 	depends on QUOTACTL && COMPAT_FOR_U64_ALIGNMENT
 	default y
+endsource
+source "fs/autofs4/Kconfig"
 config AUTOFS4_FS
 	tristate "Kernel automounter version 4 support (also supports v3)"
+source "fs/fuse/Kconfig"
 config FUSE_FS
 	tristate "FUSE (Filesystem in Userspace) support"
 config CUSE
@@ -24661,6 +25567,7 @@ config GENERIC_ACL
 	bool
 	select FS_POSIX_ACL
 menu "Caches"
+source "fs/fscache/Kconfig"
 config FSCACHE
 	tristate "General filesystem local caching manager"
 config FSCACHE_STATS
@@ -24675,6 +25582,7 @@ config FSCACHE_DEBUG
 config FSCACHE_OBJECT_LIST
 	bool "Maintain global object list for debugging purposes"
 	depends on FSCACHE && PROC_FS
+source "fs/cachefiles/Kconfig"
 config CACHEFILES
 	tristate "Filesystem caching on files"
 	depends on FSCACHE && BLOCK
@@ -24687,6 +25595,7 @@ config CACHEFILES_HISTOGRAM
 endmenu
 if BLOCK
 menu "CD-ROM/DVD Filesystems"
+source "fs/isofs/Kconfig"
 config ISO9660_FS
 	tristate "ISO 9660 CDROM file system support"
 config JOLIET
@@ -24697,6 +25606,7 @@ config ZISOFS
 	bool "Transparent decompression extension"
 	depends on ISO9660_FS
 	select ZLIB_INFLATE
+source "fs/udf/Kconfig"
 config UDF_FS
 	tristate "UDF file system support"
 	select CRC_ITU_T
@@ -24704,10 +25614,12 @@ config UDF_NLS
 	bool
 	default y
 	depends on (UDF_FS=m && NLS) || (UDF_FS=y && NLS=y)
+endsource
 endmenu
 endif
 if BLOCK
 menu "DOS/FAT/NT Filesystems"
+source "fs/fat/Kconfig"
 config FAT_FS
 	tristate
 	select NLS
@@ -24725,6 +25637,7 @@ config FAT_DEFAULT_IOCHARSET
 	string "Default iocharset for FAT"
 	depends on VFAT_FS
 	default "iso8859-1"
+source "fs/ntfs/Kconfig"
 config NTFS_FS
 	tristate "NTFS file system support"
 	select NLS
@@ -24737,6 +25650,7 @@ config NTFS_RW
 endmenu
 endif
 menu "Pseudo filesystems"
+source "fs/proc/Kconfig"
 config PROC_FS
 	bool "/proc file system support" if EXPERT
 	default y
@@ -24756,6 +25670,7 @@ config PROC_PAGE_MONITOR
  	default y
 	depends on PROC_FS && MMU
 	bool "Enable /proc page monitoring" if EXPERT
+source "fs/sysfs/Kconfig"
 config SYSFS
 	bool "sysfs file system support" if EXPERT
 	default y
@@ -24772,6 +25687,7 @@ config HUGETLBFS
 		   SYS_SUPPORTS_HUGETLBFS || BROKEN
 config HUGETLB_PAGE
 	def_bool HUGETLBFS
+source "fs/configfs/Kconfig"
 config CONFIGFS_FS
 	tristate "Userspace-driven configuration filesystem"
 	select SYSFS
@@ -24780,6 +25696,7 @@ menuconfig MISC_FILESYSTEMS
 	bool "Miscellaneous filesystems"
 	default y
 if MISC_FILESYSTEMS
+source "fs/adfs/Kconfig"
 config ADFS_FS
 	tristate "ADFS file system support (EXPERIMENTAL)"
 	depends on BLOCK && EXPERIMENTAL
@@ -24787,24 +25704,29 @@ depends on BKL
 config ADFS_FS_RW
 	bool "ADFS write support (DANGEROUS)"
 	depends on ADFS_FS
+source "fs/affs/Kconfig"
 config AFFS_FS
 	tristate "Amiga FFS file system support (EXPERIMENTAL)"
 	depends on BLOCK && EXPERIMENTAL
+source "fs/ecryptfs/Kconfig"
 config ECRYPT_FS
 	tristate "eCrypt filesystem layer support (EXPERIMENTAL)"
 	depends on EXPERIMENTAL && KEYS && CRYPTO
 	select CRYPTO_ECB
 	select CRYPTO_CBC
 	select CRYPTO_MD5
+source "fs/hfs/Kconfig"
 config HFS_FS
 	tristate "Apple Macintosh file system support (EXPERIMENTAL)"
 	depends on BLOCK && EXPERIMENTAL
 	select NLS
+source "fs/hfsplus/Kconfig"
 config HFSPLUS_FS
 	tristate "Apple Extended HFS file system support"
 	depends on BLOCK
 	select NLS
 	select NLS_UTF8
+source "fs/befs/Kconfig"
 config BEFS_FS
 	tristate "BeOS file system (BeFS) support (read only) (EXPERIMENTAL)"
 	depends on BLOCK && EXPERIMENTAL
@@ -24812,12 +25734,15 @@ config BEFS_FS
 config BEFS_DEBUG
 	bool "Debug BeFS"
 	depends on BEFS_FS
+source "fs/bfs/Kconfig"
 config BFS_FS
 	tristate "BFS file system support (EXPERIMENTAL)"
 	depends on BLOCK && EXPERIMENTAL
+source "fs/efs/Kconfig"
 config EFS_FS
 	tristate "EFS file system support (read only) (EXPERIMENTAL)"
 	depends on BLOCK && EXPERIMENTAL
+source "fs/jffs2/Kconfig"
 config JFFS2_FS
 	tristate "Journalling Flash File System v2 (JFFS2) support"
 	select CRC32
@@ -24888,6 +25813,8 @@ config JFFS2_CMODE_SIZE
 config JFFS2_CMODE_FAVOURLZO
 	bool "Favour LZO"
 endchoice
+endsource
+source "fs/ubifs/Kconfig"
 config UBIFS_FS
 	tristate "UBIFS file system support"
 	select CRC16
@@ -24924,6 +25851,7 @@ config UBIFS_FS_DEBUG_MSG_LVL
 config UBIFS_FS_DEBUG_CHKS
 	bool "Enable extra checks"
 	depends on UBIFS_FS_DEBUG
+source "fs/logfs/Kconfig"
 config LOGFS
 	tristate "LogFS file system (EXPERIMENTAL)"
 	depends on (MTD || BLOCK) && EXPERIMENTAL
@@ -24931,10 +25859,12 @@ config LOGFS
 	select ZLIB_DEFLATE
 	select CRC32
 	select BTREE
+source "fs/cramfs/Kconfig"
 config CRAMFS
 	tristate "Compressed ROM file system support (cramfs)"
 	depends on BLOCK
 	select ZLIB_INFLATE
+source "fs/squashfs/Kconfig"
 config SQUASHFS
 	tristate "SquashFS 4.0 - Squashed file system support"
 	depends on BLOCK
@@ -24957,23 +25887,29 @@ config SQUASHFS_FRAGMENT_CACHE_SIZE
 	int "Number of fragments cached" if SQUASHFS_EMBEDDED
 	depends on SQUASHFS
 	default "3"
+source "fs/freevxfs/Kconfig"
 config VXFS_FS
 	tristate "FreeVxFS file system support (VERITAS VxFS(TM) compatible)"
 	depends on BLOCK
+source "fs/minix/Kconfig"
 config MINIX_FS
 	tristate "Minix file system support"
 	depends on BLOCK
+source "fs/omfs/Kconfig"
 config OMFS_FS
 	tristate "SonicBlue Optimized MPEG File System support"
 	depends on BLOCK
 	select CRC_ITU_T
+source "fs/hpfs/Kconfig"
 config HPFS_FS
 	tristate "OS/2 HPFS file system support"
 	depends on BLOCK
 depends on BKL
+source "fs/qnx4/Kconfig"
 config QNX4FS_FS
 	tristate "QNX4 file system support (read only)"
 	depends on BLOCK
+source "fs/romfs/Kconfig"
 config ROMFS_FS
 	tristate "ROM file system support"
 	depends on BLOCK || MTD
@@ -24997,9 +25933,12 @@ config ROMFS_ON_BLOCK
 config ROMFS_ON_MTD
 	bool
 	default y if ROMFS_BACKED_BY_MTD || ROMFS_BACKED_BY_BOTH
+endsource
+source "fs/sysv/Kconfig"
 config SYSV_FS
 	tristate "System V/Xenix/V7/Coherent file system support"
 	depends on BLOCK
+source "fs/ufs/Kconfig"
 config UFS_FS
 	tristate "UFS file system support (read only)"
 	depends on BLOCK
@@ -25010,17 +25949,20 @@ config UFS_FS_WRITE
 config UFS_DEBUG
 	bool "UFS debugging"
 	depends on UFS_FS
+source "fs/exofs/Kconfig"
 config EXOFS_FS
 	tristate "exofs: OSD based file system support"
 	depends on SCSI_OSD_ULD
 config EXOFS_DEBUG
 	bool "Enable debugging"
 	depends on EXOFS_FS
+endif
 menuconfig NETWORK_FILESYSTEMS
 	bool "Network File Systems"
 	default y
 	depends on NET
 if NETWORK_FILESYSTEMS
+source "fs/nfs/Kconfig"
 config NFS_FS
 	tristate "NFS client support"
 	depends on INET && FILE_LOCKING
@@ -25061,6 +26003,7 @@ config NFS_USE_KERNEL_DNS
 config NFS_USE_NEW_IDMAPPER
 	bool "Use the new idmapper upcall routine"
 	depends on NFS_V4 && KEYS
+source "fs/nfsd/Kconfig"
 config NFSD
 	tristate "NFS server support"
 	depends on INET
@@ -25104,6 +26047,7 @@ config NFS_COMMON
 	bool
 	depends on NFSD || NFS_FS
 	default y
+source "net/sunrpc/Kconfig"
 config SUNRPC
 	tristate
 config SUNRPC_GSS
@@ -25121,6 +26065,7 @@ config RPCSEC_GSS_KRB5
 	select CRYPTO_MD5
 	select CRYPTO_DES
 	select CRYPTO_CBC
+source "fs/ceph/Kconfig"
 config CEPH_FS
         tristate "Ceph distributed file system (EXPERIMENTAL)"
 	depends on INET && EXPERIMENTAL
@@ -25129,6 +26074,7 @@ config CEPH_FS
 	select CRYPTO_AES
 	select CRYPTO
 	default n
+source "fs/cifs/Kconfig"
 config CIFS
 	tristate "CIFS support (advanced network filesystem, SMBFS successor)"
 	depends on INET
@@ -25173,6 +26119,7 @@ config CIFS_ACL
 config CIFS_EXPERIMENTAL
 	  bool "CIFS Experimental Features (EXPERIMENTAL)"
 	  depends on CIFS && EXPERIMENTAL
+source "fs/ncpfs/Kconfig"
 config NCP_FS
 	tristate "NCP file system support (to mount NetWare volumes)"
 	depends on IPX!=n || INET
@@ -25201,9 +26148,11 @@ config NCPFS_NLS
 config NCPFS_EXTRAS
 	bool "Enable symbolic links and execute flags"
 	depends on NCP_FS
+source "fs/coda/Kconfig"
 config CODA_FS
 	tristate "Coda file system support (advanced network fs)"
 	depends on INET
+source "fs/afs/Kconfig"
 config AFS_FS
 	tristate "Andrew File System support (AFS) (EXPERIMENTAL)"
 	depends on INET && EXPERIMENTAL
@@ -25216,6 +26165,7 @@ config AFS_FSCACHE
 	bool "Provide AFS client caching support (EXPERIMENTAL)"
 	depends on EXPERIMENTAL
 	depends on AFS_FS=m && FSCACHE || AFS_FS=y && FSCACHE=y
+source "fs/9p/Kconfig"
 config 9P_FS
 	tristate "Plan 9 Resource Sharing Support (9P2000) (Experimental)"
 	depends on INET && NET_9P && EXPERIMENTAL
@@ -25228,9 +26178,11 @@ config 9P_FS_POSIX_ACL
 	bool "9P POSIX Access Control Lists"
 	select FS_POSIX_ACL
 endif
+endsource
 endif
 if BLOCK
 menu "Partition Types"
+source "fs/partitions/Kconfig"
 config PARTITION_ADVANCED
 	bool "Advanced partition selection"
 config ACORN_PARTITION
@@ -25317,6 +26269,7 @@ config SYSV68_PARTITION
 	default y if VME
 endmenu
 endif
+source "fs/nls/Kconfig"
 menuconfig NLS
 	tristate "Native language support"
 if NLS
@@ -25399,6 +26352,9 @@ config NLS_KOI8_U
 	tristate "NLS KOI8-U/RU (Ukrainian, Belarusian)"
 config NLS_UTF8
 	tristate "NLS UTF-8"
+endif
+endsource
+source "fs/dlm/Kconfig"
 menuconfig DLM
 	tristate "Distributed Lock Manager (DLM)"
 	depends on EXPERIMENTAL && INET
@@ -25408,9 +26364,12 @@ config DLM_DEBUG
 	bool "DLM debugging"
 	depends on DLM
 endmenu
+endsource
+source "arch/x86/Kconfig.debug"
 menu "Kernel hacking"
 config TRACE_IRQFLAGS_SUPPORT
 	def_bool y
+source "lib/Kconfig.debug"
 config PRINTK_TIME
 	bool "Show timing information on printks"
 	depends on PRINTK
@@ -25799,6 +26758,7 @@ config ASYNC_RAID6_TEST
 	tristate "Self test for hardware accelerated raid6 recovery"
 	depends on ASYNC_RAID6_RECOV
 	select ASYNC_MEMCPY
+source "samples/Kconfig"
 menuconfig SAMPLES
 	bool "Sample kernel code"
 if SAMPLES
@@ -25827,6 +26787,9 @@ config SAMPLE_KFIFO
 config SAMPLE_KDB
 	tristate "Build kdb command exmaple -- loadable modules only"
 	depends on KGDB_KDB && m
+endif
+endsource
+source "lib/Kconfig.kgdb"
 config HAVE_ARCH_KGDB
 	bool
 menuconfig KGDB
@@ -25861,6 +26824,9 @@ config KDB_KEYBOARD
 	bool "KGDB_KDB: keyboard as input device"
 	depends on VT && KGDB_KDB
 	default n
+endif
+endsource
+source "lib/Kconfig.kmemcheck"
 config HAVE_ARCH_KMEMCHECK
 	bool
 if HAVE_ARCH_KMEMCHECK
@@ -25906,6 +26872,8 @@ config KMEMCHECK_BITOPS_OK
 	depends on KMEMCHECK
 	default n
 endif
+endsource
+endsource
 config STRICT_DEVMEM
 	bool "Filter access to /dev/mem"
 config X86_VERBOSE_BOOTUP
@@ -26023,6 +26991,8 @@ config DEBUG_STRICT_USER_COPY_CHECKS
 	bool "Strict copy size checks"
 	depends on DEBUG_KERNEL && !TRACE_BRANCH_PROFILING
 endmenu
+endsource
+source "security/Kconfig"
 menu "Security options"
 config KEYS
 	bool "Enable access key retention support"
@@ -26092,8 +27062,11 @@ config DEFAULT_SECURITY
 	default "apparmor" if DEFAULT_SECURITY_APPARMOR
 	default "" if DEFAULT_SECURITY_DAC
 endmenu
+endsource
+source "crypto/Kconfig"
 config XOR_BLOCKS
 	tristate
+source "crypto/async_tx/Kconfig"
 config ASYNC_CORE
 	tristate
 config ASYNC_MEMCPY
@@ -26118,6 +27091,7 @@ config ASYNC_TX_DISABLE_PQ_VAL_DMA
 	bool
 config ASYNC_TX_DISABLE_XOR_VAL_DMA
 	bool
+endsource
 menuconfig CRYPTO
 	tristate "Cryptographic API"
 if CRYPTO
@@ -26450,6 +27424,7 @@ config CRYPTO_USER_API_SKCIPHER
 	depends on NET
 	select CRYPTO_BLKCIPHER
 	select CRYPTO_USER_API
+source "drivers/crypto/Kconfig"
 menuconfig CRYPTO_HW
 	bool "Hardware crypto devices"
 	default y
@@ -26556,6 +27531,12 @@ config CRYPTO_DEV_OMAP_AES
 	tristate "Support for OMAP AES hw engine"
 	depends on ARCH_OMAP2 || ARCH_OMAP3
 	select CRYPTO_AES
+endif
+endsource
+endif
+endsource
+source "arch/x86/kvm/Kconfig"
+source "virt/kvm/Kconfig"
 config HAVE_KVM
        bool
 config HAVE_KVM_IRQCHIP
@@ -26569,6 +27550,7 @@ config KVM_MMIO
        bool
 config KVM_ASYNC_PF
        bool
+endsource
 menuconfig VIRTUALIZATION
 	bool "Virtualization"
 	depends on HAVE_KVM || X86
@@ -26597,6 +27579,9 @@ config KVM_AMD
 config KVM_MMU_AUDIT
 	bool "Audit KVM MMU"
 	depends on KVM && TRACEPOINTS
+endif
+endsource
+source "lib/Kconfig"
 config BINARY_PRINTF
 	def_bool n
 menu "Library routines"
@@ -26643,6 +27628,7 @@ config LZO_COMPRESS
 	tristate
 config LZO_DECOMPRESS
 	tristate
+source "lib/xz/Kconfig"
 config XZ_DEC
 	tristate "XZ decompression support"
 	select CRC32
@@ -26746,3 +27732,4 @@ config LRU_CACHE
 config AVERAGE
 	bool
 endmenu
+endsource

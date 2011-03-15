@@ -16,5 +16,6 @@ public abstract class TAEntityClass {
     public static String CHOICE_CLASS = "CHOICE";
     public static String IF_CLASS = "IF";
     public static String MENU_CONFIG_CLASS = "menuconfig";
+    public static String SOURCE_CLASS= "SOURCE";
 
 }

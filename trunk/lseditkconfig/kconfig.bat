@@ -1,2 +1,2 @@
-java.exe -classpath build\classes;..\clue;lib\bunch.jar -Xms512M -Xmx1024M cmdb.CmdbEditorFrame -l simplex kconf:kconfig-final.txt
+java.exe -classpath build\classes;..\clue;lib\bunch.jar -Xms1024M -Xmx2048M cmdb.CmdbEditorFrame -l simplex kconf:kconfig_files/kconfig-final-source.txt
 pause
