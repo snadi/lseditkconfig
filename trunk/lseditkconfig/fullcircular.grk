@@ -1,0 +1,17 @@
+getta("simple.ta")
+circular = { }
+transclosure = inv selects+
+domRevTrans = dom transclosure
+for parent in domRevTrans{
+	corresponding = {parent} . transclosure
+	for child in corresponding{
+		reversedRelns= {child} . selects
+		for reversedReln in reversedRelns{
+			if (reversedReln == parent){
+				circular = circular + {parent} X {child}				
+			}
+		}
+	}
+}		
+print("1 degree circular")
+print(circular)
