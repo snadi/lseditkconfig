@@ -50,9 +50,9 @@ public class KConfigDrawer extends BasicReader {
         if (msg == null) {
             try {
                 init(diagram);
-                                       
+                              String fileName = path.substring(6);
          
-            KConfigParser parser = new KConfigParser("kconfig_full-clean.txt", diagram);
+            KConfigParser parser = new KConfigParser(fileName, diagram);
             parser.parse();
 
                 addRootAttributes();
