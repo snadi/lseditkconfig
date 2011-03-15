@@ -1,12 +1,89 @@
-menu "Processor type and features"
-config SARAH
-	bool "sarah"
-	select KARIM	
-config KARIM
+config 64BIT
+	bool "64-bit kernel" if ARCH = "x86"
+	default ARCH = "x86_64"
+config X86_32
+	def_bool !64BIT
+config X86_64
+	def_bool 64BIT
+menu "General setup"
+config EXPERIMENTAL
+	bool "Prompt for development and/or incomplete code/drivers"
+config BROKEN
 	bool
-	select GHADA
-config GHADA
+config BROKEN_ON_SMP
 	bool
-	select KARIM
-	select SARAH	
+	depends on BROKEN || !SMP
+	default y
+config LOCK_KERNEL
+	bool
+	depends on (SMP || PREEMPT) && BKL
+	default y
+if HAVE_GENERIC_HARDIRQS 
+menu "IRQ subsystem"
+config GENERIC_HARDIRQS
+       def_bool y
+config GENERIC_HARDIRQS_NO_DEPRECATED
+       def_bool n
+config HAVE_SPARSE_IRQ
+       def_bool n
+endmenu 
+endif
+menu "RCU Subsystem"
+choice
+	prompt "RCU Implementation"
+	default TREE_RCU
+config TREE_RCU
+	bool "Tree-based hierarchical RCU"
+	depends on !PREEMPT && SMP
+config TREE_PREEMPT_RCU
+	bool "Preemptible tree-based hierarchical RCU"
+	depends on PREEMPT
+config TINY_RCU
+	bool "UP-only small-memory-footprint RCU"
+	depends on !SMP
+config TINY_PREEMPT_RCU
+	bool "Preemptible UP-only small-memory-footprint RCU"
+	depends on !SMP && PREEMPT
+endchoice
 endmenu
+menu "Kernel Performance Events And Counters"
+config PERF_EVENTS
+	bool "Kernel performance events and counters"
+	default y if (PROFILING || PERF_COUNTERS)
+	depends on HAVE_PERF_EVENTS
+	select ANON_INODES
+	select IRQ_WORK
+config PERF_COUNTERS
+	bool "Kernel performance counters (old config option)"
+	depends on HAVE_PERF_EVENTS
+endmenu 
+config HAVE_ARCH_JUMP_LABEL
+	bool
+menu "GCOV-based kernel profiling"
+config GCOV_KERNEL
+	bool "Enable gcov-based kernel profiling"
+	depends on DEBUG_FS && CONSTRUCTORS
+	default n
+config GCOV_PROFILE_ALL
+	bool "Profile entire Kernel"
+	depends on GCOV_KERNEL
+	depends on S390 || X86 || (PPC && EXPERIMENTAL) || MICROBLAZE
+	default n
+endmenu 
+endmenu
+config INLINE_SPIN_UNLOCK_IRQ
+	def_bool !DEBUG_SPINLOCK && (!PREEMPT || ARCH_INLINE_SPIN_UNLOCK_BH)
+menu "Processor type and features"
+config TICK_ONESHOT
+	bool
+config NO_HZ
+	bool "Tickless System (Dynamic Ticks)"
+	depends on !ARCH_USES_GETTIMEOFFSET && GENERIC_CLOCKEVENTS
+	select TICK_ONESHOT
+config HIGH_RES_TIMERS
+	bool "High Resolution Timer Support"
+	depends on !ARCH_USES_GETTIMEOFFSET && GENERIC_CLOCKEVENTS
+	select TICK_ONESHOT
+endmenu
+
+

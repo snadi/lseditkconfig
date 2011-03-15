@@ -1,0 +1,3 @@
+Transclos = selects + - id selects
+Revtransclos = inv transclos
+Circular = Revtransclos ^ selects
