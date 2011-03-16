@@ -197,6 +197,10 @@ public class KConfigParser {
             //    System.out.println("READ IN PARSEMENU:" + line);
         }
 
+        if(line == null){
+            System.out.println("ERROR: No closing endsource for source: " + sourceInstance.getLabel());
+        }
+
         if (!isEndSource(line)) {
             dis.reset();
         }
@@ -219,6 +223,7 @@ public class KConfigParser {
 
             newLine = readLine();
         }
+       
 
         if (!isEndMenu(newLine)) {
             dis.reset();
@@ -267,6 +272,10 @@ public class KConfigParser {
 
             line = readLine();
             //    System.out.println("READ IN PARSEMENU:" + line);
+        }
+
+         if(line == null){
+            System.out.println("ERROR: No closing ENDMENU for source: " + menuInstance.getLabel());
         }
 
         if (!isEndMenu(line)) {
@@ -358,6 +367,10 @@ public class KConfigParser {
             line = readLine();
         }
 
+         if(line == null){
+            System.out.println("ERROR: No closing ENDCHOICE for choice: " + choiceInstance.getLabel());
+        }
+
         if (!isEndChoice(line)) {
             dis.reset();
         }
@@ -430,6 +443,14 @@ public class KConfigParser {
             }
 
             nextLine = readLine();
+        }
+
+         if(nextLine == null){
+            System.out.println("ERROR: No closing endif for if: " + line);
+        }
+
+        if(!isEndIf(nextLine)){
+            dis.reset();
         }
 
         //    System.out.println("exit parseIF()");
