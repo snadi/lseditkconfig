@@ -144,7 +144,31 @@ public class KConfigParser {
         return entityInstance;
     }
 
+    //anyentry
+    private EntityInstance getNextEntry(EntityInstance parent, String line) throws Exception {
+        EntityInstance entry = null;
+        if (isMenu(line)) {
+            entry = parseMenu(parent, line);
+        } else if (isConfig(line)) {
+            entry = parseConfig(parent, line);
+        } else if (isIf(line)) {
+            entry = parseIF(parent, line);
+        } else if (isMenuConfig(line)) {
+            entry = parseMenuConfig(parent, line);
+        } else if (isChoice(line)) {
+            entry = parseChoice(parent, line);
+        } else if (isComment(line)) {
+            entry = parseComment(parent, line);
+        } else if (isSource(line)) {
+            entry = parseSource(parent, line);
+        } else {
+            //    System.out.println("IGNORED: " + line);
+        }
+
+        return entry;
+    }
     //source
+
     private EntityInstance parseSource(EntityInstance parent, String line) throws Exception {
         String sourceName = line.trim().substring(line.indexOf("\"") + 1, line.lastIndexOf("\""));
 
@@ -170,24 +194,7 @@ public class KConfigParser {
 
 
         while (line != null && !isEndSource(line)) {
-            EntityInstance sourceEntry = null;
-            if (isMenu(line)) {
-                sourceEntry = parseMenu(sourceInstance, line);
-            } else if (isConfig(line)) {
-                sourceEntry = parseConfig(sourceInstance, line);
-            } else if (isIf(line)) {
-                sourceEntry = parseIF(sourceInstance, line);
-            } else if (isMenuConfig(line)) {
-                sourceEntry = parseMenuConfig(sourceInstance, line);
-            } else if (isChoice(line)) {
-                sourceEntry = parseChoice(sourceInstance, line);
-            } else if (isComment(line)) {
-                sourceEntry = parseComment(sourceInstance, line);
-            } else if (isSource(line)) {
-                sourceEntry = parseSource(sourceInstance, line);
-            } else {
-                //    System.out.println("IGNORED: " + line);
-            }
+            EntityInstance sourceEntry = getNextEntry(sourceInstance, line);
 
             if (sourceInstance != null && sourceEntry != null) {
                 diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), sourceInstance, sourceEntry);
@@ -197,7 +204,7 @@ public class KConfigParser {
             //    System.out.println("READ IN PARSEMENU:" + line);
         }
 
-        if(line == null){
+        if (line == null) {
             System.out.println("ERROR: No closing endsource for source: " + sourceInstance.getLabel());
         }
 
@@ -223,7 +230,7 @@ public class KConfigParser {
 
             newLine = readLine();
         }
-       
+
 
         if (!isEndMenu(newLine)) {
             dis.reset();
@@ -247,24 +254,8 @@ public class KConfigParser {
 
 
         while (line != null && !isEndMenu(line)) {
-            EntityInstance menuEntry = null;
-            if (isMenu(line)) {
-                menuEntry = parseMenu(menuInstance, line);
-            } else if (isConfig(line)) {
-                menuEntry = parseConfig(menuInstance, line);
-            } else if (isIf(line)) {
-                menuEntry = parseIF(menuInstance, line);
-            } else if (isMenuConfig(line)) {
-                menuEntry = parseMenuConfig(menuInstance, line);
-            } else if (isChoice(line)) {
-                menuEntry = parseChoice(menuInstance, line);
-            } else if (isComment(line)) {
-                menuEntry = parseComment(menuInstance, line);
-            } else if (isSource(line)) {
-                menuEntry = parseSource(menuInstance, line);
-            } else {
-                //    System.out.println("IGNORED: " + line);
-            }
+            EntityInstance menuEntry = getNextEntry(menuInstance, line);
+
 
             if (menuInstance != null && menuEntry != null) {
                 diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), menuInstance, menuEntry);
@@ -274,7 +265,7 @@ public class KConfigParser {
             //    System.out.println("READ IN PARSEMENU:" + line);
         }
 
-         if(line == null){
+        if (line == null) {
             System.out.println("ERROR: No closing ENDMENU for source: " + menuInstance.getLabel());
         }
 
@@ -315,7 +306,7 @@ public class KConfigParser {
         line = readLine();
 
         //load choice attributes first
-        while (line != null && isChoiceAttribute(line)) {
+        while (line != null && isChoiceAttribute(line) && !isEndChoice(line)) {
             if (isPrompt(line)) {
                 String parts[] = line.trim().split("\"");
                 choiceInstance = diagram.newCachedEntity(diagram.getEntityClass(TAEntityClass.CHOICE_CLASS), removeSpacesAndQuotes(parts[1].trim()));
@@ -350,15 +341,7 @@ public class KConfigParser {
 
         while (line != null && !isEndChoice(line)) {
             // if (line.startsWith(Keywords.CONFIG + " ")) {
-            EntityInstance choiceEntry = null;
-
-            if (isConfig(line)) {
-                choiceEntry = parseConfig(choiceInstance, line);
-            } else if (isIf(line)) {
-                choiceEntry = parseIF(choiceInstance, line);
-            } else if (isChoice(line)) {
-                choiceEntry = parseChoice(choiceInstance, line);
-            }
+            EntityInstance choiceEntry = getNextEntry(choiceInstance, line);
 
             if (choiceEntry != null && choiceInstance != null && isContainer(choiceInstance)) {
                 diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), choiceInstance, choiceEntry);
@@ -367,7 +350,7 @@ public class KConfigParser {
             line = readLine();
         }
 
-         if(line == null){
+        if (line == null) {
             System.out.println("ERROR: No closing ENDCHOICE for choice: " + choiceInstance.getLabel());
         }
 
@@ -427,15 +410,11 @@ public class KConfigParser {
 
         String nextLine = readLine();
 
-        while (nextLine != null && !nextLine.equals(Keywords.END_IF)) {
-            EntityInstance ifEntry = null;
-            if (isMenu(nextLine)) {
-                ifEntry = parseMenu(parent, nextLine);
-            } else if (isConfig(nextLine)) {
-                ifEntry = parseConfig(parent, nextLine);
-            }
+        while (nextLine != null && !isEndIf(nextLine)) {
+            EntityInstance ifEntry = getNextEntry(parent, nextLine);
 
             for (int i = 0; i < ifDependencies.length; i++) {
+
                 EntityInstance ifDependency = getEntityInstance(ifDependencies[i], TAEntityClass.CONFIG_CLASS);
                 if (ifEntry != null && ifDependency != null) {
                     diagram.addEdge(relationClass, ifEntry, ifDependency);
@@ -445,11 +424,11 @@ public class KConfigParser {
             nextLine = readLine();
         }
 
-         if(nextLine == null){
+        if (nextLine == null) {
             System.out.println("ERROR: No closing endif for if: " + line);
         }
 
-        if(!isEndIf(nextLine)){
+        if (!isEndIf(nextLine)) {
             dis.reset();
         }
 
@@ -706,18 +685,18 @@ public class KConfigParser {
         line = line.trim();
         String parts[] = line.split(" ");
 
-
-        if ((Pattern.matches(Keywords.CONFIG + "\\s.*", line.trim()) && parts.length == 2)
-                || Pattern.matches(Keywords.MENU + "\\s\".*\"", line.trim())
-                || (line.startsWith(Keywords.MENUCONFIG) && parts.length == 2)
-                || (line.startsWith(Keywords.IF) && parts.length == 2)
-                || line.equals(Keywords.CHOICE)
-                || Pattern.matches(Keywords.SOURCE + "\\s\".*\"", line.trim())) {
-
-            return true;
-        }
-
-        return false;
+return isConfig(line) || isMenu(line) || isMenuConfig(line) || isIf(line) || isChoice(line) || isSource(line) || isComment(line);
+//        if ((Pattern.matches(Keywords.CONFIG + "\\s.*", line.trim()) && parts.length == 2)
+//                || Pattern.matches(Keywords.MENU + "\\s\".*\"", line.trim())
+//                || (line.startsWith(Keywords.MENUCONFIG) && parts.length == 2)
+//                || (line.startsWith(Keywords.IF) && parts.length == 2)
+//                || line.equals(Keywords.CHOICE)
+//                || Pattern.matches(Keywords.SOURCE + "\\s\".*\"", line.trim())) {
+//
+//            return true;
+//        }
+//
+//        return false;
 
     }
 
