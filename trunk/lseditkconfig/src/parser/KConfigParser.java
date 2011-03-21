@@ -130,7 +130,7 @@ public class KConfigParser {
         return entityInstance;
     }
 
-    private EntityInstance getEntityInstance(String name, String type) {
+    private EntityInstance getEntityInstance(String name, String type, EntityInstance parent) {
         if (removeSpacesAndQuotes(name).equals("")) {
             System.out.println("ADDING EMPTY NAME: " + name);
             name = "EMPTY_DUMMY";
@@ -139,6 +139,10 @@ public class KConfigParser {
 
         if (entityInstance == null) {
             entityInstance = diagram.newCachedEntity(diagram.getEntityClass(type), removeSpacesAndQuotes(name));
+            //to ensure that if this is the first time this entity is created, it is created where it is used
+            if (parent != null) {
+                diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), parent, entityInstance);
+            }
         }
 
         return entityInstance;
@@ -173,7 +177,7 @@ public class KConfigParser {
         String sourceName = line.trim().substring(line.indexOf("\"") + 1, line.lastIndexOf("\""));
 
         sourceName = removeSpacesAndQuotes(sourceName);
-        EntityInstance sourceInstance = getEntityInstance(sourceName, TAEntityClass.SOURCE_CLASS);
+        EntityInstance sourceInstance = getEntityInstance(sourceName, TAEntityClass.SOURCE_CLASS, parent);
 
         loadSource(sourceInstance);
 
@@ -217,13 +221,13 @@ public class KConfigParser {
     private EntityInstance parseMenu(EntityInstance parent, String line) throws Exception {
         String menuName = line.trim().substring(line.indexOf("\"") + 1, line.lastIndexOf("\""));
 
-        EntityInstance menuInstance = getEntityInstance(menuName, TAEntityClass.MENU_CLASS);
+        EntityInstance menuInstance = getEntityInstance(menuName, TAEntityClass.MENU_CLASS, parent);
 
         String newLine = readLine();
         //load menu attributes first
         while (newLine != null && !isEndMenu(newLine) && isMenuAttribute(newLine)) {
             if (isDependsOn(newLine)) {
-                addDependency(menuInstance, newLine);
+                addDependency(parent, menuInstance, newLine);
             } else if (isVisibeIf(newLine)) {
                 addVisibility(menuInstance, newLine);
             }
@@ -282,11 +286,11 @@ public class KConfigParser {
         String parts[] = configStart.split(" ");
 
 
-        configInstance = getEntityInstance(parts[1].trim(), TAEntityClass.CONFIG_CLASS);
+        configInstance = getEntityInstance(parts[1].trim(), TAEntityClass.CONFIG_CLASS, container );
 
 
 
-        loadGeneralAttributes(configInstance);
+        loadGeneralAttributes(container, configInstance);
 
 
         if (container != null && isContainer(container)) {
@@ -373,9 +377,9 @@ public class KConfigParser {
         String parts[] = line.trim().split(" ");
         String menuName = parts[1].trim();
 
-        EntityInstance menuInstance = getEntityInstance(menuName, TAEntityClass.MENU_CONFIG_CLASS);
+        EntityInstance menuInstance = getEntityInstance(menuName, TAEntityClass.MENU_CONFIG_CLASS, parent);
 
-        loadGeneralAttributes(menuInstance);
+        loadGeneralAttributes(parent, menuInstance);
 
         //TO DO: HOW TO DEAL WITH MENU CONFIG
         //loadMenuConfig(menuInstance);
@@ -415,7 +419,7 @@ public class KConfigParser {
 
             for (int i = 0; i < ifDependencies.length; i++) {
 
-                EntityInstance ifDependency = getEntityInstance(ifDependencies[i], TAEntityClass.CONFIG_CLASS);
+                EntityInstance ifDependency = getEntityInstance(ifDependencies[i], TAEntityClass.CONFIG_CLASS, parent);
                 if (ifEntry != null && ifDependency != null) {
                     diagram.addEdge(relationClass, ifEntry, ifDependency);
                 }
@@ -448,7 +452,7 @@ public class KConfigParser {
         entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1].trim()) + "\"");
     }
 
-    private void addDoubleDependency(String dependency, String split, EntityInstance parentInstance) {
+    private void addDoubleDependency(EntityInstance originalContainer, String dependency, String split, EntityInstance parentInstance) {
         String parts[] = dependency.split(split);
         EntityInstance relatedEntity = null;
 
@@ -457,9 +461,9 @@ public class KConfigParser {
 
 
             if (isComplexDep(dep)) {
-                addDependency(parentInstance, dep);
+                addDependency(originalContainer, parentInstance, dep);
             } else {
-                relatedEntity = getEntityInstance(dep, TAEntityClass.CONFIG_CLASS);
+                relatedEntity = getEntityInstance(dep, TAEntityClass.CONFIG_CLASS, originalContainer);
 
                 diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON), parentInstance, relatedEntity);
             }
@@ -467,7 +471,7 @@ public class KConfigParser {
 
     }
 
-    private void addDependency(EntityInstance parentInstance, String line) {
+    private void addDependency(EntityInstance originalContainer, EntityInstance parentInstance, String line) {
         String dependency = line;
         if (line.trim().startsWith(Keywords.DEPENDS_ON)) {
             dependency = line.trim().substring(10).trim();
@@ -481,15 +485,15 @@ public class KConfigParser {
         EntityInstance relatedEntity = null;
 
         if (dependency.contains("&&")) {
-            addDoubleDependency(dependency, "&&", parentInstance);
+            addDoubleDependency(originalContainer, dependency, "&&", parentInstance);
         } else if (dependency.contains("||")) {
-            addDoubleDependency(dependency, "\\|\\|", parentInstance);
+            addDoubleDependency(originalContainer, dependency, "\\|\\|", parentInstance);
         } else if (dependency.contains("!=")) {
-            addDoubleDependency(dependency, "!=", parentInstance);
+            addDoubleDependency(originalContainer, dependency, "!=", parentInstance);
         } else if (dependency.contains("=")) {
-            addDoubleDependency(dependency, "=", parentInstance);
+            addDoubleDependency(originalContainer, dependency, "=", parentInstance);
         } else {
-            relatedEntity = getEntityInstance(fixDepName(dependency), TAEntityClass.CONFIG_CLASS);
+            relatedEntity = getEntityInstance(fixDepName(dependency), TAEntityClass.CONFIG_CLASS, originalContainer);
             diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON), parentInstance, relatedEntity);
 
         }
@@ -498,24 +502,24 @@ public class KConfigParser {
     private void addVisibility(EntityInstance parentInstance, String line) {
         String parts[] = line.split(" ");
         if (parts[2].trim().startsWith("!")) {
-            EntityInstance relatedEntity = getEntityInstance(parts[2].trim().substring(1), TAEntityClass.CONFIG_CLASS);
+            EntityInstance relatedEntity = getEntityInstance(parts[2].trim().substring(1), TAEntityClass.CONFIG_CLASS, parentInstance);
 
             diagram.addEdge(diagram.getRelationClass(TARelation.VISIBLE_IF_NS), parentInstance, relatedEntity);
         } else {
 
-            EntityInstance relatedEntity = getEntityInstance(parts[2].trim(), TAEntityClass.CONFIG_CLASS);
+            EntityInstance relatedEntity = getEntityInstance(parts[2].trim(), TAEntityClass.CONFIG_CLASS, parentInstance);
 
             diagram.addEdge(diagram.getRelationClass(TARelation.VISIBLE_IF_SELECTED), parentInstance, relatedEntity);
         }
     }
 
-    private void addRelation(EntityInstance entityInstance, String line) {
+    private void addRelation(EntityInstance originalContainer, EntityInstance entityInstance, String line) {
         String parts[] = line.split(" ");
 
         if (isSelect(line)) {
 
 
-            EntityInstance relatedEntity = getEntityInstance(parts[1].trim(), TAEntityClass.CONFIG_CLASS);
+            EntityInstance relatedEntity = getEntityInstance(parts[1].trim(), TAEntityClass.CONFIG_CLASS, originalContainer);
 
             RelationInstance relnInstance = diagram.addEdge(diagram.getRelationClass(TARelation.SELECT), entityInstance, relatedEntity);
 
@@ -530,11 +534,11 @@ public class KConfigParser {
             }
         } else if (isDependsOn(line)) {
             //TODO HANDLE EXPRESSIONS
-            addDependency(entityInstance, line);
+            addDependency(originalContainer, entityInstance, line);
         }
     }
 
-    private boolean loadGeneralAttributes(EntityInstance entityInstance) throws Exception {
+    private boolean loadGeneralAttributes(EntityInstance originalContainer, EntityInstance entityInstance) throws Exception {
 
         String line = readLine();
         while (line != null && isGeneralAttribute(line)) {
@@ -553,7 +557,7 @@ public class KConfigParser {
             } else if (isPrompt(line)) {
                 //  addPrompt(entityInstance, line);
             } else if (isRelation(line)) {
-                addRelation(entityInstance, line);
+                addRelation(originalContainer, entityInstance, line);
             } else if (isHelp(line)) {
                 addHelp(entityInstance);
             }
@@ -685,7 +689,7 @@ public class KConfigParser {
         line = line.trim();
         String parts[] = line.split(" ");
 
-return isConfig(line) || isMenu(line) || isMenuConfig(line) || isIf(line) || isChoice(line) || isSource(line) || isComment(line);
+        return isConfig(line) || isMenu(line) || isMenuConfig(line) || isIf(line) || isChoice(line) || isSource(line) || isComment(line);
 //        if ((Pattern.matches(Keywords.CONFIG + "\\s.*", line.trim()) && parts.length == 2)
 //                || Pattern.matches(Keywords.MENU + "\\s\".*\"", line.trim())
 //                || (line.startsWith(Keywords.MENUCONFIG) && parts.length == 2)
