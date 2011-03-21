@@ -3904,7 +3904,6 @@ config BRIDGE
 	tristate "802.1d Ethernet Bridging"
 	select LLC
 	select STP
-	depends on IPV6 || IPV6=n
 config BRIDGE_IGMP_SNOOPING
 	bool "IGMP/MLD snooping"
 	depends on BRIDGE
@@ -4354,7 +4353,7 @@ config PCH_CAN
 	depends on CAN_DEV && PCI
 source "drivers/net/can/mscan/Kconfig"
 config CAN_MSCAN
-	depends on CAN_DEV && (PPC || M68K)
+	depends on CAN_DEV && (PPC || M68K || M68KNOMMU)
 	tristate "Support for Freescale MSCAN based chips"
 if CAN_MSCAN
 config CAN_MPC5XXX
@@ -4401,11 +4400,11 @@ endsource
 source "drivers/net/can/softing/Kconfig"
 config CAN_SOFTING
 	tristate "Softing Gmbh CAN generic support"
-	depends on CAN_DEV && HAS_IOMEM
+	depends on CAN_DEV
 config CAN_SOFTING_CS
 	tristate "Softing Gmbh CAN pcmcia cards"
 	depends on PCMCIA
-	depends on CAN_SOFTING
+	select CAN_SOFTING
 endsource
 config CAN_DEBUG_DEVICES
 	bool "CAN devices debugging messages"
@@ -13810,7 +13809,7 @@ config SENSORS_K8TEMP
 	tristate "AMD Athlon64/FX or Opteron temperature sensor"
 	depends on X86 && PCI && EXPERIMENTAL
 config SENSORS_K10TEMP
-	tristate "AMD Family 10h/11h/12h/14h temperature sensor"
+	tristate "AMD Phenom/Sempron/Turion/Opteron temperature sensor"
 	depends on X86 && PCI
 config SENSORS_ASB100
 	tristate "Asus ASB100 Bach"
@@ -13873,7 +13872,7 @@ config SENSORS_JZ4740
 	tristate "Ingenic JZ4740 SoC ADC driver"
 	depends on MACH_JZ4740 && MFD_JZ4740_ADC
 config SENSORS_JC42
-	tristate "JEDEC JC42.4 compliant memory module temperature sensors"
+	tristate "JEDEC JC42.4 compliant temperature sensors"
 	depends on I2C
 config SENSORS_LM63
 	tristate "National Semiconductor LM63 and LM64"
@@ -14104,6 +14103,7 @@ endsource
 source "drivers/thermal/Kconfig"
 menuconfig THERMAL
 	tristate "Generic Thermal sysfs driver"
+	depends on NET
 config THERMAL_HWMON
 	bool "Hardware monitoring support"
 	depends on THERMAL
@@ -14322,8 +14322,8 @@ config MACHZ_WDT
 config SBC_EPX_C3_WATCHDOG
 	tristate "Winsystems SBC EPX-C3 watchdog"
 	depends on X86
-config M54xx_WATCHDOG
-	tristate "MCF54xx watchdog support"
+config M548x_WATCHDOG
+	tristate "MCF548x watchdog support"
 	depends on M548x
 config ATH79_WDT
 	tristate "Atheros AR71XX/AR724X/AR913X hardware watchdog"
@@ -16990,7 +16990,7 @@ config AGP_ATI
 	depends on AGP && X86_32
 config AGP_AMD
 	tristate "AMD Irongate, 761, and 762 chipset support"
-	depends on AGP && X86_32
+	depends on AGP && (X86_32 || ALPHA)
 config AGP_AMD64
 	tristate "AMD Opteron/Athlon64 on-CPU GART support"
 	depends on AGP && X86 && AMD_NB
@@ -17136,13 +17136,11 @@ source "drivers/gpu/stub/Kconfig"
 config STUB_POULSBO
 	tristate "Intel GMA500 Stub Driver"
 	depends on PCI
-depends on NET
 
 
 	select BACKLIGHT_CLASS_DEVICE if ACPI
 	select INPUT if ACPI
 	select ACPI_VIDEO if ACPI
-	select THERMAL if ACPI
 endsource
 config VGASTATE
        tristate
@@ -22703,7 +22701,7 @@ endif
 endsource
 source "drivers/nfc/Kconfig"
 menuconfig NFC_DEVICES
-	bool "Near Field Communication (NFC) devices"
+	bool "NFC devices"
 	default n
 if NFC_DEVICES
 config PN544_NFC
@@ -22975,9 +22973,6 @@ config RTC_INTF_PROC
 config RTC_INTF_DEV
 	boolean "/dev/rtcN (character devices)"
 	default RTC_CLASS
-config RTC_INTF_DEV_UIE_EMUL
-	bool "RTC UIE emulation on dev interface"
-	depends on RTC_INTF_DEV
 config RTC_DRV_TEST
 	tristate "Test driver/device"
 if I2C
@@ -23835,7 +23830,6 @@ config COMEDI_NI_AT_AO
 config COMEDI_NI_ATMIO
 	tristate "NI AT-MIO E series ISA-PNP card support"
 	depends on ISAPNP && COMEDI_NI_TIO && COMEDI_NI_COMMON
-	select COMEDI_8255
 	default N
 config COMEDI_NI_ATMIO16D
 	tristate "NI AT-MIO16/AT-MIO16D series ISA-PNP card support"
@@ -24044,8 +24038,6 @@ config COMEDI_NI_PCIDIO
 config COMEDI_NI_PCIMIO
 	tristate "NI PCI-MIO-E series and M series support"
 	depends on COMEDI_NI_TIO && COMEDI_NI_COMMON
-	select COMEDI_8255
-	select COMEDI_FC
 	default N
 config COMEDI_RTD520
 	tristate "Real Time Devices PCI4520/DM7520 support"
@@ -24089,7 +24081,6 @@ config COMEDI_NI_LABPC_CS
 config COMEDI_NI_MIO_CS
 	tristate "NI DAQCard E series PCMCIA support"
 	depends on COMEDI_NI_TIO && COMEDI_NI_COMMON
-	select COMEDI_8255
 	select COMEDI_FC
 	default N
 config COMEDI_QUATECH_DAQP_CS
@@ -24126,6 +24117,7 @@ config COMEDI_MITE
 config COMEDI_NI_TIO
 	tristate "NI general purpose counter support"
 	depends on COMEDI_MITE
+	select COMEDI_8255
 	default N
 config COMEDI_NI_LABPC
 	tristate "NI Lab-PC and compatibles ISA and PCI support"
@@ -25394,7 +25386,7 @@ config SONYPI_COMPAT
 config IDEAPAD_LAPTOP
 	tristate "Lenovo IdeaPad Laptop Extras"
 	depends on ACPI
-	depends on RFKILL && INPUT
+	depends on RFKILL
 	select INPUT_SPARSEKMAP
 config THINKPAD_ACPI
 	tristate "ThinkPad ACPI Laptop Extras"
@@ -26424,7 +26416,6 @@ config CIFS
 	depends on INET
 	select NLS
 	select CRYPTO
-	select CRYPTO_MD4
 	select CRYPTO_MD5
 	select CRYPTO_HMAC
 	select CRYPTO_ARC4
@@ -26989,7 +26980,7 @@ config ARCH_WANT_FRAME_POINTERS
 config FRAME_POINTER
 	bool "Compile the kernel with frame pointers"
 	depends on DEBUG_KERNEL && \
-		(CRIS || M68K || FRV || UML || \
+		(CRIS || M68K || M68KNOMMU || FRV || UML || \
 		 AVR32 || SUPERH || BLACKFIN || MN10300) || \
 		ARCH_WANT_FRAME_POINTERS
 	default y if (DEBUG_INFO && UML) || ARCH_WANT_FRAME_POINTERS
