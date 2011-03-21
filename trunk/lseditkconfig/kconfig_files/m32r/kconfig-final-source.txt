@@ -1,183 +1,32 @@
-config 64BIT
-	bool "64-bit kernel" if ARCH = "x86"
-	default ARCH = "x86_64"
-config X86_32
-	def_bool !64BIT
-config X86_64
-	def_bool 64BIT
-config X86
-	def_bool y
-	select HAVE_AOUT if X86_32
-	select HAVE_READQ
-	select HAVE_WRITEQ
-	select HAVE_UNSTABLE_SCHED_CLOCK
+config M32R
+	bool
+	default y
 	select HAVE_IDE
 	select HAVE_OPROFILE
-	select HAVE_PERF_EVENTS
-	select HAVE_IRQ_WORK
-	select HAVE_IOREMAP_PROT
-	select HAVE_KPROBES
-	select HAVE_MEMBLOCK
-	select ARCH_WANT_OPTIONAL_GPIOLIB
-	select ARCH_WANT_FRAME_POINTERS
-	select HAVE_DMA_ATTRS
-	select HAVE_KRETPROBES
-	select HAVE_OPTPROBES
-	select HAVE_FTRACE_MCOUNT_RECORD
-	select HAVE_C_RECORDMCOUNT
-	select HAVE_DYNAMIC_FTRACE
-	select HAVE_FUNCTION_TRACER
-	select HAVE_FUNCTION_GRAPH_TRACER
-	select HAVE_FUNCTION_GRAPH_FP_TEST
-	select HAVE_FUNCTION_TRACE_MCOUNT_TEST
-	select HAVE_FTRACE_NMI_ENTER if DYNAMIC_FTRACE
-	select HAVE_SYSCALL_TRACEPOINTS
-	select HAVE_KVM
-	select HAVE_ARCH_KGDB
-	select HAVE_ARCH_TRACEHOOK
-	select HAVE_GENERIC_DMA_COHERENT if X86_32
-	select HAVE_EFFICIENT_UNALIGNED_ACCESS
-	select USER_STACKTRACE_SUPPORT
-	select HAVE_REGS_AND_STACK_ACCESS_API
-	select HAVE_DMA_API_DEBUG
+	select INIT_ALL_POSSIBLE
 	select HAVE_KERNEL_GZIP
 	select HAVE_KERNEL_BZIP2
 	select HAVE_KERNEL_LZMA
-	select HAVE_KERNEL_XZ
-	select HAVE_KERNEL_LZO
-	select HAVE_HW_BREAKPOINT
-	select HAVE_MIXED_BREAKPOINTS_REGS
-	select PERF_EVENTS
-	select HAVE_PERF_EVENTS_NMI
-	select ANON_INODES
-	select HAVE_ARCH_KMEMCHECK
-	select HAVE_USER_RETURN_NOTIFIER
-	select HAVE_ARCH_JUMP_LABEL
-	select HAVE_TEXT_POKE_SMP
 	select HAVE_GENERIC_HARDIRQS
-	select HAVE_SPARSE_IRQ
+	select GENERIC_HARDIRQS_NO_DEPRECATED
 	select GENERIC_IRQ_PROBE
-	select GENERIC_PENDING_IRQ if SMP
-	select USE_GENERIC_SMP_HELPERS if SMP
-config INSTRUCTION_DECODER
-	def_bool (KPROBES || PERF_EVENTS)
-config OUTPUT_FORMAT
-	string
-	default "elf32-i386" if X86_32
-	default "elf64-x86-64" if X86_64
-config ARCH_DEFCONFIG
-	string
-	default "arch/x86/configs/i386_defconfig" if X86_32
-	default "arch/x86/configs/x86_64_defconfig" if X86_64
-config GENERIC_CMOS_UPDATE
-	def_bool y
-config CLOCKSOURCE_WATCHDOG
-	def_bool y
-config GENERIC_CLOCKEVENTS
-	def_bool y
-config GENERIC_CLOCKEVENTS_BROADCAST
-	def_bool y
-	depends on X86_64 || (X86_32 && X86_LOCAL_APIC)
-config LOCKDEP_SUPPORT
-	def_bool y
-config STACKTRACE_SUPPORT
-	def_bool y
-config HAVE_LATENCYTOP_SUPPORT
-	def_bool y
-config MMU
-	def_bool y
-config ZONE_DMA
-	def_bool y
 config SBUS
 	bool
-config NEED_DMA_MAP_STATE
-       def_bool (X86_64 || DMAR || DMA_API_DEBUG)
-config NEED_SG_DMA_LENGTH
-	def_bool y
 config GENERIC_ISA_DMA
-	def_bool y
-config GENERIC_IOMAP
-	def_bool y
-config GENERIC_BUG
-	def_bool y
-	depends on BUG
-	select GENERIC_BUG_RELATIVE_POINTERS if X86_64
-config GENERIC_BUG_RELATIVE_POINTERS
 	bool
-config GENERIC_HWEIGHT
-	def_bool y
-config GENERIC_GPIO
+	default y
+config ZONE_DMA
 	bool
-config ARCH_MAY_HAVE_PC_FDC
+	default y
+config NO_IOPORT
 	def_bool y
-config RWSEM_GENERIC_SPINLOCK
-	def_bool !X86_XADD
-config RWSEM_XCHGADD_ALGORITHM
-	def_bool X86_XADD
-config ARCH_HAS_CPU_IDLE_WAIT
+config NO_DMA
 	def_bool y
-config GENERIC_CALIBRATE_DELAY
+config HZ
+	int
+	default 100
+config ARCH_USES_GETTIMEOFFSET
 	def_bool y
-config GENERIC_TIME_VSYSCALL
-	bool
-	default X86_64
-config ARCH_HAS_CPU_RELAX
-	def_bool y
-config ARCH_HAS_DEFAULT_IDLE
-	def_bool y
-config ARCH_HAS_CACHE_LINE_SIZE
-	def_bool y
-config HAVE_SETUP_PER_CPU_AREA
-	def_bool y
-config NEED_PER_CPU_EMBED_FIRST_CHUNK
-	def_bool y
-config NEED_PER_CPU_PAGE_FIRST_CHUNK
-	def_bool y
-config HAVE_CPUMASK_OF_CPU_MAP
-	def_bool X86_64_SMP
-config ARCH_HIBERNATION_POSSIBLE
-	def_bool y
-config ARCH_SUSPEND_POSSIBLE
-	def_bool y
-config ZONE_DMA32
-	bool
-	default X86_64
-config ARCH_POPULATES_NODE_MAP
-	def_bool y
-config AUDIT_ARCH
-	bool
-	default X86_64
-config ARCH_SUPPORTS_OPTIMIZED_INLINING
-	def_bool y
-config ARCH_SUPPORTS_DEBUG_PAGEALLOC
-	def_bool y
-config HAVE_INTEL_TXT
-	def_bool y
-	depends on EXPERIMENTAL && DMAR && ACPI
-config X86_32_SMP
-	def_bool y
-	depends on X86_32 && SMP
-config X86_64_SMP
-	def_bool y
-	depends on X86_64 && SMP
-config X86_HT
-	def_bool y
-	depends on SMP
-config X86_TRAMPOLINE
-	def_bool y
-	depends on SMP || (64BIT && ACPI_SLEEP)
-config X86_32_LAZY_GS
-	def_bool y
-	depends on X86_32 && !CC_STACKPROTECTOR
-config ARCH_HWEIGHT_CFLAGS
-	string
-	default "-fcall-saved-ecx -fcall-saved-edx" if X86_32
-	default "-fcall-saved-rdi -fcall-saved-rsi -fcall-saved-rdx -fcall-saved-rcx -fcall-saved-r8 -fcall-saved-r9 -fcall-saved-r10 -fcall-saved-r11" if X86_64
-config KTIME_SCALAR
-	def_bool X86_32
-config ARCH_CPU_PROBE_RELEASE
-	def_bool y
-	depends on HOTPLUG_CPU
 source "init/Kconfig"
 config ARCH
 	string
@@ -977,654 +826,120 @@ config FREEZER
 	def_bool PM_SLEEP || CGROUP_FREEZER
 endsource
 menu "Processor type and features"
-source "kernel/time/Kconfig"
-config TICK_ONESHOT
-	bool
-config NO_HZ
-	bool "Tickless System (Dynamic Ticks)"
-	depends on !ARCH_USES_GETTIMEOFFSET && GENERIC_CLOCKEVENTS
-	select TICK_ONESHOT
-config HIGH_RES_TIMERS
-	bool "High Resolution Timer Support"
-	depends on !ARCH_USES_GETTIMEOFFSET && GENERIC_CLOCKEVENTS
-	select TICK_ONESHOT
-config GENERIC_CLOCKEVENTS_BUILD
-	bool
-	default y
-	depends on GENERIC_CLOCKEVENTS || GENERIC_CLOCKEVENTS_MIGR
-endsource
-config SMP
-	bool "Symmetric multi-processing support"
-config X86_X2APIC
-	bool "Support x2apic"
-	depends on X86_LOCAL_APIC && X86_64 && INTR_REMAP
-config X86_MPPARSE
-	bool "Enable MPS table" if ACPI
-	default y
-	depends on X86_LOCAL_APIC
-config X86_BIGSMP
-	bool "Support for big SMP systems with more than 8 CPUs"
-	depends on X86_32 && SMP
-if X86_32
-config X86_EXTENDED_PLATFORM
-	bool "Support for extended (non-PC) x86 platforms"
-	default y
-endif
-if X86_64
-config X86_EXTENDED_PLATFORM
-	bool "Support for extended (non-PC) x86 platforms"
-	default y
-endif
-config X86_VSMP
-	bool "ScaleMP vSMP"
-	select PARAVIRT_GUEST
-	select PARAVIRT
-	depends on X86_64 && PCI
-	depends on X86_EXTENDED_PLATFORM
-config X86_UV
-	bool "SGI Ultraviolet"
-	depends on X86_64
-	depends on X86_EXTENDED_PLATFORM
-	depends on NUMA
-	depends on X86_X2APIC
-config X86_ELAN
-	bool "AMD Elan"
-	depends on X86_32
-	depends on X86_EXTENDED_PLATFORM
-config X86_INTEL_CE
-	bool "CE4100 TV platform"
-	depends on PCI
-	depends on PCI_GODIRECT
-	depends on X86_32
-	depends on X86_EXTENDED_PLATFORM
-	select X86_REBOOTFIXUPS
-config X86_MRST
-       bool "Moorestown MID platform"
-	depends on PCI
-	depends on PCI_GOANY
-	depends on X86_32
-	depends on X86_EXTENDED_PLATFORM
-	depends on X86_IO_APIC
-	select APB_TIMER
-	select I2C
-	select SPI
-	select INTEL_SCU_IPC
-	select X86_PLATFORM_DEVICES
-config X86_RDC321X
-	bool "RDC R-321x SoC"
-	depends on X86_32
-	depends on X86_EXTENDED_PLATFORM
-	select M486
-	select X86_REBOOTFIXUPS
-config X86_32_NON_STANDARD
-	bool "Support non-standard 32-bit SMP architectures"
-	depends on X86_32 && SMP
-	depends on X86_EXTENDED_PLATFORM
-config X86_NUMAQ
-	bool "NUMAQ (IBM/Sequent)"
-	depends on X86_32_NON_STANDARD
-	depends on PCI
-	select NUMA
-	select X86_MPPARSE
-config X86_SUPPORTS_MEMORY_FAILURE
-	def_bool y
-
-	depends on X86_MCE
-
-	depends on !X86_NUMAQ
-
-	depends on X86_64 || !SPARSEMEM
-	select ARCH_SUPPORTS_MEMORY_FAILURE
-config X86_VISWS
-	bool "SGI 320/540 (Visual Workstation)"
-	depends on X86_32 && PCI && X86_MPPARSE && PCI_GODIRECT
-	depends on X86_32_NON_STANDARD
-config X86_SUMMIT
-	bool "Summit/EXA (IBM x440)"
-	depends on X86_32_NON_STANDARD
-config X86_ES7000
-	bool "Unisys ES7000 IA32 series"
-	depends on X86_32_NON_STANDARD && X86_BIGSMP
-config X86_32_IRIS
-	tristate "Eurobraille/Iris poweroff module"
-	depends on X86_32
-config SCHED_OMIT_FRAME_POINTER
-	def_bool y
-	prompt "Single-depth WCHAN output"
-	depends on X86
-menuconfig PARAVIRT_GUEST
-	bool "Paravirtualized guest support"
-if PARAVIRT_GUEST
-source "arch/x86/xen/Kconfig"
-config XEN
-	bool "Xen guest support"
-	select PARAVIRT
-	select PARAVIRT_CLOCK
-	depends on X86_64 || (X86_32 && X86_PAE && !X86_VISWS)
-	depends on X86_CMPXCHG && X86_TSC
-config XEN_DOM0
-	def_bool y
-	depends on XEN && PCI_XEN && SWIOTLB_XEN
-	depends on X86_LOCAL_APIC && X86_IO_APIC && ACPI && PCI
-config XEN_PRIVILEGED_GUEST
-	def_bool XEN_DOM0
-config XEN_PVHVM
-	def_bool y
-	depends on XEN
-	depends on X86_LOCAL_APIC
-config XEN_MAX_DOMAIN_MEMORY
-       int
-       default 128
-       depends on XEN
-config XEN_SAVE_RESTORE
-       bool
-       depends on XEN && PM
-       default y
-config XEN_DEBUG_FS
-	bool "Enable Xen debug and tuning parameters in debugfs"
-	depends on XEN && DEBUG_FS
-	default n
-endsource
-config KVM_CLOCK
-	bool "KVM paravirtualized clock"
-	select PARAVIRT
-	select PARAVIRT_CLOCK
-config KVM_GUEST
-	bool "KVM Guest support"
-	select PARAVIRT
-source "arch/x86/lguest/Kconfig"
-config LGUEST_GUEST
-	bool "Lguest guest support"
-	select PARAVIRT
-	depends on X86_32
-	select VIRTUALIZATION
-	select VIRTIO
-	select VIRTIO_RING
-	select VIRTIO_CONSOLE
-endsource
-config PARAVIRT
-	bool "Enable paravirtualization code"
-config PARAVIRT_SPINLOCKS
-	bool "Paravirtualization layer for spinlocks"
-	depends on PARAVIRT && SMP && EXPERIMENTAL
-config PARAVIRT_CLOCK
-	bool
-endif
-config PARAVIRT_DEBUG
-	bool "paravirt-ops debugging"
-	depends on PARAVIRT && DEBUG_KERNEL
-config NO_BOOTMEM
-	def_bool y
-config MEMTEST
-	bool "Memtest"
-config X86_SUMMIT_NUMA
-	def_bool y
-	depends on X86_32 && NUMA && X86_32_NON_STANDARD
-config X86_CYCLONE_TIMER
-	def_bool y
-	depends on X86_32_NON_STANDARD
-source "arch/x86/Kconfig.cpu"
-if !X86_ELAN
+choice
+	prompt "Platform Type"
+	default PLAT_MAPPI
+config PLAT_MAPPI
+	bool "Mappi-I"
+config PLAT_USRV
+	bool "uServer"
+	select PLAT_HAS_INT1ICU
+config PLAT_M32700UT
+	bool "M32700UT"
+	select PLAT_HAS_INT0ICU
+	select PLAT_HAS_INT1ICU
+	select PLAT_HAS_INT2ICU
+config PLAT_OPSPUT
+	bool "OPSPUT"
+	select PLAT_HAS_INT0ICU
+	select PLAT_HAS_INT1ICU
+	select PLAT_HAS_INT2ICU
+config PLAT_OAKS32R
+	bool "OAKS32R"
+config PLAT_MAPPI2
+       bool "Mappi-II(M3A-ZA36/M3A-ZA52)"
+config PLAT_MAPPI3
+       bool "Mappi-III(M3A-2170)"
+config PLAT_M32104UT
+	bool "M32104UT"
+	select PLAT_HAS_INT1ICU
+endchoice
 choice
 	prompt "Processor family"
-	default M686 if X86_32
-	default GENERIC_CPU if X86_64
-config M386
-	bool "386"
-	depends on X86_32 && !UML
-config M486
-	bool "486"
-	depends on X86_32
-config M586
-	bool "586/K5/5x86/6x86/6x86MX"
-	depends on X86_32
-config M586TSC
-	bool "Pentium-Classic"
-	depends on X86_32
-config M586MMX
-	bool "Pentium-MMX"
-	depends on X86_32
-config M686
-	bool "Pentium-Pro"
-	depends on X86_32
-config MPENTIUMII
-	bool "Pentium-II/Celeron(pre-Coppermine)"
-	depends on X86_32
-config MPENTIUMIII
-	bool "Pentium-III/Celeron(Coppermine)/Pentium-III Xeon"
-	depends on X86_32
-config MPENTIUMM
-	bool "Pentium M"
-	depends on X86_32
-config MPENTIUM4
-	bool "Pentium-4/Celeron(P4-based)/Pentium-4 M/older Xeon"
-	depends on X86_32
-config MK6
-	bool "K6/K6-II/K6-III"
-	depends on X86_32
-config MK7
-	bool "Athlon/Duron/K7"
-	depends on X86_32
-config MK8
-	bool "Opteron/Athlon64/Hammer/K8"
-config MCRUSOE
-	bool "Crusoe"
-	depends on X86_32
-config MEFFICEON
-	bool "Efficeon"
-	depends on X86_32
-config MWINCHIPC6
-	bool "Winchip-C6"
-	depends on X86_32
-config MWINCHIP3D
-	bool "Winchip-2/Winchip-2A/Winchip-3"
-	depends on X86_32
-config MGEODEGX1
-	bool "GeodeGX1"
-	depends on X86_32
-config MGEODE_LX
-	bool "Geode GX/LX"
-	depends on X86_32
-config MCYRIXIII
-	bool "CyrixIII/VIA-C3"
-	depends on X86_32
-config MVIAC3_2
-	bool "VIA C3-2 (Nehemiah)"
-	depends on X86_32
-config MVIAC7
-	bool "VIA C7"
-	depends on X86_32
-config MPSC
-	bool "Intel P4 / older Netburst based Xeon"
-	depends on X86_64
-config MCORE2
-	bool "Core 2/newer Xeon"
-config MATOM
-	bool "Intel Atom"
-config GENERIC_CPU
-	bool "Generic-x86-64"
-	depends on X86_64
+	default CHIP_M32700
+config CHIP_M32700
+	bool "M32700 (Chaos)"
+config CHIP_M32102
+	bool "M32102"
+config CHIP_M32104
+	bool "M32104"
+	depends on PLAT_M32104UT
+config CHIP_VDEC2
+       bool "VDEC2"
+config CHIP_OPSP
+       bool "OPSP"
 endchoice
-config X86_GENERIC
-	bool "Generic x86 support"
-	depends on X86_32
-endif
-config X86_CPU
-	def_bool y
-	select GENERIC_FIND_FIRST_BIT
-	select GENERIC_FIND_NEXT_BIT
-config X86_INTERNODE_CACHE_SHIFT
-	int
-	default "12" if X86_VSMP
-	default "7" if NUMA
-	default X86_L1_CACHE_SHIFT
-config X86_CMPXCHG
-	def_bool X86_64 || (X86_32 && !M386)
-config CMPXCHG_LOCAL
-	def_bool X86_64 || (X86_32 && !M386)
-config X86_L1_CACHE_SHIFT
-	int
-	default "7" if MPENTIUM4 || MPSC
-	default "6" if MK7 || MK8 || MPENTIUMM || MCORE2 || MATOM || MVIAC7 || X86_GENERIC || GENERIC_CPU
-	default "4" if X86_ELAN || M486 || M386 || MGEODEGX1
-	default "5" if MWINCHIP3D || MWINCHIPC6 || MCRUSOE || MEFFICEON || MCYRIXIII || MK6 || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || M586 || MVIAC3_2 || MGEODE_LX
-config X86_XADD
-	def_bool y
-	depends on X86_64 || !M386
-config X86_PPRO_FENCE
-	bool "PentiumPro memory ordering errata workaround"
-	depends on M686 || M586MMX || M586TSC || M586 || M486 || M386 || MGEODEGX1
-config X86_F00F_BUG
-	def_bool y
-	depends on M586MMX || M586TSC || M586 || M486 || M386
-config X86_INVD_BUG
-	def_bool y
-	depends on M486 || M386
-config X86_WP_WORKS_OK
-	def_bool y
-	depends on !M386
-config X86_INVLPG
-	def_bool y
-	depends on X86_32 && !M386
-config X86_BSWAP
-	def_bool y
-	depends on X86_32 && !M386
-config X86_POPAD_OK
-	def_bool y
-	depends on X86_32 && !M386
-config X86_ALIGNMENT_16
-	def_bool y
-	depends on MWINCHIP3D || MWINCHIPC6 || MCYRIXIII || X86_ELAN || MK6 || M586MMX || M586TSC || M586 || M486 || MVIAC3_2 || MGEODEGX1
-config X86_INTEL_USERCOPY
-	def_bool y
-	depends on MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M586MMX || X86_GENERIC || MK8 || MK7 || MEFFICEON || MCORE2
-config X86_USE_PPRO_CHECKSUM
-	def_bool y
-	depends on MWINCHIP3D || MWINCHIPC6 || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MK8 || MVIAC3_2 || MEFFICEON || MGEODE_LX || MCORE2 || MATOM
-config X86_USE_3DNOW
-	def_bool y
-	depends on (MCYRIXIII || MK7 || MGEODE_LX) && !UML
-config X86_OOSTORE
-	def_bool y
-	depends on (MWINCHIP3D || MWINCHIPC6) && MTRR
-config X86_P6_NOP
-	def_bool y
-	depends on X86_64
-	depends on (MCORE2 || MPENTIUM4 || MPSC)
-config X86_TSC
-	def_bool y
-	depends on ((MWINCHIP3D || MCRUSOE || MEFFICEON || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || MK8 || MVIAC3_2 || MVIAC7 || MGEODEGX1 || MGEODE_LX || MCORE2 || MATOM) && !X86_NUMAQ) || X86_64
-config X86_CMPXCHG64
-	def_bool y
-	depends on X86_PAE || X86_64 || MCORE2 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MATOM
-config X86_CMOV
-	def_bool y
-	depends on (MK8 || MK7 || MCORE2 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7 || MCRUSOE || MEFFICEON || X86_64 || MATOM || MGEODE_LX)
-config X86_MINIMUM_CPU_FAMILY
-	int
-	default "64" if X86_64
-	default "6" if X86_32 && X86_P6_NOP
-	default "5" if X86_32 && X86_CMPXCHG64
-	default "4" if X86_32 && (X86_XADD || X86_CMPXCHG || X86_BSWAP || X86_WP_WORKS_OK)
-	default "3"
-config X86_DEBUGCTLMSR
-	def_bool y
-	depends on !(MK6 || MWINCHIPC6 || MWINCHIP3D || MCYRIXIII || M586MMX || M586TSC || M586 || M486 || M386) && !UML
-menuconfig PROCESSOR_SELECT
-	bool "Supported processor vendors" if EXPERT
-config CPU_SUP_INTEL
+config MMU
+	bool "Support for memory management hardware"
+	depends on CHIP_M32700 || CHIP_VDEC2 || CHIP_OPSP
 	default y
-	bool "Support Intel processors" if PROCESSOR_SELECT
-config CPU_SUP_CYRIX_32
+config TLB_ENTRIES
+       int "TLB Entries"
+       depends on CHIP_M32700 || CHIP_VDEC2 || CHIP_OPSP
+       default 32 if CHIP_M32700 || CHIP_OPSP
+       default 16 if CHIP_VDEC2
+config ISA_M32R
+        bool
+	depends on CHIP_M32102 || CHIP_M32104
 	default y
-	bool "Support Cyrix processors" if PROCESSOR_SELECT
-	depends on !64BIT
-config CPU_SUP_AMD
+config ISA_M32R2
+	bool
+	depends on CHIP_M32700 || CHIP_VDEC2 || CHIP_OPSP
 	default y
-	bool "Support AMD processors" if PROCESSOR_SELECT
-config CPU_SUP_CENTAUR
+config ISA_DSP_LEVEL2
+	bool
+	depends on CHIP_M32700 || CHIP_OPSP
 	default y
-	bool "Support Centaur processors" if PROCESSOR_SELECT
-config CPU_SUP_TRANSMETA_32
+config ISA_DUAL_ISSUE
+	bool
+	depends on CHIP_M32700 || CHIP_OPSP
 	default y
-	bool "Support Transmeta processors" if PROCESSOR_SELECT
-	depends on !64BIT
-config CPU_SUP_UMC_32
-	default y
-	bool "Support UMC processors" if PROCESSOR_SELECT
-	depends on !64BIT
-endsource
-config HPET_TIMER
-	def_bool X86_64
-	prompt "HPET Timer Support" if X86_32
-config HPET_EMULATE_RTC
-	def_bool y
-	depends on HPET_TIMER && (RTC=y || RTC=m || RTC_DRV_CMOS=m || RTC_DRV_CMOS=y)
-config APB_TIMER
-       def_bool y if MRST
-       prompt "Langwell APB Timer Support" if X86_MRST
-config DMI
-	default y
-	bool "Enable DMI scanning" if EXPERT
-config GART_IOMMU
-	bool "GART IOMMU support" if EXPERT
-	default y
-	select SWIOTLB
-	depends on X86_64 && PCI && AMD_NB
-config CALGARY_IOMMU
-	bool "IBM Calgary IOMMU support"
-	select SWIOTLB
-	depends on X86_64 && PCI && EXPERIMENTAL
-config CALGARY_IOMMU_ENABLED_BY_DEFAULT
-	def_bool y
-	prompt "Should Calgary be enabled by default?"
-	depends on CALGARY_IOMMU
-config AMD_IOMMU
-	bool "AMD IOMMU support"
-	select SWIOTLB
-	select PCI_MSI
-	depends on X86_64 && PCI && ACPI
-config AMD_IOMMU_STATS
-	bool "Export AMD IOMMU statistics to debugfs"
-	depends on AMD_IOMMU
-	select DEBUG_FS
-config SWIOTLB
-	def_bool y if X86_64
-config IOMMU_HELPER
-	def_bool (CALGARY_IOMMU || GART_IOMMU || SWIOTLB || AMD_IOMMU)
-config IOMMU_API
-	def_bool (AMD_IOMMU || DMAR)
-config MAXSMP
-	bool "Enable Maximum number of SMP Processors and NUMA Nodes"
-	depends on X86_64 && SMP && DEBUG_KERNEL && EXPERIMENTAL
-	select CPUMASK_OFFSTACK
-config NR_CPUS
-	int "Maximum number of CPUs" if SMP && !MAXSMP
-	range 2 8 if SMP && X86_32 && !X86_BIGSMP
-	range 2 512 if SMP && !MAXSMP
-	default "1" if !SMP
-	default "4096" if MAXSMP
-	default "32" if SMP && (X86_NUMAQ || X86_SUMMIT || X86_BIGSMP || X86_ES7000)
-	default "8" if SMP
-config SCHED_SMT
-	bool "SMT (Hyperthreading) scheduler support"
-	depends on X86_HT
-config SCHED_MC
-	def_bool y
-	prompt "Multi-core scheduler support"
-	depends on X86_HT
-config IRQ_TIME_ACCOUNTING
-	bool "Fine granularity task level IRQ time accounting"
+config PLAT_HAS_INT0ICU
+	bool
 	default n
-source "kernel/Kconfig.preempt"
-choice
-	prompt "Preemption Model"
-	default PREEMPT_NONE
-config PREEMPT_NONE
-	bool "No Forced Preemption (Server)"
-config PREEMPT_VOLUNTARY
-	bool "Voluntary Kernel Preemption (Desktop)"
-config PREEMPT
-	bool "Preemptible Kernel (Low-Latency Desktop)"
-endchoice
-endsource
-config X86_UP_APIC
-	bool "Local APIC support on uniprocessors"
-	depends on X86_32 && !SMP && !X86_32_NON_STANDARD
-config X86_UP_IOAPIC
-	bool "IO-APIC support on uniprocessors"
-	depends on X86_UP_APIC
-config X86_LOCAL_APIC
-	def_bool y
-	depends on X86_64 || SMP || X86_32_NON_STANDARD || X86_UP_APIC
-config X86_IO_APIC
-	def_bool y
-	depends on X86_64 || SMP || X86_32_NON_STANDARD || X86_UP_APIC
-config X86_VISWS_APIC
-	def_bool y
-	depends on X86_32 && X86_VISWS
-config X86_REROUTE_FOR_BROKEN_BOOT_IRQS
-	bool "Reroute for broken boot IRQs"
-	depends on X86_IO_APIC
-config X86_MCE
-	bool "Machine Check / overheating reporting"
-config X86_MCE_INTEL
-	def_bool y
-	prompt "Intel MCE features"
-	depends on X86_MCE && X86_LOCAL_APIC
-config X86_MCE_AMD
-	def_bool y
-	prompt "AMD MCE features"
-	depends on X86_MCE && X86_LOCAL_APIC
-config X86_ANCIENT_MCE
-	bool "Support for old Pentium 5 / WinChip machine checks"
-	depends on X86_32 && X86_MCE
-config X86_MCE_THRESHOLD
-	depends on X86_MCE_AMD || X86_MCE_INTEL
-	def_bool y
-config X86_MCE_INJECT
-	depends on X86_MCE
-	tristate "Machine check injector support"
-config X86_THERMAL_VECTOR
-	def_bool y
-	depends on X86_MCE_INTEL
-config VM86
-	bool "Enable VM86 support" if EXPERT
-	default y
-	depends on X86_32
-config TOSHIBA
-	tristate "Toshiba Laptop support"
-	depends on X86_32
-config I8K
-	tristate "Dell laptop support"
-config X86_REBOOTFIXUPS
-	bool "Enable X86 board specific fixups for reboot"
-	depends on X86_32
-config MICROCODE
-	tristate "/dev/cpu/microcode - microcode support"
-	select FW_LOADER
-config MICROCODE_INTEL
-	bool "Intel microcode patch loading support"
-	depends on MICROCODE
-	default MICROCODE
-	select FW_LOADER
-config MICROCODE_AMD
-	bool "AMD microcode patch loading support"
-	depends on MICROCODE
-	select FW_LOADER
-config MICROCODE_OLD_INTERFACE
-	def_bool y
-	depends on MICROCODE
-config X86_MSR
-	tristate "/dev/cpu/*/msr - Model-specific register support"
-config X86_CPUID
-	tristate "/dev/cpu/*/cpuid - CPU information support"
-choice
-	prompt "High Memory Support"
-	default HIGHMEM64G if X86_NUMAQ
-	default HIGHMEM4G
-	depends on X86_32
-config NOHIGHMEM
-	bool "off"
-	depends on !X86_NUMAQ
-config HIGHMEM4G
-	bool "4GB"
-	depends on !X86_NUMAQ
-config HIGHMEM64G
-	bool "64GB"
-	depends on !M386 && !M486
-	select X86_PAE
-endchoice
-choice
-	depends on EXPERIMENTAL
-	prompt "Memory split" if EXPERT
-	default VMSPLIT_3G
-	depends on X86_32
-	config VMSPLIT_3G
-		bool "3G/1G user/kernel split"
-	config VMSPLIT_3G_OPT
-		depends on !X86_PAE
-		bool "3G/1G user/kernel split (for full 1G low memory)"
-	config VMSPLIT_2G
-		bool "2G/2G user/kernel split"
-	config VMSPLIT_2G_OPT
-		depends on !X86_PAE
-		bool "2G/2G user/kernel split (for full 2G low memory)"
-	config VMSPLIT_1G
-		bool "1G/3G user/kernel split"
-endchoice
-config PAGE_OFFSET
-	hex
-	default 0xB0000000 if VMSPLIT_3G_OPT
-	default 0x80000000 if VMSPLIT_2G
-	default 0x78000000 if VMSPLIT_2G_OPT
-	default 0x40000000 if VMSPLIT_1G
-	default 0xC0000000
-	depends on X86_32
-config HIGHMEM
-	def_bool y
-	depends on X86_32 && (HIGHMEM64G || HIGHMEM4G)
-config X86_PAE
-	bool "PAE (Physical Address Extension) Support"
-	depends on X86_32 && !HIGHMEM4G
-config ARCH_PHYS_ADDR_T_64BIT
-	def_bool X86_64 || X86_PAE
-config ARCH_DMA_ADDR_T_64BIT
-	def_bool X86_64 || HIGHMEM64G
-config DIRECT_GBPAGES
-	bool "Enable 1GB pages for kernel pagetables" if EXPERT
-	default y
-	depends on X86_64
-config NUMA
-	bool "Numa Memory Allocation and Scheduler Support"
-	depends on SMP
-	depends on X86_64 || (X86_32 && HIGHMEM64G && (X86_NUMAQ || X86_BIGSMP || X86_SUMMIT && ACPI) && EXPERIMENTAL)
-	default y if (X86_NUMAQ || X86_SUMMIT || X86_BIGSMP)
-config AMD_NUMA
-	def_bool y
-	prompt "Old style AMD Opteron NUMA detection"
-	depends on X86_64 && NUMA && PCI
-config X86_64_ACPI_NUMA
-	def_bool y
-	prompt "ACPI NUMA detection"
-	depends on X86_64 && NUMA && ACPI && PCI
-	select ACPI_NUMA
-config NODES_SPAN_OTHER_NODES
-	def_bool y
-	depends on X86_64_ACPI_NUMA
-config NUMA_EMU
-	bool "NUMA emulation"
-	depends on X86_64 && NUMA
-config NODES_SHIFT
-	int "Maximum NUMA Nodes (as a power of 2)" if !MAXSMP
-	range 1 10
-	default "10" if MAXSMP
-	default "6" if X86_64
-	default "4" if X86_NUMAQ
-	default "3"
-	depends on NEED_MULTIPLE_NODES
-config HAVE_ARCH_BOOTMEM
-	def_bool y
-	depends on X86_32 && NUMA
-config ARCH_HAVE_MEMORY_PRESENT
-	def_bool y
-	depends on X86_32 && DISCONTIGMEM
-config NEED_NODE_MEMMAP_SIZE
-	def_bool y
-	depends on X86_32 && (DISCONTIGMEM || SPARSEMEM)
-config HAVE_ARCH_ALLOC_REMAP
-	def_bool y
-	depends on X86_32 && NUMA
-config ARCH_FLATMEM_ENABLE
-	def_bool y
-	depends on X86_32 && ARCH_SELECT_MEMORY_MODEL && !NUMA
+config PLAT_HAS_INT1ICU
+	bool
+	default n
+config PLAT_HAS_INT2ICU
+	bool
+	default n
+config BUS_CLOCK
+	int "Bus Clock [Hz] (integer)"
+	default "70000000" if PLAT_MAPPI
+	default "25000000" if PLAT_USRV
+	default "50000000" if PLAT_MAPPI3
+	default "50000000" if PLAT_M32700UT
+	default "50000000" if PLAT_OPSPUT
+	default "54000000" if PLAT_M32104UT
+	default "33333333" if PLAT_OAKS32R
+	default "20000000" if PLAT_MAPPI2
+config TIMER_DIVIDE
+	int "Timer divider (integer)"
+	default "128"
+config CPU_LITTLE_ENDIAN
+        bool "Generate little endian code"
+	default n
+config MEMORY_START
+	hex "Physical memory start address (hex)"
+	default "08000000" if PLAT_MAPPI || PLAT_MAPPI2 || PLAT_MAPPI3
+	default "08000000" if PLAT_USRV
+	default "08000000" if PLAT_M32700UT
+	default "08000000" if PLAT_OPSPUT
+	default "04000000" if PLAT_M32104UT
+	default "01000000" if PLAT_OAKS32R
+config MEMORY_SIZE
+	hex "Physical memory size (hex)"
+	default "08000000" if PLAT_MAPPI3
+	default "04000000" if PLAT_MAPPI || PLAT_MAPPI2
+	default "02000000" if PLAT_USRV
+	default "01000000" if PLAT_M32700UT
+	default "01000000" if PLAT_OPSPUT
+	default "01000000" if PLAT_M32104UT
+	default "00800000" if PLAT_OAKS32R
 config ARCH_DISCONTIGMEM_ENABLE
-	def_bool y
-	depends on NUMA && X86_32
-config ARCH_DISCONTIGMEM_DEFAULT
-	def_bool y
-	depends on NUMA && X86_32
-config ARCH_PROC_KCORE_TEXT
-	def_bool y
-	depends on X86_64 && PROC_KCORE
-config ARCH_SPARSEMEM_DEFAULT
-	def_bool y
-	depends on X86_64
-config ARCH_SPARSEMEM_ENABLE
-	def_bool y
-	depends on X86_64 || NUMA || (EXPERIMENTAL && X86_32) || X86_32_NON_STANDARD
-	select SPARSEMEM_STATIC if X86_32
-	select SPARSEMEM_VMEMMAP_ENABLE if X86_64
-config ARCH_SELECT_MEMORY_MODEL
-	def_bool y
-	depends on ARCH_SPARSEMEM_ENABLE
-config ARCH_MEMORY_PROBE
-	def_bool X86_64
-	depends on MEMORY_HOTPLUG
-config ILLEGAL_POINTER_VALUE
-       hex
-       default 0 if X86_32
-       default 0xdead000000000000 if X86_64
+	bool "Internal RAM Support"
+	depends on CHIP_M32700 || CHIP_M32102 || CHIP_VDEC2 || CHIP_OPSP || CHIP_M32104
+	default y
 source "mm/Kconfig"
 config SELECT_MEMORY_MODEL
 	def_bool y
@@ -1766,614 +1081,97 @@ config NEED_PER_CPU_KM
 	bool
 	default y
 endsource
-config HIGHPTE
-	bool "Allocate 3rd-level pagetables from highmem"
-	depends on HIGHMEM
-config X86_CHECK_BIOS_CORRUPTION
-	bool "Check for low memory corruption"
-config X86_BOOTPARAM_MEMORY_CORRUPTION_CHECK
-	bool "Set the default setting of memory_corruption_check"
-	depends on X86_CHECK_BIOS_CORRUPTION
+config IRAM_START
+	hex "Internal memory start address (hex)"
+	default "00f00000" if !CHIP_M32104
+	default "00700000" if CHIP_M32104
+	depends on (CHIP_M32700 || CHIP_M32102 || CHIP_VDEC2 || CHIP_OPSP || CHIP_M32104) && DISCONTIGMEM
+config IRAM_SIZE
+	hex "Internal memory size (hex)"
+	depends on (CHIP_M32700 || CHIP_M32102 || CHIP_VDEC2 || CHIP_OPSP || CHIP_M32104) && DISCONTIGMEM
+	default "00080000" if CHIP_M32700
+	default "00010000" if CHIP_M32102 || CHIP_OPSP || CHIP_M32104
+	default "00008000" if CHIP_VDEC2
+config GENERIC_LOCKBREAK
+	bool
 	default y
-config X86_RESERVE_LOW
-	int "Amount of low memory, in kilobytes, to reserve for the BIOS"
-	default 64
-	range 4 640
-config MATH_EMULATION
+	depends on SMP && PREEMPT
+config RWSEM_GENERIC_SPINLOCK
 	bool
-	prompt "Math emulation" if X86_32
-config MTRR
-	def_bool y
-	prompt "MTRR (Memory Type Range Register) support" if EXPERT
-config MTRR_SANITIZER
-	def_bool y
-	prompt "MTRR cleanup support"
-	depends on MTRR
-config MTRR_SANITIZER_ENABLE_DEFAULT
-	int "MTRR cleanup enable value (0-1)"
-	range 0 1
-	default "0"
-	depends on MTRR_SANITIZER
-config MTRR_SANITIZER_SPARE_REG_NR_DEFAULT
-	int "MTRR cleanup spare reg num (0-7)"
-	range 0 7
-	default "1"
-	depends on MTRR_SANITIZER
-config X86_PAT
-	def_bool y
-	prompt "x86 PAT support" if EXPERT
-	depends on MTRR
-config ARCH_USES_PG_UNCACHED
-	def_bool y
-	depends on X86_PAT
-config EFI
-	bool "EFI runtime service support"
-	depends on ACPI
-config SECCOMP
-	def_bool y
-	prompt "Enable seccomp to safely compute untrusted bytecode"
-config CC_STACKPROTECTOR
-	bool "Enable -fstack-protector buffer overflow detection (EXPERIMENTAL)"
-config KEXEC
-	bool "kexec system call"
-config CRASH_DUMP
-	bool "kernel crash dumps"
-	depends on X86_64 || (X86_32 && HIGHMEM)
-config KEXEC_JUMP
-	bool "kexec jump (EXPERIMENTAL)"
-	depends on EXPERIMENTAL
-	depends on KEXEC && HIBERNATION
-config PHYSICAL_START
-	hex "Physical address where the kernel is loaded" if (EXPERT || CRASH_DUMP)
-	default "0x1000000"
-config RELOCATABLE
-	bool "Build a relocatable kernel"
+	depends on M32R
 	default y
-config X86_NEED_RELOCS
-	def_bool y
-	depends on X86_32 && RELOCATABLE
-config PHYSICAL_ALIGN
-	hex "Alignment value to which kernel should be aligned" if X86_32
-	default "0x1000000"
-	range 0x2000 0x1000000
-config HOTPLUG_CPU
-	bool "Support for hot-pluggable CPUs"
-	depends on SMP && HOTPLUG
-config COMPAT_VDSO
-	def_bool y
-	prompt "Compat VDSO support"
-	depends on X86_32 || IA32_EMULATION
-config CMDLINE_BOOL
-	bool "Built-in kernel command line"
-config CMDLINE
-	string "Built-in kernel command string"
-	depends on CMDLINE_BOOL
-	default ""
-config CMDLINE_OVERRIDE
-	bool "Built-in command line overrides boot loader arguments"
-	depends on CMDLINE_BOOL
-endmenu
-config ARCH_ENABLE_MEMORY_HOTPLUG
-	def_bool y
-	depends on X86_64 || (X86_32 && HIGHMEM)
-config ARCH_ENABLE_MEMORY_HOTREMOVE
-	def_bool y
-	depends on MEMORY_HOTPLUG
-config HAVE_ARCH_EARLY_PFN_TO_NID
-	def_bool X86_64
-	depends on NUMA
-config USE_PERCPU_NUMA_NODE_ID
-	def_bool X86_64
-	depends on NUMA
-menu "Power management and ACPI options"
-config ARCH_HIBERNATION_HEADER
-	def_bool y
-	depends on X86_64 && HIBERNATION
-source "kernel/power/Kconfig"
-config PM
-	bool "Power Management support"
-	depends on !IA64_HP_SIM
-config PM_DEBUG
-	bool "Power Management Debug Support"
-	depends on PM
-config PM_ADVANCED_DEBUG
-	bool "Extra PM attributes in sysfs for low-level debugging/testing"
-	depends on PM_DEBUG
-	default n
-config PM_VERBOSE
-	bool "Verbose Power Management debugging"
-	depends on PM_DEBUG
-	default n
-config CAN_PM_TRACE
-	def_bool y
-	depends on PM_DEBUG && PM_SLEEP && EXPERIMENTAL
-config PM_TRACE
+config RWSEM_XCHGADD_ALGORITHM
 	bool
-config PM_TRACE_RTC
-	bool "Suspend/resume event tracing"
-	depends on CAN_PM_TRACE
-	depends on X86
-	select PM_TRACE
 	default n
-config PM_SLEEP_SMP
+config ARCH_HAS_ILOG2_U32
 	bool
+	default n
+config ARCH_HAS_ILOG2_U64
+	bool
+	default n
+config GENERIC_FIND_NEXT_BIT
+	bool
+	default y
+config GENERIC_HWEIGHT
+	bool
+	default y
+config GENERIC_CALIBRATE_DELAY
+	bool
+	default y
+config SCHED_OMIT_FRAME_POINTER
+        bool
+        default y
+config PREEMPT
+	bool "Preemptible Kernel"
+config SMP
+	bool "Symmetric multi-processing support"
+	select USE_GENERIC_SMP_HELPERS
+config CHIP_M32700_TS1
+	bool "Workaround code for the M32700 TS1 chip's bug"
+	depends on (CHIP_M32700 && SMP)
+	default n
+config NR_CPUS
+	int "Maximum number of CPUs (2-32)"
+	range 2 32
 	depends on SMP
-	depends on ARCH_SUSPEND_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
-	depends on PM_SLEEP
-	select HOTPLUG
-	select HOTPLUG_CPU
-	default y
-config PM_SLEEP
-	bool
-	depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
-	default y
-config PM_SLEEP_ADVANCED_DEBUG
-	bool
-	depends on PM_ADVANCED_DEBUG
+	default "2"
+config NUMA
+	bool "Numa Memory Allocation Support"
+	depends on SMP && BROKEN
 	default n
-config SUSPEND
-	bool "Suspend to RAM and standby"
-	depends on PM && ARCH_SUSPEND_POSSIBLE
-	default y
-config PM_TEST_SUSPEND
-	bool "Test suspend/resume and wakealarm during bootup"
-	depends on SUSPEND && PM_DEBUG && RTC_CLASS=y
-config SUSPEND_FREEZER
-	bool "Enable freezer for suspend to RAM/standby" \
-		if ARCH_WANTS_FREEZER_CONTROL || BROKEN
-	depends on SUSPEND
-	default y
-config HIBERNATION
-	bool "Hibernation (aka 'suspend to disk')"
-	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
-	select LZO_COMPRESS
-	select LZO_DECOMPRESS
-config PM_STD_PARTITION
-	string "Default resume partition"
-	depends on HIBERNATION
-	default ""
-config APM_EMULATION
-	tristate "Advanced Power Management Emulation"
-	depends on PM && SYS_SUPPORTS_APM_EMULATION
-config PM_RUNTIME
-	bool "Run-time PM core functionality"
-	depends on PM
-config PM_OPS
+config NODES_SHIFT
+	int
+	default "1"
+	depends on NEED_MULTIPLE_NODES
+config BOOT_IOREMAP
 	bool
-	depends on PM_SLEEP || PM_RUNTIME
-	default y
-config ARCH_HAS_OPP
-	bool
-config PM_OPP
-	bool "Operating Performance Point (OPP) Layer library"
-	depends on PM
-	depends on ARCH_HAS_OPP
-endsource
-source "drivers/acpi/Kconfig"
-menuconfig ACPI
-	bool "ACPI (Advanced Configuration and Power Interface) Support"
-	depends on !IA64_HP_SIM
-	depends on IA64 || X86
-	depends on PCI
-	depends on PM
-	select PNP
-	default y
-if ACPI
-config ACPI_SLEEP
-	bool
-	depends on SUSPEND || HIBERNATION
-	default y
-config ACPI_PROCFS
-	bool "Deprecated /proc/acpi files"
-	depends on PROC_FS
-config ACPI_PROCFS_POWER
-	bool "Deprecated power /proc/acpi directories"
-	depends on PROC_FS
-config ACPI_POWER_METER
-	tristate "ACPI 4.0 power meter"
-	depends on HWMON
-config ACPI_EC_DEBUGFS
-	tristate "EC read/write access through /sys/kernel/debug/ec"
-	default n
-config ACPI_PROC_EVENT
-	bool "Deprecated /proc/acpi/event support"
-	depends on PROC_FS
-	default y
-config ACPI_AC
-	tristate "AC Adapter"
-	depends on X86
-	select POWER_SUPPLY
-	default y
-config ACPI_BATTERY
-	tristate "Battery"
-	depends on X86
-	select POWER_SUPPLY
-	default y
-config ACPI_BUTTON
-	tristate "Button"
-	depends on INPUT
-	default y
-config ACPI_VIDEO
-	tristate "Video"
-	depends on X86 && BACKLIGHT_CLASS_DEVICE && VIDEO_OUTPUT_CONTROL
-	depends on INPUT
-	select THERMAL
-config ACPI_FAN
-	tristate "Fan"
-	select THERMAL
-	default y
-config ACPI_DOCK
-	bool "Dock"
-	depends on EXPERIMENTAL
-config ACPI_PROCESSOR
-	tristate "Processor"
-	select THERMAL
-	select CPU_IDLE
-	default y
-config ACPI_IPMI
-	tristate "IPMI"
-	depends on EXPERIMENTAL && IPMI_SI && IPMI_HANDLER
-	default n
-config ACPI_HOTPLUG_CPU
-	bool
-	depends on ACPI_PROCESSOR && HOTPLUG_CPU
-	select ACPI_CONTAINER
-	default y
-config ACPI_PROCESSOR_AGGREGATOR
-	tristate "Processor Aggregator"
-	depends on ACPI_PROCESSOR
-	depends on EXPERIMENTAL
-	depends on X86
-config ACPI_THERMAL
-	tristate "Thermal Zone"
-	depends on ACPI_PROCESSOR
-	select THERMAL
-	default y
-config ACPI_NUMA
-	bool "NUMA support"
 	depends on NUMA
-	depends on (X86 || IA64)
-	default y if IA64_GENERIC || IA64_SGI_SN2
-config ACPI_CUSTOM_DSDT_FILE
-	string "Custom DSDT Table file to include"
-	default ""
-	depends on !STANDALONE
-config ACPI_CUSTOM_DSDT
-	bool
-	default ACPI_CUSTOM_DSDT_FILE != ""
-config ACPI_BLACKLIST_YEAR
-	int "Disable ACPI for systems before Jan 1st this year" if X86_32
-	default 0
-config ACPI_DEBUG
-	bool "Debug Statements"
 	default n
-config ACPI_DEBUG_FUNC_TRACE
-	bool "Additionally enable ACPI function tracing"
-	default n
-	depends on ACPI_DEBUG
-config ACPI_PCI_SLOT
-	tristate "PCI slot detection driver"
-	depends on SYSFS
-	default n
-config X86_PM_TIMER
-	bool "Power Management Timer Support" if EXPERT
-	depends on X86
-	default y
-config ACPI_CONTAINER
-	tristate "Container and Module Devices (EXPERIMENTAL)"
-	depends on EXPERIMENTAL
-	default (ACPI_HOTPLUG_MEMORY || ACPI_HOTPLUG_CPU || ACPI_HOTPLUG_IO)
-config ACPI_HOTPLUG_MEMORY
-	tristate "Memory Hotplug"
-	depends on MEMORY_HOTPLUG
-	default n
-config ACPI_SBS
-	tristate "Smart Battery System"
-	depends on X86
-	select POWER_SUPPLY
-config ACPI_HED
-	tristate "Hardware Error Device"
-source "drivers/acpi/apei/Kconfig"
-config ACPI_APEI
-	bool "ACPI Platform Error Interface (APEI)"
-	depends on X86
-config ACPI_APEI_GHES
-	tristate "APEI Generic Hardware Error Source"
-	depends on ACPI_APEI && X86
-	select ACPI_HED
-config ACPI_APEI_EINJ
-	tristate "APEI Error INJection (EINJ)"
-	depends on ACPI_APEI && DEBUG_FS
-config ACPI_APEI_ERST_DEBUG
-	tristate "APEI Error Record Serialization Table (ERST) Debug Support"
-	depends on ACPI_APEI
-endsource
-endif
-endsource
-source "drivers/sfi/Kconfig"
-menuconfig SFI
-	bool "SFI (Simple Firmware Interface) Support"
-endsource
-config X86_APM_BOOT
-	def_bool y
-	depends on APM || APM_MODULE
-menuconfig APM
-	tristate "APM (Advanced Power Management) BIOS support"
-	depends on X86_32 && PM_SLEEP
-if APM
-config APM_IGNORE_USER_SUSPEND
-	bool "Ignore USER SUSPEND"
-config APM_DO_ENABLE
-	bool "Enable PM at boot time"
-config APM_CPU_IDLE
-	bool "Make CPU Idle calls when idle"
-config APM_DISPLAY_BLANK
-	bool "Enable console blanking using APM"
-config APM_ALLOW_INTS
-	bool "Allow interrupts during APM BIOS calls"
-endif
-source "arch/x86/kernel/cpu/cpufreq/Kconfig"
-menu "CPU Frequency scaling"
-source "drivers/cpufreq/Kconfig"
-config CPU_FREQ
-	bool "CPU Frequency scaling"
-if CPU_FREQ
-config CPU_FREQ_TABLE
-	tristate
-config CPU_FREQ_DEBUG
-	bool "Enable CPUfreq debugging"
-config CPU_FREQ_STAT
-	tristate "CPU frequency translation statistics"
-	select CPU_FREQ_TABLE
-	default y
-config CPU_FREQ_STAT_DETAILS
-	bool "CPU frequency translation statistics details"
-	depends on CPU_FREQ_STAT
-choice
-	prompt "Default CPUFreq governor"
-	default CPU_FREQ_DEFAULT_GOV_USERSPACE if CPU_FREQ_SA1100 || CPU_FREQ_SA1110
-	default CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-config CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-	bool "performance"
-	select CPU_FREQ_GOV_PERFORMANCE
-config CPU_FREQ_DEFAULT_GOV_POWERSAVE
-	bool "powersave"
-	depends on EXPERT
-	select CPU_FREQ_GOV_POWERSAVE
-config CPU_FREQ_DEFAULT_GOV_USERSPACE
-	bool "userspace"
-	select CPU_FREQ_GOV_USERSPACE
-config CPU_FREQ_DEFAULT_GOV_ONDEMAND
-	bool "ondemand"
-	select CPU_FREQ_GOV_ONDEMAND
-	select CPU_FREQ_GOV_PERFORMANCE
-config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
-	bool "conservative"
-	select CPU_FREQ_GOV_CONSERVATIVE
-	select CPU_FREQ_GOV_PERFORMANCE
-endchoice
-config CPU_FREQ_GOV_PERFORMANCE
-	tristate "'performance' governor"
-config CPU_FREQ_GOV_POWERSAVE
-	tristate "'powersave' governor"
-config CPU_FREQ_GOV_USERSPACE
-	tristate "'userspace' governor for userspace frequency scaling"
-config CPU_FREQ_GOV_ONDEMAND
-	tristate "'ondemand' cpufreq policy governor"
-	select CPU_FREQ_TABLE
-config CPU_FREQ_GOV_CONSERVATIVE
-	tristate "'conservative' cpufreq governor"
-	depends on CPU_FREQ
-endif
-endsource
-if CPU_FREQ
-comment "CPUFreq processor drivers"
-config X86_PCC_CPUFREQ
-	tristate "Processor Clocking Control interface driver"
-	depends on ACPI && ACPI_PROCESSOR
-config X86_ACPI_CPUFREQ
-	tristate "ACPI Processor P-States driver"
-	select CPU_FREQ_TABLE
-	depends on ACPI_PROCESSOR
-config ELAN_CPUFREQ
-	tristate "AMD Elan SC400 and SC410"
-	select CPU_FREQ_TABLE
-	depends on X86_ELAN
-config SC520_CPUFREQ
-	tristate "AMD Elan SC520"
-	select CPU_FREQ_TABLE
-	depends on X86_ELAN
-config X86_POWERNOW_K6
-	tristate "AMD Mobile K6-2/K6-3 PowerNow!"
-	select CPU_FREQ_TABLE
-	depends on X86_32
-config X86_POWERNOW_K7
-	tristate "AMD Mobile Athlon/Duron PowerNow!"
-	select CPU_FREQ_TABLE
-	depends on X86_32
-config X86_POWERNOW_K7_ACPI
-	bool
-	depends on X86_POWERNOW_K7 && ACPI_PROCESSOR
-	depends on !(X86_POWERNOW_K7 = y && ACPI_PROCESSOR = m)
-	depends on X86_32
-	default y
-config X86_POWERNOW_K8
-	tristate "AMD Opteron/Athlon64 PowerNow!"
-	select CPU_FREQ_TABLE
-	depends on ACPI && ACPI_PROCESSOR
-config X86_GX_SUSPMOD
-	tristate "Cyrix MediaGX/NatSemi Geode Suspend Modulation"
-	depends on X86_32 && PCI
-config X86_SPEEDSTEP_CENTRINO
-	tristate "Intel Enhanced SpeedStep (deprecated)"
-	select CPU_FREQ_TABLE
-	select X86_SPEEDSTEP_CENTRINO_TABLE if X86_32
-	depends on X86_32 || (X86_64 && ACPI_PROCESSOR)
-config X86_SPEEDSTEP_CENTRINO_TABLE
-	bool "Built-in tables for Banias CPUs"
-	depends on X86_32 && X86_SPEEDSTEP_CENTRINO
-	default y
-config X86_SPEEDSTEP_ICH
-	tristate "Intel Speedstep on ICH-M chipsets (ioport interface)"
-	select CPU_FREQ_TABLE
-	depends on X86_32
-config X86_SPEEDSTEP_SMI
-	tristate "Intel SpeedStep on 440BX/ZX/MX chipsets (SMI interface)"
-	select CPU_FREQ_TABLE
-	depends on X86_32 && EXPERIMENTAL
-config X86_P4_CLOCKMOD
-	tristate "Intel Pentium 4 clock modulation"
-	select CPU_FREQ_TABLE
-config X86_CPUFREQ_NFORCE2
-	tristate "nVidia nForce2 FSB changing"
-	depends on X86_32 && EXPERIMENTAL
-config X86_LONGRUN
-	tristate "Transmeta LongRun"
-	depends on X86_32
-config X86_LONGHAUL
-	tristate "VIA Cyrix III Longhaul"
-	select CPU_FREQ_TABLE
-	depends on X86_32 && ACPI_PROCESSOR
-config X86_E_POWERSAVER
-	tristate "VIA C7 Enhanced PowerSaver (DANGEROUS)"
-	select CPU_FREQ_TABLE
-	depends on X86_32 && EXPERIMENTAL
-config X86_SPEEDSTEP_LIB
-	tristate
-	default (X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD)
-config X86_SPEEDSTEP_RELAXED_CAP_CHECK
-	bool "Relaxed speedstep capability checks"
-	depends on X86_32 && (X86_SPEEDSTEP_SMI || X86_SPEEDSTEP_ICH)
-endif
 endmenu
-endsource
-source "drivers/cpuidle/Kconfig"
-config CPU_IDLE
-	bool "CPU idle PM support"
-	default ACPI
-config CPU_IDLE_GOV_LADDER
-	bool
-	depends on CPU_IDLE
-	default y
-config CPU_IDLE_GOV_MENU
-	bool
-	depends on CPU_IDLE && NO_HZ
-	default y
-endsource
-source "drivers/idle/Kconfig"
-config INTEL_IDLE
-	bool "Cpuidle Driver for Intel Processors"
-	depends on CPU_IDLE
-	depends on X86
-	depends on CPU_SUP_INTEL
-menu "Memory power savings"
-depends on X86_64
-config I7300_IDLE_IOAT_CHANNEL
-	bool
-config I7300_IDLE
-	tristate "Intel chipset idle memory power saving driver"
-	select I7300_IDLE_IOAT_CHANNEL
-	depends on EXPERIMENTAL
-endmenu
-endsource
-endmenu
-menu "Bus options (PCI etc.)"
+menu "Bus options (PCI, PCMCIA, EISA, MCA, ISA)"
 config PCI
 	bool "PCI support"
-	default y
-	select ARCH_SUPPORTS_MSI if (X86_LOCAL_APIC && X86_IO_APIC)
+	depends on BROKEN
+	default n
 choice
 	prompt "PCI access mode"
-	depends on X86_32 && PCI
+	depends on PCI
 	default PCI_GOANY
 config PCI_GOBIOS
 	bool "BIOS"
-config PCI_GOMMCONFIG
-	bool "MMConfig"
 config PCI_GODIRECT
 	bool "Direct"
-config PCI_GOOLPC
-	bool "OLPC XO-1"
-	depends on OLPC
 config PCI_GOANY
 	bool "Any"
 endchoice
 config PCI_BIOS
-	def_bool y
-	depends on X86_32 && PCI && (PCI_GOBIOS || PCI_GOANY)
+	bool
+	depends on PCI && (PCI_GOBIOS || PCI_GOANY)
+	default y
 config PCI_DIRECT
-	def_bool y
-	depends on PCI && (X86_64 || (PCI_GODIRECT || PCI_GOANY || PCI_GOOLPC))
-config PCI_MMCONFIG
-	def_bool y
-	depends on X86_32 && PCI && (ACPI || SFI) && (PCI_GOMMCONFIG || PCI_GOANY)
-config PCI_OLPC
-	def_bool y
-	depends on PCI && OLPC && (PCI_GOOLPC || PCI_GOANY)
-config PCI_XEN
-	def_bool y
-	depends on PCI && XEN
-	select SWIOTLB_XEN
-config PCI_DOMAINS
-	def_bool y
-	depends on PCI
-config PCI_MMCONFIG
-	bool "Support mmconfig PCI config space access"
-	depends on X86_64 && PCI && ACPI
-config PCI_CNB20LE_QUIRK
-	bool "Read CNB20LE Host Bridge Windows" if EXPERT
-	default n
-	depends on PCI && EXPERIMENTAL
-config DMAR
-	bool "Support for DMA Remapping Devices (EXPERIMENTAL)"
-	depends on PCI_MSI && ACPI && EXPERIMENTAL
-config DMAR_DEFAULT_ON
-	def_bool y
-	prompt "Enable DMA Remapping Devices by default"
-	depends on DMAR
-config DMAR_BROKEN_GFX_WA
-	bool "Workaround broken graphics drivers (going away soon)"
-	depends on DMAR && BROKEN
-config DMAR_FLOPPY_WA
-	def_bool y
-	depends on DMAR
-config INTR_REMAP
-	bool "Support for Interrupt Remapping (EXPERIMENTAL)"
-	depends on X86_64 && X86_IO_APIC && PCI_MSI && ACPI && EXPERIMENTAL
-source "drivers/pci/pcie/Kconfig"
-config PCIEPORTBUS
-	bool "PCI Express support"
-	depends on PCI
-config HOTPLUG_PCI_PCIE
-	tristate "PCI Express Hotplug driver"
-	depends on HOTPLUG_PCI && PCIEPORTBUS
-source "drivers/pci/pcie/aer/Kconfig"
-config PCIEAER
-	boolean "Root Port Advanced Error Reporting support"
-	depends on PCIEPORTBUS
+	bool
+ 	depends on PCI && (PCI_GODIRECT || PCI_GOANY)
 	default y
-config PCIE_ECRC
-	bool "PCI Express ECRC settings control"
-	depends on PCIEAER
-source "drivers/pci/pcie/aer/Kconfig.debug"
-config PCIEAER_INJECT
-	tristate "PCIe AER error injector support"
-	depends on PCIEAER
-	default n
-endsource
-endsource
-config PCIEASPM
-	bool "PCI Express ASPM control" if EXPERT
-	depends on PCI && PCIEPORTBUS
-	default y
-config PCIEASPM_DEBUG
-	bool "Debug PCI Express ASPM"
-	depends on PCIEASPM
-	default n
-config PCIE_PME
-	def_bool y
-	depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL && ACPI
-endsource
 source "drivers/pci/Kconfig"
 config ARCH_SUPPORTS_MSI
 	bool
@@ -2412,69 +1210,8 @@ config PCI_IOAPIC
 	depends on HOTPLUG
 	default y
 endsource
-config ISA_DMA_API
-	def_bool y
-if X86_32
 config ISA
-	bool "ISA support"
-config EISA
-	bool "EISA support"
-	depends on ISA
-source "drivers/eisa/Kconfig"
-config EISA_VLB_PRIMING
-	bool "Vesa Local Bus priming"
-	depends on X86 && EISA
-	default n
-config EISA_PCI_EISA
-	bool "Generic PCI/EISA bridge"
-	depends on !PARISC && PCI && EISA
-	default y
-config EISA_VIRTUAL_ROOT
-	bool "EISA virtual root device"
-	depends on EISA && (ALPHA || X86)
-	default y
-config EISA_NAMES
-	bool "EISA device name database"
-	depends on EISA
-	default y
-endsource
-config MCA
-	bool "MCA support"
-source "drivers/mca/Kconfig"
-config MCA_LEGACY
-	bool "Legacy MCA API Support"
-	depends on MCA
-config MCA_PROC_FS
-	bool "Support for the mca entry in /proc"
-	depends on MCA_LEGACY && PROC_FS
-endsource
-config SCx200
-	tristate "NatSemi SCx200 support"
-config SCx200HR_TIMER
-	tristate "NatSemi SCx200 27MHz High-Resolution Timer Support"
-	depends on SCx200
-	default y
-config OLPC
-	bool "One Laptop Per Child support"
-	select GPIOLIB
-	select OLPC_OPENFIRMWARE
-	depends on !X86_64 && !X86_PAE
-config OLPC_XO1
-	tristate "OLPC XO-1 support"
-	depends on OLPC && MFD_CS5535
-config OLPC_OPENFIRMWARE
-	bool "Support for OLPC's Open Firmware"
-	depends on !X86_64 && !X86_PAE
-	default n
-	select OF
-config OLPC_OPENFIRMWARE_DT
 	bool
-	default y if OLPC_OPENFIRMWARE && PROC_DEVICETREE
-	select OF_PROMTREE
-endif
-config AMD_NB
-	def_bool y
-	depends on CPU_SUP_AMD && PCI
 source "drivers/pcmcia/Kconfig"
 menuconfig PCCARD
 	tristate "PCCard (PCMCIA/CardBus) support"
@@ -2655,7 +1392,7 @@ config HOTPLUG_PCI_SGI
 endif
 endsource
 endmenu
-menu "Executable file formats / Emulations"
+menu "Executable file formats"
 source "fs/Kconfig.binfmt"
 config BINFMT_ELF
 	bool "Kernel support for ELF binaries"
@@ -2699,29 +1436,7 @@ config BINFMT_SOM
 config BINFMT_MISC
 	tristate "Kernel support for MISC binaries"
 endsource
-config IA32_EMULATION
-	bool "IA32 Emulation"
-	depends on X86_64
-	select COMPAT_BINFMT_ELF
-config IA32_AOUT
-	tristate "IA32 a.out support"
-	depends on IA32_EMULATION
-config COMPAT
-	def_bool y
-	depends on IA32_EMULATION
-config COMPAT_FOR_U64_ALIGNMENT
-	def_bool COMPAT
-	depends on X86_64
-config SYSVIPC_COMPAT
-	def_bool y
-	depends on COMPAT && SYSVIPC
 endmenu
-config HAVE_ATOMIC_IOMAP
-	def_bool y
-	depends on X86_32
-config HAVE_TEXT_POKE_SMP
-	bool
-	select STOP_MACHINE if SMP
 source "net/Kconfig"
 menuconfig NET
 	bool "Networking support"
@@ -25538,48 +24253,6 @@ config CLKDEV_LOOKUP
 endsource
 endmenu
 endsource
-source "drivers/firmware/Kconfig"
-menu "Firmware Drivers"
-config EDD
-	tristate "BIOS Enhanced Disk Drive calls determine boot disk"
-	depends on X86
-config EDD_OFF
-	bool "Sets default behavior for EDD detection to off"
-	depends on EDD
-	default n
-config FIRMWARE_MEMMAP
-    bool "Add firmware-provided memory map to sysfs" if EXPERT
-    default X86
-config EFI_VARS
-	tristate "EFI Variable Support via sysfs"
-	depends on EFI
-	default n
-config EFI_PCDP
-	bool "Console device selection via EFI PCDP or HCDP table"
-	depends on ACPI && EFI && IA64
-	default y if IA64
-config DELL_RBU
-	tristate "BIOS update support for DELL systems via sysfs"
-	depends on X86
-	select FW_LOADER
-config DCDBAS
-	tristate "Dell Systems Management Base Driver"
-	depends on X86
-config DMIID
-    bool "Export DMI identification via sysfs to userspace"
-    depends on DMI
-    default y
-config ISCSI_IBFT_FIND
-	bool "iSCSI Boot Firmware Table Attributes"
-	depends on X86
-	default n
-config ISCSI_IBFT
-	tristate "iSCSI Boot Firmware Table Attributes module"
-	select ISCSI_BOOT_SYSFS
-	depends on ISCSI_IBFT_FIND && SCSI && SCSI_LOWLEVEL
-	default	n
-endmenu
-endsource
 source "fs/Kconfig"
 menu "File systems"
 if BLOCK
@@ -26716,10 +25389,8 @@ config DLM_DEBUG
 endsource
 endmenu
 endsource
-source "arch/x86/Kconfig.debug"
+source "arch/m32r/Kconfig.debug"
 menu "Kernel hacking"
-config TRACE_IRQFLAGS_SUPPORT
-	def_bool y
 source "lib/Kconfig.debug"
 config PRINTK_TIME
 	bool "Show timing information on printks"
@@ -27225,122 +25896,17 @@ config KMEMCHECK_BITOPS_OK
 endif
 endsource
 endsource
-config STRICT_DEVMEM
-	bool "Filter access to /dev/mem"
-config X86_VERBOSE_BOOTUP
-	bool "Enable verbose x86 bootup info messages"
-	default y
-config EARLY_PRINTK
-	bool "Early printk" if EXPERT
-	default y
-config EARLY_PRINTK_MRST
-	bool "Early printk for MRST platform support"
-	depends on EARLY_PRINTK && X86_MRST
-config EARLY_PRINTK_DBGP
-	bool "Early printk via EHCI debug port"
-	depends on EARLY_PRINTK && PCI
 config DEBUG_STACKOVERFLOW
 	bool "Check for stack overflows"
 	depends on DEBUG_KERNEL
 config DEBUG_STACK_USAGE
 	bool "Stack utilization instrumentation"
 	depends on DEBUG_KERNEL
-config DEBUG_PER_CPU_MAPS
-	bool "Debug access to per_cpu maps"
-	depends on DEBUG_KERNEL
-	depends on SMP
-config X86_PTDUMP
-	bool "Export kernel pagetable layout to userspace via debugfs"
-	depends on DEBUG_KERNEL
-	select DEBUG_FS
-config DEBUG_RODATA
-	bool "Write protect kernel read-only data structures"
-	default y
-	depends on DEBUG_KERNEL
-config DEBUG_RODATA_TEST
-	bool "Testcase for the DEBUG_RODATA feature"
-	depends on DEBUG_RODATA
-	default y
-config DEBUG_SET_MODULE_RONX
-	bool "Set loadable kernel module data as NX and text as RO"
-	depends on MODULES
-config DEBUG_NX_TEST
-	tristate "Testcase for the NX non-executable stack feature"
-	depends on DEBUG_KERNEL && m
-config DOUBLEFAULT
-	default y
-	bool "Enable doublefault exception handler" if EXPERT
-	depends on X86_32
-config IOMMU_DEBUG
-	bool "Enable IOMMU debugging"
-	depends on GART_IOMMU && DEBUG_KERNEL
-	depends on X86_64
-config IOMMU_STRESS
-	bool "Enable IOMMU stress-test mode"
-config IOMMU_LEAK
-	bool "IOMMU leak tracing"
-	depends on IOMMU_DEBUG && DMA_API_DEBUG
-config HAVE_MMIOTRACE_SUPPORT
-	def_bool y
-config X86_DECODER_SELFTEST
-	bool "x86 instruction decoder selftest"
-	depends on DEBUG_KERNEL && KPROBES
-config IO_DELAY_TYPE_0X80
-	int
-	default "0"
-config IO_DELAY_TYPE_0XED
-	int
-	default "1"
-config IO_DELAY_TYPE_UDELAY
-	int
-	default "2"
-config IO_DELAY_TYPE_NONE
-	int
-	default "3"
-choice
-	prompt "IO delay type"
-	default IO_DELAY_0X80
-config IO_DELAY_0X80
-	bool "port 0x80 based port-IO delay [recommended]"
-config IO_DELAY_0XED
-	bool "port 0xed based port-IO delay"
-config IO_DELAY_UDELAY
-	bool "udelay based port-IO delay"
-config IO_DELAY_NONE
-	bool "no port-IO delay"
-endchoice
-if IO_DELAY_0X80
-config DEFAULT_IO_DELAY_TYPE
-	int
-	default IO_DELAY_TYPE_0X80
-endif
-if IO_DELAY_0XED
-config DEFAULT_IO_DELAY_TYPE
-	int
-	default IO_DELAY_TYPE_0XED
-endif
-if IO_DELAY_UDELAY
-config DEFAULT_IO_DELAY_TYPE
-	int
-	default IO_DELAY_TYPE_UDELAY
-endif
-if IO_DELAY_NONE
-config DEFAULT_IO_DELAY_TYPE
-	int
-	default IO_DELAY_TYPE_NONE
-endif
-config DEBUG_BOOT_PARAMS
-	bool "Debug boot parameters"
-	depends on DEBUG_KERNEL
-	depends on DEBUG_FS
-config CPA_DEBUG
-	bool "CPA self-test code"
-	depends on DEBUG_KERNEL
-config OPTIMIZE_INLINING
-	bool "Allow gcc to uninline functions marked 'inline'"
-config DEBUG_STRICT_USER_COPY_CHECKS
-	bool "Strict copy size checks"
-	depends on DEBUG_KERNEL && !TRACE_BRANCH_PROFILING
+config DEBUG_PAGEALLOC
+	bool "Debug page memory allocations"
+	depends on DEBUG_KERNEL && BROKEN
+config FRAME_POINTER
+	bool "Compile the kernel with frame pointers"
 endmenu
 endsource
 source "security/Kconfig"
@@ -27884,52 +26450,6 @@ config CRYPTO_DEV_OMAP_AES
 	select CRYPTO_AES
 endif
 endsource
-endif
-endsource
-source "arch/x86/kvm/Kconfig"
-source "virt/kvm/Kconfig"
-config HAVE_KVM
-       bool
-config HAVE_KVM_IRQCHIP
-       bool
-config HAVE_KVM_EVENTFD
-       bool
-       select EVENTFD
-config KVM_APIC_ARCHITECTURE
-       bool
-config KVM_MMIO
-       bool
-config KVM_ASYNC_PF
-       bool
-endsource
-menuconfig VIRTUALIZATION
-	bool "Virtualization"
-	depends on HAVE_KVM || X86
-	default y
-if VIRTUALIZATION
-config KVM
-	tristate "Kernel-based Virtual Machine (KVM) support"
-	depends on HAVE_KVM
-
-	depends on PCI
-	select PREEMPT_NOTIFIERS
-	select MMU_NOTIFIER
-	select ANON_INODES
-	select HAVE_KVM_IRQCHIP
-	select HAVE_KVM_EVENTFD
-	select KVM_APIC_ARCHITECTURE
-	select KVM_ASYNC_PF
-	select USER_RETURN_NOTIFIER
-	select KVM_MMIO
-config KVM_INTEL
-	tristate "KVM for Intel processors support"
-	depends on KVM
-config KVM_AMD
-	tristate "KVM for AMD processors support"
-	depends on KVM
-config KVM_MMU_AUDIT
-	bool "Audit KVM MMU"
-	depends on KVM && TRACEPOINTS
 endif
 endsource
 source "lib/Kconfig"

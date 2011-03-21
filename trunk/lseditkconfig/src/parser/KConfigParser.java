@@ -448,12 +448,9 @@ public class KConfigParser {
 
 
         //prompt "message" if condition
-        if (line.contains(" if ")) {
-            String dependency = line.substring(line.indexOf(" if "));
-            addDependency(originalContainer, entityInstace, dependency);
+       addCondition(originalContainer, entityInstace, line);
 
-
-        }
+        entityInstace.addAttribute(TaAttribute.USER_SELECTABLE, "\"true\"");
         //   entityInstace.addAttribute(TaAttribute.PROMPT, "\"" + removeSpacesAndQuotes(parts[1].trim()) + "\"");
     }
 
@@ -559,8 +556,10 @@ public class KConfigParser {
     }
 
     private void addDependencies(EntityInstance parent, Vector<EntityInstance> relatedInstances) {
-        for (EntityInstance relatedInstance : relatedInstances) {
-            diagram.newRelation(diagram.getRelationClass(TARelation.DEPENDS_ON), parent, relatedInstance);
+        if (relatedInstances != null) {
+            for (EntityInstance relatedInstance : relatedInstances) {
+                diagram.newRelation(diagram.getRelationClass(TARelation.DEPENDS_ON), parent, relatedInstance);
+            }
         }
     }
 
@@ -633,21 +632,22 @@ public class KConfigParser {
 
     private void addDefaultValue(EntityInstance originalContainer, EntityInstance entityInstance, String line) {
         //default value if condition
+        
+addCondition(originalContainer, entityInstance, line);
+        //  entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1]) + "\"");
+    }
+
+    private void addCondition(EntityInstance originalContainer, EntityInstance entityInstance, String line) {
         if (line.contains(" if ")) {
-            String dependency = line.substring(line.indexOf(" if "));
+            String dependency = line.substring(line.indexOf(" if ") + 4);
             addDependency(originalContainer, entityInstance, dependency);
         }
-
-        //  entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1]) + "\"");
     }
 
     private void addDefBool(EntityInstance originalContainer, EntityInstance entityInstance, String line) {
 
         //def_bool/def_tristate expr if expr
-        if (line.contains(" if ")) {
-            String dependency = line.substring(line.indexOf(" if "));
-            addDependency(originalContainer, entityInstance, dependency);
-        }
+        addCondition(originalContainer, entityInstance, line);
         //                if (entityInstance != null && entityInstance.getContainedBy() ==null)
 //                    diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), diagram.getCache("not_selectable"), entityInstance);
 //                //  entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1].trim()) + "\"");
@@ -658,12 +658,12 @@ public class KConfigParser {
         String parts[] = line.trim().split("\"");
 
         if (parts.length > 1) {
-            // instance.addAttribute(TaAttribute.USER_SELECTABLE, "\"true\"");
+             instance.addAttribute(TaAttribute.USER_SELECTABLE, "\"true\"");
             //instance.addAttribute(TaAttribute.PROMPT, "\"" + parts[1] + "\"");
         } else {
-//            if (instance != null && instance.getContainedBy() == null)
+  //          if (instance != null && instance.getContainedBy() == null)
 //                diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), diagram.getCache("not_selectable"), instance);
-            //  instance.addAttribute(TaAttribute.USER_SELECTABLE, "\"false\"");
+              instance.addAttribute(TaAttribute.USER_SELECTABLE, "\"false\"");
         }
     }
 
