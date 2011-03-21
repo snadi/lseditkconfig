@@ -224,10 +224,11 @@ public class KConfigParser {
         EntityInstance menuInstance = getEntityInstance(menuName, TAEntityClass.MENU_CLASS, parent);
 
         String newLine = readLine();
+        Vector<EntityInstance> addedDependencies = null;
         //load menu attributes first
         while (newLine != null && !isEndMenu(newLine) && isMenuAttribute(newLine)) {
             if (isDependsOn(newLine)) {
-                addDependency(parent, menuInstance, newLine);
+                addedDependencies = addDependency(parent, menuInstance, newLine);
             } else if (isVisibeIf(newLine)) {
                 addVisibility(menuInstance, newLine);
             }
@@ -239,7 +240,7 @@ public class KConfigParser {
         if (!isEndMenu(newLine)) {
             dis.reset();
 
-            loadMenu(menuInstance);
+            loadMenu(menuInstance, addedDependencies);
         }
 
         if (parent != null && isContainer(parent)) {
@@ -251,7 +252,7 @@ public class KConfigParser {
 
     }
 
-    private void loadMenu(EntityInstance menuInstance) throws Exception {
+    private void loadMenu(EntityInstance menuInstance, Vector<EntityInstance> addedDependencies) throws Exception {
         //    System.out.println("enter loadMeny() with: ");
 
         String line = readLine();
@@ -260,6 +261,8 @@ public class KConfigParser {
         while (line != null && !isEndMenu(line)) {
             EntityInstance menuEntry = getNextEntry(menuInstance, line);
 
+            //PROPAGATE DEPENDENCIES TO MENU ENTRIES
+            addDependencies(menuEntry, addedDependencies);
 
             if (menuInstance != null && menuEntry != null) {
                 diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), menuInstance, menuEntry);
@@ -286,7 +289,7 @@ public class KConfigParser {
         String parts[] = configStart.split(" ");
 
 
-        configInstance = getEntityInstance(parts[1].trim(), TAEntityClass.CONFIG_CLASS, container );
+        configInstance = getEntityInstance(parts[1].trim(), TAEntityClass.CONFIG_CLASS, container);
 
 
 
@@ -441,8 +444,16 @@ public class KConfigParser {
     }
 
     //adding attributes and relations
-    private void addPrompt(EntityInstance entityInstace, String line) {
-        String parts[] = line.trim().split("\"");
+    private void addPrompt(EntityInstance originalContainer, EntityInstance entityInstace, String line) {
+
+
+        //prompt "message" if condition
+        if (line.contains(" if ")) {
+            String dependency = line.substring(line.indexOf(" if "));
+            addDependency(originalContainer, entityInstace, dependency);
+
+
+        }
         //   entityInstace.addAttribute(TaAttribute.PROMPT, "\"" + removeSpacesAndQuotes(parts[1].trim()) + "\"");
     }
 
@@ -452,9 +463,10 @@ public class KConfigParser {
         entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1].trim()) + "\"");
     }
 
-    private void addDoubleDependency(EntityInstance originalContainer, String dependency, String split, EntityInstance parentInstance) {
+    private Vector<EntityInstance> addDoubleDependency(EntityInstance originalContainer, String dependency, String split, EntityInstance parentInstance) {
         String parts[] = dependency.split(split);
         EntityInstance relatedEntity = null;
+        Vector<EntityInstance> addedDependencies = new Vector<EntityInstance>();
 
         for (int i = 0; i < parts.length; i++) {
             String dep = fixDepName(parts[i]);
@@ -466,13 +478,17 @@ public class KConfigParser {
                 relatedEntity = getEntityInstance(dep, TAEntityClass.CONFIG_CLASS, originalContainer);
 
                 diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON), parentInstance, relatedEntity);
+                addedDependencies.add(relatedEntity);
             }
         }
 
+        return addedDependencies;
+
     }
 
-    private void addDependency(EntityInstance originalContainer, EntityInstance parentInstance, String line) {
+    private Vector<EntityInstance> addDependency(EntityInstance originalContainer, EntityInstance parentInstance, String line) {
         String dependency = line;
+        Vector<EntityInstance> addedDependencies = new Vector<EntityInstance>();
         if (line.trim().startsWith(Keywords.DEPENDS_ON)) {
             dependency = line.trim().substring(10).trim();
         }
@@ -485,18 +501,21 @@ public class KConfigParser {
         EntityInstance relatedEntity = null;
 
         if (dependency.contains("&&")) {
-            addDoubleDependency(originalContainer, dependency, "&&", parentInstance);
+            addedDependencies.addAll(addDoubleDependency(originalContainer, dependency, "&&", parentInstance));
         } else if (dependency.contains("||")) {
-            addDoubleDependency(originalContainer, dependency, "\\|\\|", parentInstance);
+            addedDependencies.addAll(addDoubleDependency(originalContainer, dependency, "\\|\\|", parentInstance));
         } else if (dependency.contains("!=")) {
-            addDoubleDependency(originalContainer, dependency, "!=", parentInstance);
+            addedDependencies.addAll(addDoubleDependency(originalContainer, dependency, "!=", parentInstance));
         } else if (dependency.contains("=")) {
-            addDoubleDependency(originalContainer, dependency, "=", parentInstance);
+            addedDependencies.addAll(addDoubleDependency(originalContainer, dependency, "=", parentInstance));
         } else {
             relatedEntity = getEntityInstance(fixDepName(dependency), TAEntityClass.CONFIG_CLASS, originalContainer);
             diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON), parentInstance, relatedEntity);
+            addedDependencies.add(relatedEntity);
 
         }
+
+        return addedDependencies;
     }
 
     private void addVisibility(EntityInstance parentInstance, String line) {
@@ -521,7 +540,8 @@ public class KConfigParser {
 
             EntityInstance relatedEntity = getEntityInstance(parts[1].trim(), TAEntityClass.CONFIG_CLASS, originalContainer);
 
-            RelationInstance relnInstance = diagram.addEdge(diagram.getRelationClass(TARelation.SELECT), entityInstance, relatedEntity);
+            //add reverse dependency for select
+            RelationInstance relnInstance = diagram.addEdge(diagram.getRelationClass(TARelation.DEPENDS_ON), relatedEntity, entityInstance);
 
             if (parts.length > 2) {
 
@@ -538,6 +558,12 @@ public class KConfigParser {
         }
     }
 
+    private void addDependencies(EntityInstance parent, Vector<EntityInstance> relatedInstances) {
+        for (EntityInstance relatedInstance : relatedInstances) {
+            diagram.newRelation(diagram.getRelationClass(TARelation.DEPENDS_ON), parent, relatedInstance);
+        }
+    }
+
     private boolean loadGeneralAttributes(EntityInstance originalContainer, EntityInstance entityInstance) throws Exception {
 
         String line = readLine();
@@ -547,15 +573,15 @@ public class KConfigParser {
                 addType(entityInstance, line);
             } else if (isDefBool(line)) {
                 entityInstance.addAttribute(TaAttribute.TYPE, "\"" + Keywords.BOOL + "\"");
-
+                addDefBool(originalContainer, entityInstance, line);
 //                if (entityInstance != null && entityInstance.getContainedBy() ==null)
 //                    diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), diagram.getCache("not_selectable"), entityInstance);
 //                //  entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1].trim()) + "\"");
                 // entityInstance.addAttribute(TaAttribute.USER_SELECTABLE, "\"false\"");
             } else if (isDefault(line)) {
-                //addDefaultValue(entityInstance, line);
+                addDefaultValue(originalContainer, entityInstance, line);
             } else if (isPrompt(line)) {
-                //  addPrompt(entityInstance, line);
+                addPrompt(originalContainer, entityInstance, line);
             } else if (isRelation(line)) {
                 addRelation(originalContainer, entityInstance, line);
             } else if (isHelp(line)) {
@@ -605,12 +631,27 @@ public class KConfigParser {
         dis.reset();
     }
 
-    private void addDefaultValue(EntityInstance entityInstance, String line) {
-        String defaultValue = "";
-
-        String parts[] = line.split(" ");
+    private void addDefaultValue(EntityInstance originalContainer, EntityInstance entityInstance, String line) {
+        //default value if condition
+        if (line.contains(" if ")) {
+            String dependency = line.substring(line.indexOf(" if "));
+            addDependency(originalContainer, entityInstance, dependency);
+        }
 
         //  entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1]) + "\"");
+    }
+
+    private void addDefBool(EntityInstance originalContainer, EntityInstance entityInstance, String line) {
+
+        //def_bool/def_tristate expr if expr
+        if (line.contains(" if ")) {
+            String dependency = line.substring(line.indexOf(" if "));
+            addDependency(originalContainer, entityInstance, dependency);
+        }
+        //                if (entityInstance != null && entityInstance.getContainedBy() ==null)
+//                    diagram.addEdge(diagram.getRelationClass(TARelation.CONTAINS), diagram.getCache("not_selectable"), entityInstance);
+//                //  entityInstance.addAttribute(TaAttribute.DEFAULT_VALUE, "\"" + removeQuotes(parts[1].trim()) + "\"");
+        // entityInstance.addAttribute(TaAttribute.USER_SELECTABLE, "\"false\"");
     }
 
     private void checkDefPrompt(EntityInstance instance, String line) {
